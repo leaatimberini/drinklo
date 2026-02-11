@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+﻿import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { validateEnv } from "./modules/config/env.schema";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
@@ -52,6 +52,7 @@ import { PromosModule } from "./modules/promos/promos.module";
 import { AbTestingModule } from "./modules/ab-testing/ab-testing.module";
 import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
 import { SearchModule } from "./modules/search/search.module";
+import { ForecastingModule } from "./modules/forecasting/forecasting.module";
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { SearchModule } from "./modules/search/search.module";
     AbTestingModule,
     FulfillmentModule,
     SearchModule,
+    ForecastingModule,
     AuthModule,
     CompaniesModule,
     UsersModule,
