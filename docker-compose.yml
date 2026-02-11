@@ -15,6 +15,15 @@ services:
     container_name: erp-redis
     ports:
       - "6379:6379"
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: erp-meilisearch
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_API_KEY:-}
+    ports:
+      - "7700:7700"
+    volumes:
+      - erp_meili:/meili_data
   minio:
     image: minio/minio:latest
     container_name: erp-minio
@@ -43,3 +52,4 @@ volumes:
   erp_pgdata:
   erp_minio:
   erp_clickhouse:
+  erp_meili:

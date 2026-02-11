@@ -21,6 +21,7 @@ const LOCAL_TOKEN = process.env.AGENT_LOCAL_TOKEN ?? "";
 const DB_URL = process.env.DATABASE_URL ?? "";
 const REDIS_URL = process.env.REDIS_URL ?? "";
 const STORAGE_ENDPOINT = process.env.STORAGE_ENDPOINT ?? process.env.STORAGE_PUBLIC_URL ?? "";
+const MEILI_HOST = process.env.MEILI_HOST ?? "";
 const OPS_URL = process.env.AGENT_OPS_URL ?? "";
 const OPS_TOKEN = process.env.AGENT_OPS_TOKEN ?? "";
 const BACKUP_META_PATH = process.env.BACKUP_META_PATH ?? "";
@@ -75,6 +76,7 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
   const db_ok = await tcpCheck(DB_URL, 5432);
   const redis_ok = await tcpCheck(REDIS_URL, 6379);
   const storage_ok = STORAGE_ENDPOINT ? await tcpCheck(STORAGE_ENDPOINT, 9000) : true;
+  const search_ok = MEILI_HOST ? await tcpCheck(MEILI_HOST, 7700) : true;
 
   let jobs_failed = 0;
   let secrets_expired = 0;
@@ -148,6 +150,7 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
     db_ok,
     redis_ok,
     storage_ok,
+    search_ok,
     jobs_failed,
     secrets_expired,
     secrets_unverified,
@@ -251,6 +254,7 @@ app.post("/smoke", async (_req, res) => {
     db_ok: await tcpCheck(DB_URL, 5432),
     redis_ok: await tcpCheck(REDIS_URL, 6379),
     storage_ok: STORAGE_ENDPOINT ? await tcpCheck(STORAGE_ENDPOINT, 9000) : true,
+    search_ok: MEILI_HOST ? await tcpCheck(MEILI_HOST, 7700) : true,
   };
   res.json(results);
 });

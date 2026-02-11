@@ -15,6 +15,7 @@ model Installation {
   version        String?
   releaseChannel String?
   healthStatus   String?
+  searchOk       Boolean?
   lastSeenAt     DateTime?
   lastHeartbeatAt DateTime?
   backupStatus   String?

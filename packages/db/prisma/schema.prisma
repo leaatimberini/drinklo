@@ -58,6 +58,8 @@ model Company {
   experiments           Experiment[]
   experimentAssignments ExperimentAssignment[]
   experimentEvents      ExperimentEvent[]
+  searchConfig          SearchConfig?
+  searchIndexState      SearchIndexState?
 }
 
 model CompanySettings {
@@ -1442,6 +1444,7 @@ model ProductVariant {
   name      String
   sku       String
   barcode   String?
+  cost      Decimal? @db.Numeric(10, 2)
   createdById String?
   updatedById String?
   createdAt DateTime @default(now())
@@ -1461,6 +1464,27 @@ model ProductVariant {
   @@index([barcode])
   @@index([productId])
   @@index([companyId])
+}
+
+model SearchConfig {
+  id        String   @id @default(uuid())
+  companyId String   @unique
+  synonyms  Json?
+  boosters  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+model SearchIndexState {
+  id        String   @id @default(uuid())
+  companyId String   @unique
+  lastIndexedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 model ProductCategory {

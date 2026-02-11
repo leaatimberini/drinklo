@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { Permissions } from "../common/rbac.decorators";
 import { PermissionsGuard } from "../common/permissions.guard";
-import type { CreateStockItemDto, CreateStockLocationDto, UpdateStockItemDto } from "./dto/stock.dto";
+import type { CreateStockItemDto, CreateStockLocationDto, ReceiveStockDto, UpdateStockItemDto } from "./dto/stock.dto";
 import { StockService } from "./stock.service";
 
 @ApiTags("stock")
@@ -31,10 +31,22 @@ export class StockController {
     return this.stock.listItems(req.user.companyId);
   }
 
+  @Get("lookup")
+  @Permissions("inventory:read")
+  lookup(@Req() req: any, @Query("code") code?: string) {
+    return this.stock.lookupByCode(req.user.companyId, code ?? "");
+  }
+
   @Post("items")
   @Permissions("inventory:write")
   createItem(@Req() req: any, @Body() body: CreateStockItemDto) {
     return this.stock.createItem(req.user.companyId, body, req.user.sub);
+  }
+
+  @Post("movements/receive")
+  @Permissions("inventory:write")
+  receive(@Req() req: any, @Body() body: ReceiveStockDto) {
+    return this.stock.receiveStock(req.user.companyId, body, req.user.sub);
   }
 
   @Patch("items/:id")

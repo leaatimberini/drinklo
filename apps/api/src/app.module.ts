@@ -50,6 +50,8 @@ import { WarehouseModule } from "./modules/warehouse/warehouse.module";
 import { AutomationModule } from "./modules/automation/automation.module";
 import { PromosModule } from "./modules/promos/promos.module";
 import { AbTestingModule } from "./modules/ab-testing/ab-testing.module";
+import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
+import { SearchModule } from "./modules/search/search.module";
 
 @Module({
   imports: [
@@ -98,6 +100,8 @@ import { AbTestingModule } from "./modules/ab-testing/ab-testing.module";
     AutomationModule,
     PromosModule,
     AbTestingModule,
+    FulfillmentModule,
+    SearchModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

@@ -37,3 +37,23 @@ export class UpdateStockItemDto {
   @IsInt()
   quantity!: number;
 }
+
+export class ReceiveStockDto {
+  @ApiProperty()
+  @IsString()
+  variantId!: string;
+
+  @ApiProperty()
+  @IsString()
+  locationId!: string;
+
+  @ApiProperty()
+  @IsInt()
+  @Min(1)
+  quantity!: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}

@@ -14,6 +14,14 @@ services:
     image: redis:7
     ports:
       - "6379:6379"
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_API_KEY:-}
+    ports:
+      - "7700:7700"
+    volumes:
+      - erp_meili:/meili_data
   clickhouse:
     image: clickhouse/clickhouse-server:24.8
     environment:
@@ -33,6 +41,7 @@ services:
       - postgres
       - redis
       - clickhouse
+      - meilisearch
   admin:
     image: erp-admin:latest
     env_file: .env
@@ -55,3 +64,4 @@ services:
 volumes:
   erp_pgdata:
   erp_clickhouse:
+  erp_meili:

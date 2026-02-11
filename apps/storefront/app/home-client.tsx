@@ -25,7 +25,22 @@ export default function HomeClient({
       <h1 style={{ fontSize: 34, marginBottom: 8, fontFamily: "var(--font-heading)" }}>
         {abVariant?.payload?.headline ?? "Storefront"}
       </h1>
-      <p style={{ marginBottom: 24 }}>Explorá categorías y productos.</p>
+      <p style={{ marginBottom: 12 }}>Explorá categorías y productos.</p>
+      <Link
+        href="/search"
+        style={{
+          display: "inline-block",
+          marginBottom: 24,
+          padding: "8px 14px",
+          borderRadius: "var(--radius-md)",
+          border: "1px solid var(--card-border)",
+          background: "var(--button-bg)",
+          color: "var(--button-text)",
+          textDecoration: "none",
+        }}
+      >
+        Buscar productos
+      </Link>
 
       {slots.length > 0 && (
         <section style={{ marginBottom: 32 }}>

@@ -1,0 +1,28 @@
+﻿{
+  "name": "@erp/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "main": "App.tsx",
+  "scripts": {
+    "dev": "expo start",
+    "build": "expo export --platform all",
+    "start": "expo start --dev-client",
+    "lint": "echo \"no lint\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@erp/shared": "workspace:*",
+    "expo": "^51.0.0",
+    "expo-barcode-scanner": "^12.5.0",
+    "expo-camera": "^15.0.0",
+    "react": "^19.0.0",
+    "react-native": "^0.74.0",
+    "@react-native-async-storage/async-storage": "^1.24.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-native": "^0.74.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

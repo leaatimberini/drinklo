@@ -9,6 +9,7 @@ export type HeartbeatPayload = {
   db_ok: boolean;
   redis_ok: boolean;
   storage_ok: boolean;
+  search_ok?: boolean;
   jobs_failed: number;
   secrets_expired?: number;
   secrets_unverified?: number;

@@ -8,6 +8,7 @@ services:
       - postgres
       - redis
       - clickhouse
+      - meilisearch
     ports:
       - "3001:3001"
 
@@ -56,6 +57,14 @@ services:
     container_name: erp-redis
     volumes:
       - erp_redis:/data
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: erp-meilisearch
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_API_KEY:-}
+    volumes:
+      - erp_meili:/meili_data
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.8
@@ -121,6 +130,7 @@ volumes:
   erp_pgdata:
   erp_redis:
   erp_clickhouse:
+  erp_meili:
   erp_minio:
   erp_backups:
   caddy_data:
