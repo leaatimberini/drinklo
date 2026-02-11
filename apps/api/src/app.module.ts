@@ -52,6 +52,7 @@ import { PromosModule } from "./modules/promos/promos.module";
 import { AbTestingModule } from "./modules/ab-testing/ab-testing.module";
 import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
 import { SearchModule } from "./modules/search/search.module";
+import { DeliveryRoutingModule } from "./modules/delivery-routing/delivery-routing.module";
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { SearchModule } from "./modules/search/search.module";
     AbTestingModule,
     FulfillmentModule,
     SearchModule,
+    DeliveryRoutingModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

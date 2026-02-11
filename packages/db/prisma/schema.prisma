@@ -60,6 +60,8 @@ model Company {
   experimentEvents      ExperimentEvent[]
   searchConfig          SearchConfig?
   searchIndexState      SearchIndexState?
+  deliveryWindows       DeliveryWindow[]
+  deliveryRoutes        DeliveryRoute[]
 }
 
 model CompanySettings {
@@ -618,6 +620,14 @@ enum OrderStatus {
   CANCELED
 }
 
+enum DeliveryStopStatus {
+  PENDING
+  EN_ROUTE
+  DELIVERED
+  FAILED
+  SKIPPED
+}
+
 enum PaymentProvider {
   MERCADOPAGO
 }
@@ -979,6 +989,7 @@ model Order {
   id              String           @id @default(uuid())
   companyId       String
   branchId        String?
+  deliveryWindowId String?
   customerName    String
   customerEmail   String
   customerPhone   String?
@@ -1008,6 +1019,7 @@ model Order {
 
   company      Company           @relation(fields: [companyId], references: [id])
   branch       Branch?           @relation(fields: [branchId], references: [id])
+  deliveryWindow DeliveryWindow? @relation(fields: [deliveryWindowId], references: [id])
   items        OrderItem[]
   statusEvents OrderStatusEvent[]
   payments     Payment[]
@@ -1020,8 +1032,65 @@ model Order {
   @@index([companyId])
   @@index([branchId])
   @@index([status])
+  @@index([deliveryWindowId])
   @@index([couponId])
   @@index([giftCardId])
+}
+
+model DeliveryWindow {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  routes  DeliveryRoute[]
+  orders  Order[]
+
+  @@index([companyId])
+  @@unique([companyId, name])
+}
+
+model DeliveryRoute {
+  id        String   @id @default(uuid())
+  companyId String
+  date      DateTime
+  windowId  String?
+  driverName String?
+  status    String   @default("PLANNED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  window  DeliveryWindow? @relation(fields: [windowId], references: [id])
+  stops   DeliveryStop[]
+
+  @@index([companyId])
+  @@index([date])
+  @@index([windowId])
+}
+
+model DeliveryStop {
+  id        String            @id @default(uuid())
+  routeId   String
+  orderId   String
+  sequence  Int
+  status    DeliveryStopStatus @default(PENDING)
+  distanceKm Float?
+  etaMinutes Int?
+  notifiedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  route DeliveryRoute @relation(fields: [routeId], references: [id])
+  order Order        @relation(fields: [orderId], references: [id])
+
+  @@index([routeId])
+  @@index([orderId])
+  @@index([status])
 }
 
 model OrderItem {
