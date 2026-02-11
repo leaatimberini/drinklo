@@ -1,0 +1,27 @@
+* { box-sizing: border-box; }
+:root {
+  --color-bg: #ffffff;
+  --color-fg: #111111;
+  --color-primary: #111111;
+  --color-secondary: #3b82f6;
+  --color-accent: #f97316;
+  --color-muted: #e5e7eb;
+  --font-body: ui-sans-serif, system-ui;
+  --font-heading: ui-sans-serif, system-ui;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --button-bg: #111111;
+  --button-text: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+}
+body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-body); }
+button {
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--card-border);
+  background: var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+}

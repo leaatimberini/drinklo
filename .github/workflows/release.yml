@@ -1,0 +1,146 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver version (e.g. 1.2.3)"
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - id: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
+      - name: Generate changelog
+        run: |
+          npx conventional-changelog-cli -p angular -i CHANGELOG.md -s -r 0
+
+      - name: Commit changelog
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog" || echo "No changes"
+          git push origin HEAD
+
+      - name: Generate SBOM
+        id: sbom
+        run: |
+          mkdir -p sbom
+          npx @cyclonedx/cyclonedx-npm --output-file sbom/bom.json --omit dev
+
+      - name: Ensure SBOM exists
+        run: |
+          test -f sbom/bom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom/bom.json
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ github.sha }}
+          IMAGE_PREFIX: ghcr.io/${{ github.repository }}
+        run: |
+          docker build -f apps/api/Dockerfile -t $IMAGE_PREFIX/erp-api:$VERSION -t $IMAGE_PREFIX/erp-api:$SHA .
+          docker build -f apps/admin/Dockerfile -t $IMAGE_PREFIX/erp-admin:$VERSION -t $IMAGE_PREFIX/erp-admin:$SHA .
+          docker build -f apps/storefront/Dockerfile -t $IMAGE_PREFIX/erp-storefront:$VERSION -t $IMAGE_PREFIX/erp-storefront:$SHA .
+          docker build -f apps/bot/Dockerfile -t $IMAGE_PREFIX/erp-bot:$VERSION -t $IMAGE_PREFIX/erp-bot:$SHA .
+
+      - name: Trivy scan api image
+        id: trivy_api
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/erp-api:${{ inputs.version }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+      - name: Trivy scan admin image
+        id: trivy_admin
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/erp-admin:${{ inputs.version }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+      - name: Trivy scan storefront image
+        id: trivy_storefront
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/erp-storefront:${{ inputs.version }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+      - name: Trivy scan bot image
+        id: trivy_bot
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/erp-bot:${{ inputs.version }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+
+      - name: Push images
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ github.sha }}
+          IMAGE_PREFIX: ghcr.io/${{ github.repository }}
+        run: |
+          docker push $IMAGE_PREFIX/erp-api:$VERSION
+          docker push $IMAGE_PREFIX/erp-api:$SHA
+          docker push $IMAGE_PREFIX/erp-admin:$VERSION
+          docker push $IMAGE_PREFIX/erp-admin:$SHA
+          docker push $IMAGE_PREFIX/erp-storefront:$VERSION
+          docker push $IMAGE_PREFIX/erp-storefront:$SHA
+          docker push $IMAGE_PREFIX/erp-bot:$VERSION
+          docker push $IMAGE_PREFIX/erp-bot:$SHA
+
+      - name: Tag release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git tag v$VERSION
+          git push origin v$VERSION
+
+      - name: Send report to control-plane
+        if: always()
+        env:
+          CONTROL_PLANE_URL: ${{ secrets.CONTROL_PLANE_URL }}
+          CONTROL_PLANE_SECURITY_TOKEN: ${{ secrets.CONTROL_PLANE_SECURITY_TOKEN }}
+          SECURITY_REPORT_KIND: release
+          SECURITY_REPORT_STATUS: ${{ job.status }}
+          SECURITY_REPORT_REPO: ${{ github.repository }}
+          SECURITY_REPORT_SHA: ${{ github.sha }}
+          SECURITY_REPORT_RUN_ID: ${{ github.run_id }}
+          SECURITY_REPORT_SUMMARY: >
+            {"sbom":"${{ steps.sbom.outcome }}","trivy_api":"${{ steps.trivy_api.outcome }}","trivy_admin":"${{ steps.trivy_admin.outcome }}","trivy_storefront":"${{ steps.trivy_storefront.outcome }}","trivy_bot":"${{ steps.trivy_bot.outcome }}","gitleaks":"${{ steps.gitleaks.outcome }}"}
+        run: node scripts/security-report.mjs

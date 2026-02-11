@@ -1,0 +1,16 @@
+﻿{
+  "name": "ERP Admin POS",
+  "short_name": "ERP POS",
+  "start_url": "/pos",
+  "display": "standalone",
+  "background_color": "#f6f6f6",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

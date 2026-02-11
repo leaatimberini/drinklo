@@ -1,0 +1,1659 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  settings      CompanySettings?
+  users          User[]
+  roles          Role[]
+  permissions    Permission[]
+  customers      Customer[]
+  addresses      Address[]
+  categories     Category[]
+  products       Product[]
+  variants       ProductVariant[]
+  productCats    ProductCategory[]
+  priceLists     PriceList[]
+  priceRules     PriceRule[]
+  stockLocations StockLocation[]
+  stockItems     StockItem[]
+  stockMovements StockMovement[]
+  licenseKey     LicenseKey?
+  branches       Branch[]
+  userBranches   UserBranch[]
+  secrets        Secret[]
+  secretAudits   SecretAudit[]
+  integrationHealthLogs IntegrationHealthLog[]
+  supportCustomers      SupportCustomer[]
+  supportTickets        SupportTicket[]
+  supportIncidents      SupportIncident[]
+  plugins               CompanyPlugin[]
+  eventLogs             EventLog[]
+  segments              Segment[]
+  campaigns             Campaign[]
+  flows                 Flow[]
+  triggers              Trigger[]
+  suppressionLists      SuppressionList[]
+  automationSendLogs    AutomationSendLog[]
+  flowMetrics           FlowMetric[]
+  coupons               Coupon[]
+  couponRedemptions     CouponRedemption[]
+  giftCards             GiftCard[]
+  giftCardTransactions  GiftCardTransaction[]
+  loyaltyTiers          LoyaltyTier[]
+  loyaltyRules          LoyaltyRule[]
+  loyaltyAccounts       LoyaltyAccount[]
+  loyaltyTransactions   LoyaltyTransaction[]
+  experiments           Experiment[]
+  experimentAssignments ExperimentAssignment[]
+  experimentEvents      ExperimentEvent[]
+}
+
+model CompanySettings {
+  id         String   @id @default(uuid())
+  companyId  String   @unique
+  brandName  String
+  domain     String
+  logoUrl    String
+  faviconUrl String?
+  seoTitle   String?
+  seoDescription String?
+  seoKeywords String?
+  templateId String? @default("default")
+  brandTone  String? @default("Profesional")
+  timezone   String
+  currency   String
+  storefrontTheme String
+  adminTheme      String
+  depotAddress String
+  depotLat     Float
+  depotLng     Float
+  billingMode String   @default("NO_FISCAL")
+  afipCuit     String?
+  afipPointOfSale Int?
+  afipEnvironment String? @default("HOMO")
+  afipCertIssuer String?
+  enableAfip       Boolean @default(false)
+  enableMercadoLibre Boolean @default(false)
+  enableRappi       Boolean @default(false)
+  enablePedidosYa   Boolean @default(false)
+  enableAndreani    Boolean @default(false)
+  enableOwnDelivery Boolean @default(false)
+  ageGateMode    String  @default("DISABLED")
+  termsUrl       String?
+  privacyUrl     String?
+  cookiesUrl     String?
+  marketingConsentRequired Boolean @default(false)
+  enableAbTesting Boolean @default(false)
+  retentionLogsDays      Int @default(90)
+  retentionOrdersDays    Int @default(365)
+  retentionMarketingDays Int @default(365)
+  supportPlan String? @default("standard")
+  supportSlaFirstResponseHours Int? @default(48)
+  supportSlaResolutionHours Int? @default(120)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+model Secret {
+  id            String   @id @default(uuid())
+  companyId     String
+  provider      String
+  encData       String
+  encDataIv     String
+  encDataTag    String
+  encKey        String
+  encKeyIv      String
+  encKeyTag     String
+  alg           String   @default("AES-256-GCM")
+  keyVersion    Int      @default(1)
+  status        String   @default("ACTIVE")
+  expiresAt     DateTime?
+  verifiedAt    DateTime?
+  rotatedAt     DateTime?
+  meta          Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  audits  SecretAudit[]
+
+  @@unique([companyId, provider])
+  @@index([companyId])
+  @@index([provider])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model SecretAudit {
+  id        String   @id @default(uuid())
+  companyId String
+  secretId  String
+  actorId   String?
+  action    String
+  changes   Json?
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  secret  Secret  @relation(fields: [secretId], references: [id])
+  actor   User?   @relation(fields: [actorId], references: [id])
+
+  @@index([companyId])
+  @@index([secretId])
+  @@index([actorId])
+  @@index([action])
+}
+
+model IntegrationHealthLog {
+  id        String   @id @default(uuid())
+  companyId String
+  provider  String
+  status    String
+  message   String?
+  meta      Json?
+  checkedAt DateTime @default(now())
+  actorId   String?
+
+  company Company @relation(fields: [companyId], references: [id])
+  actor   User?   @relation(fields: [actorId], references: [id])
+
+  @@index([companyId])
+  @@index([provider])
+  @@index([status])
+  @@index([checkedAt])
+}
+
+model SupportCustomer {
+  id        String   @id @default(uuid())
+  companyId String
+  email     String
+  name      String
+  passwordHash String
+  lastLoginAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  tickets SupportTicket[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+model SupportTicket {
+  id           String   @id @default(uuid())
+  companyId    String
+  customerId   String
+  subject      String
+  status       String   @default("OPEN")
+  priority     String   @default("NORMAL")
+  diagnosticsKey String?
+  diagnosticsMeta Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company  Company @relation(fields: [companyId], references: [id])
+  customer SupportCustomer @relation(fields: [customerId], references: [id])
+  messages SupportTicketMessage[]
+  attachments SupportTicketAttachment[]
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model SupportTicketMessage {
+  id        String   @id @default(uuid())
+  ticketId  String
+  authorType String
+  authorId  String?
+  message   String
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id])
+
+  @@index([ticketId])
+  @@index([authorType])
+}
+
+model SupportTicketAttachment {
+  id        String   @id @default(uuid())
+  ticketId  String
+  key       String
+  contentType String?
+  sizeBytes Int?
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id])
+
+  @@index([ticketId])
+}
+
+model SupportIncident {
+  id        String   @id @default(uuid())
+  companyId String
+  title     String
+  status    String   @default("OPEN")
+  severity  String   @default("MEDIUM")
+  startedAt DateTime @default(now())
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+  @@index([severity])
+}
+
+model CompanyPlugin {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  enabled   Boolean  @default(false)
+  allowedPermissions String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([name])
+}
+
+model EventLog {
+  id           String   @id @default(uuid())
+  companyId    String?
+  name         String
+  source       String
+  schemaVersion Int
+  occurredAt   DateTime
+  receivedAt   DateTime @default(now())
+  payload      Json
+  status       String   @default("stored")
+  error        String?
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([name])
+  @@index([source])
+  @@index([receivedAt])
+  @@index([status])
+}
+
+enum TriggerType {
+  CART_ABANDONED
+  POST_PURCHASE
+  BIRTHDAY
+  STOCK_BACK
+  WINBACK
+}
+
+enum ActionType {
+  EMAIL
+  PUSH
+  IN_APP
+  TELEGRAM
+  COUPON
+}
+
+enum FlowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+model Segment {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  description String?
+  definition  Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company   Company   @relation(fields: [companyId], references: [id])
+  campaigns Campaign[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Campaign {
+  id        String         @id @default(uuid())
+  companyId String
+  name      String
+  status    CampaignStatus @default(DRAFT)
+  segmentId String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id])
+  segment Segment? @relation(fields: [segmentId], references: [id])
+  flows   Flow[]
+
+  @@index([companyId])
+  @@index([segmentId])
+  @@index([status])
+}
+
+model Trigger {
+  id        String      @id @default(uuid())
+  companyId String
+  type      TriggerType
+  config    Json
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  flows   Flow[]
+
+  @@index([companyId])
+  @@index([type])
+}
+
+model Flow {
+  id         String     @id @default(uuid())
+  companyId  String
+  campaignId String?
+  triggerId  String
+  name       String
+  status     FlowStatus @default(DRAFT)
+  settings   Json
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  company   Company   @relation(fields: [companyId], references: [id])
+  campaign  Campaign? @relation(fields: [campaignId], references: [id])
+  trigger   Trigger   @relation(fields: [triggerId], references: [id])
+  actions   Action[]
+  metrics   FlowMetric[]
+  sendLogs  AutomationSendLog[]
+
+  @@index([companyId])
+  @@index([campaignId])
+  @@index([triggerId])
+  @@index([status])
+}
+
+model Action {
+  id           String     @id @default(uuid())
+  flowId       String
+  type         ActionType
+  config       Json
+  delayMinutes Int        @default(0)
+  position     Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  flow Flow @relation(fields: [flowId], references: [id])
+
+  @@index([flowId])
+  @@index([type])
+}
+
+model SuppressionList {
+  id        String   @id @default(uuid())
+  companyId String
+  channel   String
+  value     String
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, channel, value])
+  @@index([companyId])
+  @@index([channel])
+}
+
+model AutomationSendLog {
+  id        String   @id @default(uuid())
+  companyId String
+  flowId    String
+  channel   String
+  recipient String
+  sentAt    DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  flow    Flow    @relation(fields: [flowId], references: [id])
+
+  @@index([companyId])
+  @@index([flowId])
+  @@index([channel])
+  @@index([recipient])
+  @@index([sentAt])
+}
+
+model FlowMetric {
+  id         String   @id @default(uuid())
+  flowId     String
+  companyId  String
+  date       DateTime
+  sent       Int      @default(0)
+  opened     Int      @default(0)
+  converted  Int      @default(0)
+
+  company Company @relation(fields: [companyId], references: [id])
+  flow    Flow    @relation(fields: [flowId], references: [id])
+
+  @@unique([flowId, date])
+  @@index([companyId])
+  @@index([flowId])
+  @@index([date])
+}
+
+model PrivacyRequest {
+  id        String   @id @default(uuid())
+  companyId String
+  customerId String?
+  type      String
+  status    String
+  requestedById String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  requestedBy User? @relation("PrivacyRequestBy", fields: [requestedById], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([type])
+  @@index([status])
+}
+
+model ConsentRecord {
+  id        String   @id @default(uuid())
+  companyId String
+  userId    String?
+  type      String
+  accepted  Boolean
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([type])
+  @@index([userId])
+}
+
+model EmailDomain {
+  id           String   @id @default(uuid())
+  companyId    String   @unique
+  providerType String
+  providerName String?
+  domain       String?
+  spfValue     String?
+  dkimSelector String?
+  dkimValue    String?
+  dmarcValue   String?
+  status       String   @default("PENDING")
+  verifiedAt   DateTime?
+  verifiedById String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  verifiedBy User? @relation("EmailDomainVerifiedBy", fields: [verifiedById], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model EmailEventLog {
+  id        String   @id @default(uuid())
+  companyId String
+  provider  String
+  type      String
+  recipient String?
+  messageId String?
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([provider])
+  @@index([type])
+  @@index([messageId])
+}
+
+model LicenseKey {
+  id        String   @id @default(uuid())
+  companyId String   @unique
+  key       String
+  plan      String
+  expiresAt DateTime
+  features  String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([expiresAt])
+}
+
+enum EmailTemplateStatus {
+  DRAFT
+  APPROVED
+}
+
+model EmailTemplate {
+  id        String              @id @default(uuid())
+  companyId String
+  type      String
+  subject   String
+  body      String
+  version   Int
+  status    EmailTemplateStatus @default(DRAFT)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+}
+
+model BotCommandLog {
+  id        String   @id @default(uuid())
+  adminId   String?
+  chatId    String
+  command   String
+  args      String?
+  status    String
+  result    Json?
+  createdAt DateTime @default(now())
+
+  @@index([chatId])
+  @@index([command])
+}
+
+enum ShippingMode {
+  PICKUP
+  DELIVERY
+}
+
+enum ShippingProvider {
+  ANDREANI
+  OWN
+}
+
+enum OrderStatus {
+  CREATED
+  PAID
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentProvider {
+  MERCADOPAGO
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  IN_PROCESS
+  REJECTED
+  CANCELED
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_SHIPPING
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  REDEEMED
+  EXPIRED
+  VOID
+}
+
+enum GiftCardTransactionType {
+  ISSUE
+  REDEEM
+  ADJUST
+}
+
+enum LoyaltyTransactionType {
+  EARN
+  REDEEM
+  ADJUST
+}
+
+enum LoyaltyRuleType {
+  EARN_RATE
+  BONUS_PRODUCT
+  BONUS_CATEGORY
+}
+
+enum ExperimentTarget {
+  HOME
+  PDP
+  CHECKOUT
+}
+
+enum ExperimentStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ExperimentEventType {
+  ADD_TO_CART
+  CONVERSION
+}
+
+model Coupon {
+  id            String     @id @default(uuid())
+  companyId     String
+  code          String
+  type          CouponType
+  amount        Decimal    @db.Numeric(10, 2)
+  currency      String
+  startsAt      DateTime?
+  endsAt        DateTime?
+  usageLimit    Int?
+  usageCount    Int        @default(0)
+  perCustomerLimit Int?
+  minSubtotal   Decimal?   @db.Numeric(10, 2)
+  maxDiscount   Decimal?   @db.Numeric(10, 2)
+  priceListId   String?
+  categoryId    String?
+  customerId    String?
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  company      Company    @relation(fields: [companyId], references: [id])
+  priceList    PriceList? @relation(fields: [priceListId], references: [id])
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  redemptions  CouponRedemption[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([type])
+  @@index([active])
+  @@index([startsAt])
+  @@index([endsAt])
+  @@index([priceListId])
+  @@index([categoryId])
+  @@index([customerId])
+}
+
+model CouponRedemption {
+  id         String   @id @default(uuid())
+  companyId  String
+  couponId   String
+  orderId    String?
+  customerId String?
+  email      String?
+  amount     Decimal  @db.Numeric(10, 2)
+  createdAt  DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  coupon  Coupon  @relation(fields: [couponId], references: [id])
+  order   Order?  @relation(fields: [orderId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([companyId])
+  @@index([couponId])
+  @@index([orderId])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model GiftCard {
+  id            String         @id @default(uuid())
+  companyId     String
+  code          String
+  initialAmount Decimal        @db.Numeric(10, 2)
+  balance       Decimal        @db.Numeric(10, 2)
+  currency      String
+  issuedToEmail String?
+  expiresAt     DateTime?
+  status        GiftCardStatus @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  company      Company                @relation(fields: [companyId], references: [id])
+  transactions GiftCardTransaction[]
+  orders       Order[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model GiftCardTransaction {
+  id         String                  @id @default(uuid())
+  companyId  String
+  giftCardId String
+  type       GiftCardTransactionType
+  amount     Decimal                 @db.Numeric(10, 2)
+  orderId    String?
+  note       String?
+  createdById String?
+  createdAt  DateTime                @default(now())
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id])
+  order    Order?   @relation(fields: [orderId], references: [id])
+  createdBy User?   @relation(fields: [createdById], references: [id])
+
+  @@index([companyId])
+  @@index([giftCardId])
+  @@index([type])
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+model LoyaltyTier {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  minPoints Int
+  multiplier Float @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  accounts LoyaltyAccount[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([minPoints])
+}
+
+model LoyaltyRule {
+  id        String          @id @default(uuid())
+  companyId String
+  type      LoyaltyRuleType
+  config    Json
+  productId String?
+  categoryId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([companyId])
+  @@index([type])
+  @@index([productId])
+  @@index([categoryId])
+}
+
+model LoyaltyAccount {
+  id        String   @id @default(uuid())
+  companyId String
+  customerId String
+  tierId    String?
+  pointsBalance Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  tier     LoyaltyTier? @relation(fields: [tierId], references: [id])
+  transactions LoyaltyTransaction[]
+
+  @@unique([companyId, customerId])
+  @@index([companyId])
+  @@index([customerId])
+  @@index([tierId])
+}
+
+model LoyaltyTransaction {
+  id         String                  @id @default(uuid())
+  companyId  String
+  accountId  String
+  type       LoyaltyTransactionType
+  points     Int
+  orderId    String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  account LoyaltyAccount @relation(fields: [accountId], references: [id])
+  order   Order? @relation(fields: [orderId], references: [id])
+
+  @@index([companyId])
+  @@index([accountId])
+  @@index([type])
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+model Experiment {
+  id        String           @id @default(uuid())
+  companyId String
+  name      String
+  target    ExperimentTarget
+  status    ExperimentStatus @default(DRAFT)
+  objectives String[]
+  trafficSplit Json
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  company   Company            @relation(fields: [companyId], references: [id])
+  variants  ExperimentVariant[]
+  assignments ExperimentAssignment[]
+  events    ExperimentEvent[]
+
+  @@index([companyId])
+  @@index([target])
+  @@index([status])
+}
+
+model ExperimentVariant {
+  id           String   @id @default(uuid())
+  experimentId String
+  name         String
+  weight       Float    @default(0.5)
+  payload      Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  experiment Experiment @relation(fields: [experimentId], references: [id])
+  assignments ExperimentAssignment[]
+  events     ExperimentEvent[]
+
+  @@index([experimentId])
+}
+
+model ExperimentAssignment {
+  id           String   @id @default(uuid())
+  companyId    String
+  experimentId String
+  variantId    String
+  userId       String?
+  cookieId     String
+  assignedAt   DateTime @default(now())
+
+  company    Company           @relation(fields: [companyId], references: [id])
+  experiment Experiment        @relation(fields: [experimentId], references: [id])
+  variant    ExperimentVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([experimentId, cookieId])
+  @@index([companyId])
+  @@index([experimentId])
+  @@index([variantId])
+  @@index([userId])
+}
+
+model ExperimentEvent {
+  id           String             @id @default(uuid())
+  companyId    String
+  experimentId String
+  variantId    String
+  type         ExperimentEventType
+  orderId      String?
+  createdAt    DateTime           @default(now())
+
+  company    Company           @relation(fields: [companyId], references: [id])
+  experiment Experiment        @relation(fields: [experimentId], references: [id])
+  variant    ExperimentVariant @relation(fields: [variantId], references: [id])
+  order      Order?            @relation(fields: [orderId], references: [id])
+
+  @@index([companyId])
+  @@index([experimentId])
+  @@index([variantId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum SaleStatus {
+  OPEN
+  PAID
+  CANCELED
+}
+
+enum QuoteStatus {
+  OPEN
+  SENT
+  ACCEPTED
+  EXPIRED
+  CANCELED
+}
+
+model ShippingZone {
+  id            String   @id @default(uuid())
+  companyId     String
+  branchId      String?
+  name          String
+  maxDistanceKm Float
+  baseFee       Decimal  @db.Numeric(10, 2)
+  perKm         Decimal  @db.Numeric(10, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  branch  Branch?  @relation(fields: [branchId], references: [id])
+
+  @@index([companyId])
+  @@index([branchId])
+}
+
+model Order {
+  id              String           @id @default(uuid())
+  companyId       String
+  branchId        String?
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  shippingMode    ShippingMode
+  shippingProvider ShippingProvider?
+  shippingCost    Decimal          @db.Numeric(10, 2)
+  shippingLabel   String?
+  shippingMeta    Json?
+  trackingCode    String?
+  status          OrderStatus      @default(CREATED)
+  subtotal        Decimal          @default(0) @db.Numeric(10, 2)
+  discountTotal   Decimal          @db.Numeric(10, 2) @default(0)
+  couponId        String?
+  couponCode      String?
+  giftCardId      String?
+  giftCardAmount  Decimal          @db.Numeric(10, 2) @default(0)
+  loyaltyPointsUsed Int            @default(0)
+  loyaltyPointsEarned Int          @default(0)
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  postalCode      String?
+  country         String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  company      Company           @relation(fields: [companyId], references: [id])
+  branch       Branch?           @relation(fields: [branchId], references: [id])
+  items        OrderItem[]
+  statusEvents OrderStatusEvent[]
+  payments     Payment[]
+  coupon       Coupon?         @relation(fields: [couponId], references: [id])
+  giftCard     GiftCard?       @relation(fields: [giftCardId], references: [id])
+  couponRedemptions CouponRedemption[]
+  giftCardTransactions GiftCardTransaction[]
+  loyaltyTransactions LoyaltyTransaction[]
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([status])
+  @@index([couponId])
+  @@index([giftCardId])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  variantId String?
+  name      String
+  sku       String?
+  quantity  Int
+  unitPrice Decimal @db.Numeric(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model OrderStatusEvent {
+  id        String      @id @default(uuid())
+  orderId   String
+  status    OrderStatus
+  message   String?
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model Payment {
+  id             String         @id @default(uuid())
+  orderId        String
+  provider       PaymentProvider
+  preferenceId   String?
+  paymentId      String?
+  status         PaymentStatus
+  amount         Decimal        @db.Numeric(10, 2)
+  currency       String
+  raw            Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([paymentId])
+}
+
+model WebhookLog {
+  id         String   @id @default(uuid())
+  provider   String
+  eventId    String
+  payload    Json
+  headers    Json?
+  receivedAt DateTime @default(now())
+  processedAt DateTime?
+  status     String?
+  error      String?
+
+  @@unique([provider, eventId])
+  @@index([provider])
+}
+
+model Sale {
+  id            String      @id @default(uuid())
+  companyId     String
+  clientTxnId   String?
+  subtotal      Decimal     @db.Numeric(10, 2)
+  discount      Decimal     @db.Numeric(10, 2)
+  total         Decimal     @db.Numeric(10, 2)
+  currency      String
+  paymentMethod String
+  paidAmount    Decimal     @db.Numeric(10, 2)
+  changeAmount  Decimal     @db.Numeric(10, 2)
+  status        SaleStatus  @default(PAID)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  company Company   @relation(fields: [companyId], references: [id])
+  items   SaleItem[]
+
+  @@unique([companyId, clientTxnId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  productId String
+  variantId String?
+  name      String
+  sku       String?
+  quantity  Int
+  unitPrice Decimal @db.Numeric(10, 2)
+  total     Decimal @db.Numeric(10, 2)
+
+  sale    Sale          @relation(fields: [saleId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model Quote {
+  id            String      @id @default(uuid())
+  companyId     String
+  customerName  String
+  customerEmail String?
+  subtotal      Decimal     @db.Numeric(10, 2)
+  discount      Decimal     @db.Numeric(10, 2)
+  total         Decimal     @db.Numeric(10, 2)
+  currency      String
+  status        QuoteStatus @default(OPEN)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  company Company    @relation(fields: [companyId], references: [id])
+  items   QuoteItem[]
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model QuoteItem {
+  id        String  @id @default(uuid())
+  quoteId   String
+  productId String
+  variantId String?
+  name      String
+  sku       String?
+  quantity  Int
+  unitPrice Decimal @db.Numeric(10, 2)
+  total     Decimal @db.Numeric(10, 2)
+
+  quote   Quote          @relation(fields: [quoteId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([quoteId])
+  @@index([productId])
+}
+
+model FxRate {
+  id           String   @id @default(uuid())
+  currencyCode String
+  date         DateTime
+  rate         Decimal  @db.Numeric(18, 6)
+  source       String
+  createdAt    DateTime @default(now())
+
+  @@unique([currencyCode, date])
+  @@index([currencyCode])
+  @@index([date])
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  companyId      String
+  saleId         String?
+  type           String
+  pointOfSale    Int
+  number         Int
+  cae            String
+  caeDue         DateTime
+  total          Decimal  @db.Numeric(18, 2)
+  currency       String
+  status         String
+  raw            Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  sale    Sale?   @relation(fields: [saleId], references: [id])
+
+  @@index([companyId])
+  @@index([cae])
+  @@index([number])
+}
+
+model AfipLog {
+  id         String   @id @default(uuid())
+  companyId  String?
+  service    String
+  environment String
+  request    Json?
+  response   Json?
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([companyId])
+  @@index([service])
+}
+
+model User {
+  id           String   @id @default(uuid())
+  companyId    String
+  roleId       String
+  email        String
+  name         String
+  passwordHash String
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+  role    Role    @relation(fields: [roleId], references: [id])
+  createdBy User? @relation("UserCreatedBy", fields: [createdById], references: [id])
+  updatedBy User? @relation("UserUpdatedBy", fields: [updatedById], references: [id])
+  createdUsers User[] @relation("UserCreatedBy")
+  updatedUsers User[] @relation("UserUpdatedBy")
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@index([roleId])
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  company         Company         @relation(fields: [companyId], references: [id])
+  users           User[]
+  rolePermissions RolePermission[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  companyId   String
+  code        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company         Company         @relation(fields: [companyId], references: [id])
+  rolePermissions RolePermission[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  companyId    String
+  roleId       String
+  permissionId String
+
+  company    Company    @relation(fields: [companyId], references: [id])
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@index([companyId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  email     String?
+  phone     String?
+  createdById String?
+  updatedById String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  addresses Address[]
+  createdBy User? @relation("CustomerCreatedBy", fields: [createdById], references: [id])
+  updatedBy User? @relation("CustomerUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([companyId])
+  @@index([email])
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  companyId  String
+  customerId String
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  postalCode String
+  country    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  slug      String?
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  company        Company          @relation(fields: [companyId], references: [id])
+  parent         Category?        @relation("CategoryToParent", fields: [parentId], references: [id])
+  children       Category[]       @relation("CategoryToParent")
+  productCats    ProductCategory[]
+
+  @@index([companyId])
+  @@index([parentId])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  description String?
+  imageUrl    String?
+  isAlcoholic Boolean @default(false)
+  abv         Float?
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  company     Company          @relation(fields: [companyId], references: [id])
+  variants    ProductVariant[]
+  productCats ProductCategory[]
+  priceRules  PriceRule[]
+  attributes  ProductAttribute[]
+  createdBy   User? @relation("ProductCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([companyId])
+}
+
+model ProductAttribute {
+  id        String   @id @default(uuid())
+  companyId String
+  productId String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([companyId])
+  @@index([productId])
+  @@index([key])
+}
+
+model AttributeDefinition {
+  id        String   @id @default(uuid())
+  companyId String
+  key       String
+  label     String
+  dataType  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, key])
+  @@index([companyId])
+}
+
+model DashboardTemplate {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+}
+
+model ReportTemplate {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  companyId String
+  productId String
+  name      String
+  sku       String
+  barcode   String?
+  createdById String?
+  updatedById String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  company     Company      @relation(fields: [companyId], references: [id])
+  product     Product      @relation(fields: [productId], references: [id])
+  priceRules  PriceRule[]
+  stockItems  StockItem[]
+  createdBy   User? @relation("VariantCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("VariantUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([companyId, sku])
+  @@unique([companyId, barcode])
+  @@index([sku])
+  @@index([barcode])
+  @@index([productId])
+  @@index([companyId])
+}
+
+model ProductCategory {
+  id         String @id @default(uuid())
+  companyId  String
+  productId  String
+  categoryId String
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([productId, categoryId])
+  @@index([companyId])
+  @@index([categoryId])
+}
+
+model PriceList {
+  id        String   @id @default(uuid())
+  companyId String
+  branchId  String?
+  name      String
+  currency  String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  company    Company     @relation(fields: [companyId], references: [id])
+  branch     Branch?     @relation(fields: [branchId], references: [id])
+  priceRules PriceRule[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([branchId])
+}
+
+model PriceRule {
+  id          String   @id @default(uuid())
+  companyId   String
+  priceListId String
+  productId   String?
+  variantId   String?
+  minQty      Int      @default(1)
+  price       Decimal  @db.Numeric(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  company   Company        @relation(fields: [companyId], references: [id])
+  priceList PriceList      @relation(fields: [priceListId], references: [id])
+  product   Product?       @relation(fields: [productId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([companyId])
+  @@index([priceListId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+model StockLocation {
+  id        String   @id @default(uuid())
+  companyId String
+  branchId  String?
+  name      String
+  createdById String?
+  updatedById String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  company    Company     @relation(fields: [companyId], references: [id])
+  branch     Branch?      @relation(fields: [branchId], references: [id])
+  stockItems StockItem[]
+  createdBy  User? @relation("StockLocationCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User? @relation("StockLocationUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([companyId])
+  @@index([branchId])
+}
+
+model StockItem {
+  id         String   @id @default(uuid())
+  companyId  String
+  branchId   String?
+  variantId  String
+  locationId String
+  quantity   Int      @default(0)
+  reservedQuantity Int @default(0)
+  createdById String?
+  updatedById String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  company    Company      @relation(fields: [companyId], references: [id])
+  branch     Branch?       @relation(fields: [branchId], references: [id])
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
+  location   StockLocation  @relation(fields: [locationId], references: [id])
+  movements  StockMovement[]
+  createdBy  User? @relation("StockItemCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User? @relation("StockItemUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([variantId, locationId])
+  @@index([companyId])
+  @@index([branchId])
+  @@index([variantId])
+}
+
+enum ReservationStatus {
+  RESERVED
+  CONFIRMED
+  CANCELED
+  EXPIRED
+}
+
+model StockReservation {
+  id         String            @id @default(uuid())
+  companyId  String
+  branchId   String?
+  orderId    String
+  variantId  String
+  quantity   Int
+  status     ReservationStatus @default(RESERVED)
+  expiresAt  DateTime
+  confirmedAt DateTime?
+  canceledAt  DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  company Company        @relation(fields: [companyId], references: [id])
+  branch  Branch?         @relation(fields: [branchId], references: [id])
+  order   Order          @relation(fields: [orderId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([orderId])
+  @@index([variantId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model StockMovement {
+  id          String   @id @default(uuid())
+  companyId   String
+  branchId    String?
+  stockItemId String
+  delta       Int
+  reason      String
+  createdAt   DateTime @default(now())
+
+  company   Company   @relation(fields: [companyId], references: [id])
+  branch    Branch?    @relation(fields: [branchId], references: [id])
+  stockItem StockItem @relation(fields: [stockItemId], references: [id])
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([stockItemId])
+}
+
+model Branch {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company       Company       @relation(fields: [companyId], references: [id])
+  stockLocations StockLocation[]
+  stockItems     StockItem[]
+  stockMovements StockMovement[]
+  shippingZones  ShippingZone[]
+  orders         Order[]
+  users          UserBranch[]
+  priceLists     PriceList[]
+
+  @@index([companyId])
+}
+
+model UserBranch {
+  id        String   @id @default(uuid())
+  companyId String
+  userId    String
+  branchId  String
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  branch  Branch  @relation(fields: [branchId], references: [id])
+
+  @@unique([userId, branchId])
+  @@index([companyId])
+  @@index([branchId])
+}

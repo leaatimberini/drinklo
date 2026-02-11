@@ -1,0 +1,8 @@
+{
+  "name": "product-label",
+  "version": "0.1.0",
+  "permissions": ["products:read"],
+  "hooks": ["product.decorate"],
+  "uiSlots": ["admin.dashboard", "storefront.home"],
+  "signature": ""
+}

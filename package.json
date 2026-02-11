@@ -1,0 +1,49 @@
+{
+  "name": "erp-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "format": "prettier --write .",
+    "smoke": "node scripts/smoke.mjs",
+    "e2e": "playwright test",
+    "gate": "pnpm lint && pnpm test && pnpm build && pnpm smoke",
+    "db:backup": "node scripts/db-backup.mjs",
+    "db:restore": "node scripts/db-restore.mjs",
+    "installer": "node scripts/installer.mjs",
+    "deploy:up": "docker compose -f deploy/prod/docker-compose.yml up -d",
+    "deploy:down": "docker compose -f deploy/prod/docker-compose.yml down",
+    "deploy:logs": "docker compose -f deploy/prod/docker-compose.yml logs -f",
+    "deploy:upgrade": "docker compose -f deploy/prod/docker-compose.yml pull && docker compose -f deploy/prod/docker-compose.yml up -d",
+    "backup:run": "node scripts/backup.mjs",
+    "restore:run": "node scripts/restore.mjs",
+    "provision:instance": "node scripts/provision-instance.mjs",
+    "perf:api": "node scripts/perf-api.mjs",
+    "perf:storefront": "node scripts/perf-storefront.mjs",
+    "perf": "pnpm perf:api && pnpm perf:storefront",
+    "promote-to-prod": "node scripts/promote-to-prod.mjs",
+    "dr:drill": "node scripts/dr-drill.mjs",
+    "release:manifest": "node scripts/release-manifest.mjs",
+    "restore:verify:schedule": "node scripts/schedule-restore-verifications.mjs",
+    "plugin:sign": "node scripts/sign-plugin.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "autocannon": "^7.13.0",
+    "@cyclonedx/cyclonedx-npm": "^1.17.0",
+    "conventional-changelog-cli": "^5.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.0.0",
+    "prettier": "^3.3.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.6.0"
+  }
+}

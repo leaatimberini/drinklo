@@ -1,0 +1,105 @@
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { validateEvent, type EventEnvelope } from "@erp/shared/event-model";
+
+type QueueItem = EventEnvelope;
+
+@Injectable()
+export class EventsService {
+  private queue: QueueItem[] = [];
+  private processing = false;
+
+  constructor(private readonly prisma: PrismaService) {
+    setInterval(() => {
+      this.flush().catch(() => undefined);
+    }, 2000).unref();
+  }
+
+  enqueue(events: EventEnvelope[]) {
+    for (const event of events) {
+      this.queue.push(event);
+    }
+  }
+
+  async flush() {
+    if (this.processing || this.queue.length === 0) return;
+    this.processing = true;
+    const batch = this.queue.splice(0, 200);
+    try {
+      for (const event of batch) {
+        const validation = validateEvent(event);
+        if (!validation.ok) {
+          await this.prisma.eventLog.create({
+            data: {
+              id: event.id,
+              companyId: event.companyId ?? null,
+              name: event.name ?? "unknown",
+              source: event.source ?? "unknown",
+              schemaVersion: event.schemaVersion ?? 1,
+              occurredAt: new Date(event.occurredAt ?? new Date().toISOString()),
+              payload: event.payload ?? {},
+              status: "invalid",
+              error: validation.error,
+            },
+          });
+          continue;
+        }
+        await this.prisma.eventLog.create({
+          data: {
+            id: event.id,
+            companyId: event.companyId ?? null,
+            name: event.name,
+            source: event.source,
+            schemaVersion: event.schemaVersion,
+            occurredAt: new Date(event.occurredAt),
+            payload: event.payload,
+            status: "stored",
+          },
+        });
+      }
+
+      const sinkUrl = process.env.EVENT_SINK_URL ?? "";
+      if (sinkUrl) {
+        await fetch(sinkUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(batch),
+        });
+      }
+    } catch (error: any) {
+      for (const event of batch) {
+        await this.prisma.eventLog.create({
+          data: {
+            id: event.id,
+            companyId: event.companyId ?? null,
+            name: event.name ?? "unknown",
+            source: event.source ?? "unknown",
+            schemaVersion: event.schemaVersion ?? 1,
+            occurredAt: new Date(event.occurredAt ?? new Date().toISOString()),
+            payload: event.payload ?? {},
+            status: "failed",
+            error: error?.message ?? "sink failed",
+          },
+        });
+      }
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  async getStats(companyId?: string) {
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const where = companyId ? { companyId, receivedAt: { gte: since } } : { receivedAt: { gte: since } };
+    const total = await this.prisma.eventLog.count({ where });
+    const failed = await this.prisma.eventLog.count({ where: { ...where, status: { in: ["failed", "invalid"] } } });
+    const events = await this.prisma.eventLog.findMany({
+      where,
+      select: { occurredAt: true, receivedAt: true },
+      take: 500,
+      orderBy: { receivedAt: "desc" },
+    });
+    const lags = events.map((e) => e.receivedAt.getTime() - e.occurredAt.getTime());
+    const avgLagMs = lags.length ? Math.round(lags.reduce((a, b) => a + b, 0) / lags.length) : 0;
+    return { total1h: total, failed1h: failed, avgLagMs };
+  }
+}

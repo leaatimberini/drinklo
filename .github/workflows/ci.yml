@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gitleaks/gitleaks-action@v2
+
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: |
+          docker build -f apps/api/Dockerfile -t local/erp-api:ci .
+          docker build -f apps/admin/Dockerfile -t local/erp-admin:ci .
+          docker build -f apps/storefront/Dockerfile -t local/erp-storefront:ci .
+          docker build -f apps/bot/Dockerfile -t local/erp-bot:ci .
+      - name: Scan api image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: local/erp-api:ci
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+      - name: Scan admin image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: local/erp-admin:ci
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+      - name: Scan storefront image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: local/erp-storefront:ci
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+      - name: Scan bot image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: local/erp-bot:ci
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          ignorefile: .trivyignore
+
+  security-report:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [build, gitleaks, trivy]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - name: Send report to control-plane
+        env:
+          CONTROL_PLANE_URL: ${{ secrets.CONTROL_PLANE_URL }}
+          CONTROL_PLANE_SECURITY_TOKEN: ${{ secrets.CONTROL_PLANE_SECURITY_TOKEN }}
+          SECURITY_REPORT_KIND: ci
+          SECURITY_REPORT_STATUS: ${{ job.status }}
+          SECURITY_REPORT_REPO: ${{ github.repository }}
+          SECURITY_REPORT_SHA: ${{ github.sha }}
+          SECURITY_REPORT_RUN_ID: ${{ github.run_id }}
+          SECURITY_REPORT_SUMMARY: >
+            {"build":"${{ needs.build.result }}","gitleaks":"${{ needs.gitleaks.result }}","trivy":"${{ needs.trivy.result }}"}
+        run: node scripts/security-report.mjs
+
+  performance:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.PERF_BASE_URL != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm perf
+        env:
+          PERF_BASE_URL: ${{ secrets.PERF_BASE_URL }}
+          PERF_ADMIN_TOKEN: ${{ secrets.PERF_ADMIN_TOKEN }}
+          PERF_STOREFRONT_URL: ${{ secrets.PERF_STOREFRONT_URL }}
+          PERF_P95_CATALOG_MS: ${{ secrets.PERF_P95_CATALOG_MS }}
+          PERF_P95_CHECKOUT_MS: ${{ secrets.PERF_P95_CHECKOUT_MS }}
+          PERF_P95_ADMIN_MS: ${{ secrets.PERF_P95_ADMIN_MS }}
+          PERF_TTFB_MS: ${{ secrets.PERF_TTFB_MS }}
+          PERF_LCP_MS: ${{ secrets.PERF_LCP_MS }}

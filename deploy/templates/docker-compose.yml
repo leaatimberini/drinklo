@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+      POSTGRES_DB: erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - erp_pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_DB: erp_warehouse
+      CLICKHOUSE_USER: erp
+      CLICKHOUSE_PASSWORD: erp
+    ports:
+      - "8123:8123"
+    volumes:
+      - erp_clickhouse:/var/lib/clickhouse
+  api:
+    image: erp-api:latest
+    env_file: .env
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+      - clickhouse
+  admin:
+    image: erp-admin:latest
+    env_file: .env
+    ports:
+      - "3002:3002"
+    depends_on:
+      - api
+  storefront:
+    image: erp-storefront:latest
+    env_file: .env
+    ports:
+      - "3003:3003"
+    depends_on:
+      - api
+  bot:
+    image: erp-bot:latest
+    env_file: .env
+    depends_on:
+      - api
+volumes:
+  erp_pgdata:
+  erp_clickhouse:

@@ -1,0 +1,25 @@
+{
+  "name": "@erp/shared",
+  "private": true,
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./event-model": {
+      "types": "./dist/event-model.d.ts",
+      "default": "./dist/event-model.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "echo \"no tests\""
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

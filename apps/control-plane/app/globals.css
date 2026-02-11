@@ -1,0 +1,18 @@
+:root {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  color: #101010;
+  background: linear-gradient(160deg, #f0f4f8 0%, #f7f7fb 60%, #ffffff 100%);
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+main {
+  padding: 32px;
+}
+.card {
+  background: #ffffff;
+  border: 1px solid #e3e6eb;
+  border-radius: 12px;
+  padding: 16px;
+}

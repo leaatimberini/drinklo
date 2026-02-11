@@ -1,0 +1,70 @@
+import { ConflictException } from "@nestjs/common";
+import { SetupService } from "./setup.service";
+
+const prismaMock = {
+  company: {
+    count: jest.fn(),
+    create: jest.fn(),
+  },
+  companySettings: {
+    create: jest.fn(),
+  },
+  permission: {
+    create: jest.fn(),
+  },
+  role: {
+    create: jest.fn(),
+  },
+  rolePermission: {
+    create: jest.fn(),
+  },
+  user: {
+    create: jest.fn(),
+  },
+  $transaction: jest.fn(),
+};
+
+const dto = {
+  companyName: "Acme",
+  brandName: "Acme",
+  domain: "acme.local",
+  adminName: "Admin",
+  adminEmail: "admin@acme.local",
+  adminPassword: "admin123",
+};
+
+describe("SetupService", () => {
+  let service: SetupService;
+
+  beforeEach(() => {
+    service = new SetupService(prismaMock as any);
+    prismaMock.company.count.mockReset();
+  });
+
+  it("blocks initialize when company exists", async () => {
+    prismaMock.company.count.mockResolvedValue(1);
+
+    await expect(service.initialize(dto)).rejects.toThrow(ConflictException);
+  });
+
+  it("allows initialize when no company exists", async () => {
+    prismaMock.company.count.mockResolvedValue(0);
+    prismaMock.$transaction.mockImplementation(async (cb: any) => {
+      const tx = {
+        company: { create: jest.fn().mockResolvedValue({ id: "c1" }) },
+        companySettings: { create: jest.fn() },
+        permission: { create: jest.fn().mockResolvedValue({ id: "p1", code: "products:read" }) },
+        role: { create: jest.fn().mockResolvedValue({ id: "r1", name: "Admin" }) },
+        rolePermission: { create: jest.fn() },
+        user: { create: jest.fn().mockResolvedValue({ id: "u1" }) },
+        $transaction: jest.fn(async (ops: any[]) => Promise.all(ops.map((op) => op))),
+      };
+      return cb(tx);
+    });
+
+    const result = await service.initialize(dto);
+
+    expect(result.companyId).toBe("c1");
+    expect(result.adminId).toBe("u1");
+  });
+});

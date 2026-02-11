@@ -1,0 +1,37 @@
+export type HeartbeatPayload = {
+  instance_id: string;
+  domain?: string;
+  client?: string;
+  version?: string;
+  release_channel?: string;
+  health?: string;
+  uptime_seconds?: number;
+  db_ok: boolean;
+  redis_ok: boolean;
+  storage_ok: boolean;
+  jobs_failed: number;
+  secrets_expired?: number;
+  secrets_unverified?: number;
+  slo_p95_ms?: number;
+  slo_error_rate?: number;
+  slo_webhook_retry_rate?: number;
+  slo_updated_at?: string;
+  events_total_1h?: number;
+  events_failed_1h?: number;
+  events_avg_lag_ms?: number;
+  last_backup_at?: string | null;
+  backup_id?: string;
+  backup_size_bytes?: number;
+  backup_checksum?: string;
+  backup_bucket?: string;
+  backup_path?: string;
+  alerts?: Array<{ level: string; message: string }>;
+  job_failures?: Array<{ queue?: string; message: string }>;
+};
+
+export function validateHeartbeat(payload: HeartbeatPayload) {
+  if (!payload.instance_id) {
+    throw new Error("instance_id required");
+  }
+  return payload;
+}

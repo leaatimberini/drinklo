@@ -1,0 +1,3 @@
+name,description,sku,isAlcoholic,abv
+"Cerveza",Lager,SKU-001,true,5.0
+"Agua",Sin gas,SKU-002,false,

@@ -1,0 +1,40 @@
+{
+  email@example.com
+  # Optional: set ACME CA or staging if needed.
+}
+
+{$DOMAIN} {
+  encode zstd gzip
+
+  @admin path /admin* /admin/*
+  handle @admin {
+    reverse_proxy admin:3002
+  }
+
+  @api path /api* /api/*
+  handle @api {
+    reverse_proxy api:3001
+  }
+
+  @bot path /bot* /bot/*
+  handle @bot {
+    reverse_proxy bot:3004
+  }
+
+  # Default: storefront
+  handle {
+    reverse_proxy storefront:3003
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; connect-src 'self' https:; frame-ancestors 'none'"
+  }
+
+  request_body {
+    max_size 20MB
+  }
+}

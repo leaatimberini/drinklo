@@ -1,0 +1,430 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("CONTROL_PLANE_DATABASE_URL")
+}
+
+model Installation {
+  id             String   @id @default(uuid())
+  instanceId     String   @unique
+  domain         String?
+  clientName     String?
+  version        String?
+  releaseChannel String?
+  healthStatus   String?
+  lastSeenAt     DateTime?
+  lastHeartbeatAt DateTime?
+  backupStatus   String?
+  lastBackupAt   DateTime?
+  sloP95Ms       Float?
+  sloErrorRate   Float?
+  sloWebhookRetryRate Float?
+  sloUpdatedAt   DateTime?
+  eventsTotal1h  Int?
+  eventsFailed1h Int?
+  eventsAvgLagMs Int?
+  drPlan         String?
+  rpoTargetMin   Int?
+  rtoTargetMin   Int?
+  lastDrillAt    DateTime?
+  lastDrillStatus String?
+  lastDrillRpoMin Int?
+  lastDrillRtoMin Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  alerts     Alert[]
+  jobFailures JobFailure[]
+  updateJobs UpdateJob[]
+  backups   BackupRecord[]
+  restoreVerifications RestoreVerification[]
+  pluginJobs PluginJob[]
+  securityReports SecurityReport[]
+  drDrills  DisasterRecoveryDrill[]
+  billingAccounts BillingAccount[]
+
+  @@index([clientName])
+  @@index([domain])
+  @@index([healthStatus])
+}
+
+enum BillingAccountStatus {
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELED
+}
+
+enum BillingProvider {
+  MERCADOPAGO
+  MANUAL
+}
+
+enum BillingPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum InvoiceStatus {
+  OPEN
+  PAID
+  VOID
+}
+
+model BillingPlan {
+  id         String   @id @default(uuid())
+  name       String
+  price      Float
+  currency   String
+  period     BillingPeriod
+  features   String[]
+  rpoTargetMin Int?
+  rtoTargetMin Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  accounts BillingAccount[]
+
+  @@index([name])
+}
+
+model BillingAccount {
+  id           String   @id @default(uuid())
+  installationId String
+  instanceId   String   @unique
+  clientName   String?
+  email        String?
+  planId       String
+  status       BillingAccountStatus @default(ACTIVE)
+  provider     BillingProvider @default(MANUAL)
+  externalId   String?
+  nextBillingAt DateTime?
+  warningCount Int @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  plan         BillingPlan  @relation(fields: [planId], references: [id])
+  invoices     BillingInvoice[]
+  payments     BillingPayment[]
+
+  @@index([installationId])
+  @@index([planId])
+  @@index([status])
+}
+
+model BillingInvoice {
+  id          String   @id @default(uuid())
+  accountId   String
+  amount      Float
+  currency    String
+  status      InvoiceStatus @default(OPEN)
+  dueAt       DateTime
+  paidAt      DateTime?
+  provider    BillingProvider
+  externalId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  account  BillingAccount @relation(fields: [accountId], references: [id])
+  payments BillingPayment[]
+
+  @@index([accountId])
+  @@index([status])
+  @@index([dueAt])
+}
+
+model BillingPayment {
+  id         String   @id @default(uuid())
+  accountId  String
+  invoiceId  String?
+  provider   BillingProvider
+  status     String
+  amount     Float
+  currency   String
+  externalId String?
+  raw        Json?
+  createdAt  DateTime @default(now())
+
+  account BillingAccount @relation(fields: [accountId], references: [id])
+  invoice BillingInvoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([accountId])
+  @@index([invoiceId])
+  @@index([provider])
+  @@index([status])
+}
+
+model Alert {
+  id             String   @id @default(uuid())
+  installationId String
+  level          String
+  message        String
+  createdAt      DateTime @default(now())
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([level])
+}
+
+model JobFailure {
+  id             String   @id @default(uuid())
+  installationId String
+  queue          String?
+  message        String
+  createdAt      DateTime @default(now())
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([queue])
+}
+
+model ReleaseManifest {
+  id                 String   @id @default(uuid())
+  version            String
+  sha                String
+  channel            String
+  migrationsRequired Boolean  @default(false)
+  breakingChanges    String?
+  releasedAt         DateTime @default(now())
+  signature          String
+  createdAt          DateTime @default(now())
+
+  rollouts  Rollout[]
+  updateJobs UpdateJob[]
+
+  @@index([version])
+  @@index([channel])
+}
+
+model Rollout {
+  id          String   @id @default(uuid())
+  manifestId  String
+  channel     String
+  batchSize   Int
+  batchIndex  Int      @default(0)
+  status      String   @default("running")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  manifest ReleaseManifest @relation(fields: [manifestId], references: [id])
+  batches  RolloutBatch[]
+
+  @@index([channel])
+  @@index([status])
+}
+
+model RolloutBatch {
+  id         String   @id @default(uuid())
+  rolloutId  String
+  batchIndex Int
+  status     String   @default("running")
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  rollout   Rollout @relation(fields: [rolloutId], references: [id])
+  updateJobs UpdateJob[]
+
+  @@unique([rolloutId, batchIndex])
+  @@index([status])
+}
+
+model UpdateJob {
+  id             String   @id @default(uuid())
+  installationId String
+  manifestId     String
+  batchId        String
+  status         String   @default("pending")
+  step           String?
+  error          String?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  manifest     ReleaseManifest @relation(fields: [manifestId], references: [id])
+  batch        RolloutBatch @relation(fields: [batchId], references: [id])
+
+  @@index([installationId])
+  @@index([status])
+}
+
+model BackupRecord {
+  id             String   @id @default(uuid())
+  installationId String
+  instanceId     String
+  backupId       String?
+  createdAt      DateTime @default(now())
+  sizeBytes      Int?
+  checksum       String?
+  bucket         String?
+  path           String?
+  meta           Json?
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([instanceId])
+  @@index([createdAt])
+  @@index([checksum])
+}
+
+model RestoreVerification {
+  id             String   @id @default(uuid())
+  installationId String
+  instanceId     String
+  status         String   @default("scheduled")
+  environment    String   @default("staging")
+  scheduledAt    DateTime @default(now())
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  message        String?
+  meta           Json?
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([instanceId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model PluginRelease {
+  id            String   @id @default(uuid())
+  name          String
+  version       String
+  channel       String
+  compatibility String?
+  changelog     String?
+  signature     String
+  createdAt     DateTime @default(now())
+
+  @@index([name])
+  @@index([version])
+  @@index([channel])
+}
+
+model PluginRequest {
+  id         String   @id @default(uuid())
+  instanceId String
+  pluginName String
+  version    String?
+  action     String
+  status     String   @default("pending")
+  requestedAt DateTime @default(now())
+  approvedAt DateTime?
+
+  @@index([instanceId])
+  @@index([pluginName])
+  @@index([status])
+}
+
+model PluginRollout {
+  id        String   @id @default(uuid())
+  pluginName String
+  version   String
+  channel   String
+  batchSize Int
+  batchIndex Int @default(0)
+  status    String @default("running")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  batches PluginRolloutBatch[]
+
+  @@index([pluginName])
+  @@index([channel])
+  @@index([status])
+}
+
+model PluginRolloutBatch {
+  id        String   @id @default(uuid())
+  rolloutId String
+  batchIndex Int
+  status    String   @default("running")
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  createdAt DateTime @default(now())
+
+  rollout PluginRollout @relation(fields: [rolloutId], references: [id])
+  jobs    PluginJob[]
+
+  @@unique([rolloutId, batchIndex])
+  @@index([status])
+}
+
+model PluginJob {
+  id            String   @id @default(uuid())
+  installationId String
+  instanceId     String
+  pluginName    String
+  version       String?
+  action        String
+  status        String   @default("pending")
+  step          String?
+  error         String?
+  durationMs    Int?
+  startedAt     DateTime?
+  finishedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  batchId       String?
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  batch        PluginRolloutBatch? @relation(fields: [batchId], references: [id])
+
+  @@index([installationId])
+  @@index([instanceId])
+  @@index([pluginName])
+  @@index([status])
+}
+
+model SecurityReport {
+  id          String   @id @default(uuid())
+  installationId String?
+  instanceId  String?
+  repo        String?
+  sha         String?
+  runId       String?
+  kind        String
+  status      String
+  summary     Json?
+  createdAt   DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([instanceId])
+  @@index([repo])
+  @@index([kind])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DisasterRecoveryDrill {
+  id             String   @id @default(uuid())
+  installationId String
+  instanceId     String
+  status         String   @default("scheduled")
+  rpoMinutes     Int?
+  rtoMinutes     Int?
+  startedAt      DateTime @default(now())
+  finishedAt     DateTime?
+  notes          String?
+  meta           Json?
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([instanceId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([finishedAt])
+}
