@@ -264,6 +264,36 @@ export class PurchasingService {
           },
         });
 
+        const lotCode = (line.lotCode ?? `LOT-${receipt.id}-${poItem.id}`).trim();
+        if (lotCode) {
+          const existingLot = await tx.batchLot.findFirst({
+            where: { stockItemId: stockItem.id, lotCode },
+          });
+          if (existingLot) {
+            await tx.batchLot.update({
+              where: { id: existingLot.id },
+              data: {
+                quantity: existingLot.quantity + line.quantityReceived,
+                manufacturingDate: line.manufacturingDate ? new Date(line.manufacturingDate) : existingLot.manufacturingDate,
+                expiryDate: line.expiryDate ? new Date(line.expiryDate) : existingLot.expiryDate,
+              },
+            });
+          } else {
+            await tx.batchLot.create({
+              data: {
+                companyId,
+                branchId: stockItem.branchId ?? null,
+                stockItemId: stockItem.id,
+                variantId: poItem.variantId,
+                lotCode,
+                manufacturingDate: line.manufacturingDate ? new Date(line.manufacturingDate) : null,
+                expiryDate: line.expiryDate ? new Date(line.expiryDate) : null,
+                quantity: line.quantityReceived,
+              },
+            });
+          }
+        }
+
         await this.updateVariantCost(tx, companyId, poItem.variantId, line.quantityReceived, unitCost, receiptItem.id);
 
         resultLines.push({

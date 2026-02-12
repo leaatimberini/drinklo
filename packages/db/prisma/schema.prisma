@@ -29,6 +29,8 @@ model Company {
   priceRules     PriceRule[]
   stockLocations StockLocation[]
   stockItems     StockItem[]
+  stockLots      BatchLot[]
+  stockReservationLots StockReservationLot[]
   stockMovements StockMovement[]
   licenseKey     LicenseKey?
   branches       Branch[]
@@ -112,6 +114,8 @@ model CompanySettings {
   retentionOrdersDays    Int @default(365)
   retentionMarketingDays Int @default(365)
   inventoryCostMethod   String @default("WAVG")
+  pickingStrategy       String @default("FEFO")
+  blockExpiredLotSale   Boolean @default(false)
   supportPlan String? @default("standard")
   supportSlaFirstResponseHours Int? @default(48)
   supportSlaResolutionHours Int? @default(120)
@@ -1557,6 +1561,7 @@ model ProductVariant {
   product     Product      @relation(fields: [productId], references: [id])
   priceRules  PriceRule[]
   stockItems  StockItem[]
+  stockLots   BatchLot[]
   createdBy   User? @relation("VariantCreatedBy", fields: [createdById], references: [id])
   updatedBy   User? @relation("VariantUpdatedBy", fields: [updatedById], references: [id])
   purchaseOrderItems PurchaseOrderItem[]
@@ -1867,6 +1872,7 @@ model StockItem {
   variant    ProductVariant @relation(fields: [variantId], references: [id])
   location   StockLocation  @relation(fields: [locationId], references: [id])
   movements  StockMovement[]
+  lots       BatchLot[]
   createdBy  User? @relation("StockItemCreatedBy", fields: [createdById], references: [id])
   updatedBy  User? @relation("StockItemUpdatedBy", fields: [updatedById], references: [id])
 
@@ -1874,6 +1880,31 @@ model StockItem {
   @@index([companyId])
   @@index([branchId])
   @@index([variantId])
+}
+
+model BatchLot {
+  id                String   @id @default(uuid())
+  companyId         String
+  branchId          String?
+  stockItemId       String
+  variantId         String
+  lotCode           String
+  manufacturingDate DateTime?
+  expiryDate        DateTime?
+  quantity          Int      @default(0)
+  reservedQuantity  Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  company         Company      @relation(fields: [companyId], references: [id])
+  branch          Branch?      @relation(fields: [branchId], references: [id])
+  stockItem       StockItem    @relation(fields: [stockItemId], references: [id])
+  variant         ProductVariant @relation(fields: [variantId], references: [id])
+  reservationLots StockReservationLot[]
+
+  @@unique([stockItemId, lotCode])
+  @@index([companyId, variantId, expiryDate])
+  @@index([companyId, lotCode])
 }
 
 enum ReservationStatus {
@@ -1901,6 +1932,7 @@ model StockReservation {
   branch  Branch?         @relation(fields: [branchId], references: [id])
   order   Order          @relation(fields: [orderId], references: [id])
   variant ProductVariant @relation(fields: [variantId], references: [id])
+  lotReservations StockReservationLot[]
 
   @@index([companyId])
   @@index([branchId])
@@ -1908,6 +1940,23 @@ model StockReservation {
   @@index([variantId])
   @@index([status])
   @@index([expiresAt])
+}
+
+model StockReservationLot {
+  id            String   @id @default(uuid())
+  companyId     String
+  reservationId String
+  lotId         String
+  quantity      Int
+  createdAt     DateTime @default(now())
+
+  company     Company          @relation(fields: [companyId], references: [id])
+  reservation StockReservation @relation(fields: [reservationId], references: [id])
+  lot         BatchLot         @relation(fields: [lotId], references: [id])
+
+  @@index([companyId])
+  @@index([reservationId])
+  @@index([lotId])
 }
 
 model StockMovement {
@@ -1939,6 +1988,7 @@ model Branch {
   company       Company       @relation(fields: [companyId], references: [id])
   stockLocations StockLocation[]
   stockItems     StockItem[]
+  stockLots      BatchLot[]
   stockMovements StockMovement[]
   shippingZones  ShippingZone[]
   orders         Order[]

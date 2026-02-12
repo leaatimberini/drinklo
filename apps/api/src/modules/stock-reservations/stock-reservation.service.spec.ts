@@ -1,13 +1,9 @@
-import { BadRequestException } from "@nestjs/common";
-import { StockReservationService } from "./stock-reservation.service";
+﻿import { StockReservationService } from "./stock-reservation.service";
 
 class FakeClient {
   stock = { quantity: 1, reservedQuantity: 0 };
-  stockItem = {
-    findFirst: jest.fn(async () => ({ id: "s1" })),
-  };
   stockReservation = {
-    create: jest.fn(async () => ({})),
+    create: jest.fn(async ({ data }: any) => ({ id: `r-${data.orderId}` })),
   };
   stockMovement = {
     create: jest.fn(async () => ({})),
@@ -24,13 +20,19 @@ class FakeClient {
 
 describe("StockReservationService", () => {
   it("allows only one reservation for last item", async () => {
-    const svc = new StockReservationService({} as any);
+    const lots = {
+      allocateLotsWithClient: jest.fn(async () => [{ lotId: "l1", stockItemId: "s1", quantity: 1, lotCode: "L1", expiryDate: null }]),
+      reserveLotsWithClient: jest.fn(async () => undefined),
+      confirmReservationLotsWithClient: jest.fn(async () => undefined),
+      releaseReservationLotsWithClient: jest.fn(async () => undefined),
+    };
+    const svc = new StockReservationService({} as any, lots as any);
     const client = new FakeClient() as any;
 
-    const reserve = () =>
-      svc.reserveWithClient(client, "c1", "o1", [{ variantId: "v1", quantity: 1 }], new Date());
+    const reserve = (orderId: string) =>
+      svc.reserveWithClient(client, "c1", orderId, [{ variantId: "v1", quantity: 1 }], new Date());
 
-    const results = await Promise.allSettled([reserve(), reserve()]);
+    const results = await Promise.allSettled([reserve("o1"), reserve("o2")]);
     const fulfilled = results.filter((r) => r.status === "fulfilled").length;
     const rejected = results.filter((r) => r.status === "rejected").length;
 

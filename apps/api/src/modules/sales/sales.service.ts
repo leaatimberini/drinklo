@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, SaleStatus } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
+import { LotsService } from "../lots/lots.service";
 import type { CreateSaleDto, OfflineSaleDraftDto } from "./dto/sales.dto";
 
 @Injectable()
 export class SalesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly lots: LotsService,
+  ) {}
 
   private async getCompany() {
     const company = await this.prisma.company.findFirst();
@@ -232,12 +236,37 @@ export class SalesService {
             throw new BadRequestException("Insufficient stock");
           }
 
+          let lotPicks: Array<{ lotCode: string; quantity: number }> = [];
+          try {
+            lotPicks = await this.lots.consumeLotsForSaleWithClient(
+              tx as any,
+              company.id,
+              item.variant.id,
+              item.quantity,
+              stockItem.branchId ?? undefined,
+            );
+          } catch (error) {
+            const hasTrackedLots = await this.lots.hasTrackedLotsWithClient(
+              tx as any,
+              company.id,
+              item.variant.id,
+              stockItem.branchId ?? undefined,
+            );
+            if (hasTrackedLots) {
+              throw error;
+            }
+            lotPicks = [];
+          }
+
           await tx.stockMovement.create({
             data: {
               companyId: company.id,
               stockItemId: stockItem.id,
               delta: -item.quantity,
-              reason: "reserve",
+              reason:
+                lotPicks.length > 0
+                  ? `sale:lots:${lotPicks.map((pick) => `${pick.lotCode}:${pick.quantity}`).join("|")}`
+                  : "reserve",
             },
           });
 

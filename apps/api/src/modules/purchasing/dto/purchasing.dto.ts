@@ -87,6 +87,21 @@ export class ReceiveGoodsItemDto {
   @IsNumber()
   @Min(0)
   unitCost?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  lotCode?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsDateString()
+  expiryDate?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsDateString()
+  manufacturingDate?: string;
 }
 
 export class ReceiveGoodsDto {
