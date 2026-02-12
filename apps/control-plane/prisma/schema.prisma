@@ -24,6 +24,19 @@ model Installation {
   sloErrorRate   Float?
   sloWebhookRetryRate Float?
   sloUpdatedAt   DateTime?
+  cpuUsagePct    Float?
+  memoryUsedBytes BigInt?
+  memoryTotalBytes BigInt?
+  diskUsedBytes  BigInt?
+  diskTotalBytes BigInt?
+  networkRxBytes BigInt?
+  networkTxBytes BigInt?
+  dbSizeBytes    BigInt?
+  storageSizeBytes BigInt?
+  jobsProcessed1h Int?
+  jobsPending    Int?
+  estimatedMonthlyCostUsd Float?
+  finopsUpdatedAt DateTime?
   eventsTotal1h  Int?
   eventsFailed1h Int?
   eventsAvgLagMs Int?
@@ -46,6 +59,8 @@ model Installation {
   securityReports SecurityReport[]
   drDrills  DisasterRecoveryDrill[]
   billingAccounts BillingAccount[]
+  finopsSnapshots FinOpsSnapshot[]
+  finopsCosts   FinOpsCostRecord[]
 
   @@index([clientName])
   @@index([domain])
@@ -440,4 +455,55 @@ model DisasterRecoveryDrill {
   @@index([status])
   @@index([startedAt])
   @@index([finishedAt])
+}
+
+model FinOpsPricing {
+  id            String   @id @default(uuid())
+  resourceKey   String   @unique
+  unit          String
+  usdPerUnit    Float
+  description   String?
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+model FinOpsSnapshot {
+  id             String   @id @default(uuid())
+  installationId String
+  recordedAt     DateTime @default(now())
+  cpuUsagePct    Float?
+  memoryUsedBytes BigInt?
+  memoryTotalBytes BigInt?
+  diskUsedBytes  BigInt?
+  diskTotalBytes BigInt?
+  networkRxBytes BigInt?
+  networkTxBytes BigInt?
+  dbSizeBytes    BigInt?
+  storageSizeBytes BigInt?
+  jobsFailed     Int?
+  jobsProcessed1h Int?
+  jobsPending    Int?
+  estimatedMonthlyCostUsd Float?
+  meta           Json?
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, recordedAt])
+}
+
+model FinOpsCostRecord {
+  id             String   @id @default(uuid())
+  installationId String
+  periodStart    DateTime
+  periodEnd      DateTime
+  estimatedCostUsd Float
+  breakdown      Json?
+  createdAt      DateTime @default(now())
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, periodStart, periodEnd])
 }

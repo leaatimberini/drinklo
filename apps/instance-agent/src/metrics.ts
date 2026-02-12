@@ -2,6 +2,8 @@ type MetricsSummary = {
   p95Ms?: number;
   errorRate?: number;
   webhookRetryRate?: number;
+  jobsProcessed1h?: number;
+  jobsPending?: number;
 };
 
 function parseLabels(segment: string) {
@@ -26,6 +28,8 @@ export function parseMetricsSummary(text: string): MetricsSummary {
   let errorRequests = 0;
   let webhooksTotal = 0;
   let webhookRetries = 0;
+  let jobsProcessedTotal = 0;
+  let jobsPending = 0;
 
   const lines = text.split("\n");
   for (const line of lines) {
@@ -59,6 +63,13 @@ export function parseMetricsSummary(text: string): MetricsSummary {
     if (name === "webhook_retries_total") {
       webhookRetries += value;
     }
+
+    if (name === "bullmq_jobs_processed_total" || name === "jobs_processed_total") {
+      jobsProcessedTotal += value;
+    }
+    if (name === "bullmq_jobs_waiting" || name === "jobs_pending") {
+      jobsPending += value;
+    }
   }
 
   const errorRate = totalRequests > 0 ? errorRequests / totalRequests : undefined;
@@ -68,5 +79,7 @@ export function parseMetricsSummary(text: string): MetricsSummary {
     p95Ms,
     errorRate,
     webhookRetryRate,
+    jobsProcessed1h: jobsProcessedTotal > 0 ? jobsProcessedTotal : undefined,
+    jobsPending: jobsPending > 0 ? jobsPending : undefined,
   };
 }

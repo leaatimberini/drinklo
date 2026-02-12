@@ -26,6 +26,17 @@ export type HeartbeatPayload = {
   backup_checksum?: string;
   backup_bucket?: string;
   backup_path?: string;
+  cpu_usage_pct?: number;
+  memory_used_bytes?: number;
+  memory_total_bytes?: number;
+  disk_used_bytes?: number;
+  disk_total_bytes?: number;
+  network_rx_bytes?: number;
+  network_tx_bytes?: number;
+  db_size_bytes?: number;
+  storage_size_bytes?: number;
+  jobs_processed_1h?: number;
+  jobs_pending?: number;
   alerts?: Array<{ level: string; message: string }>;
   job_failures?: Array<{ queue?: string; message: string }>;
 };

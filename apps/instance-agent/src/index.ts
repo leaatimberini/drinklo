@@ -6,7 +6,12 @@ import { startPluginLoop } from "./plugin-update";
 import { parseMetricsSummary } from "./metrics";
 import net from "node:net";
 import fs from "node:fs";
+import os from "node:os";
 import { setInterval } from "node:timers";
+import { exec as execCb } from "node:child_process";
+import { promisify } from "node:util";
+import path from "node:path";
+import { Client as PgClient } from "pg";
 
 const INSTANCE_ID = process.env.INSTANCE_ID ?? "";
 const CONTROL_PLANE_URL = process.env.CONTROL_PLANE_URL ?? "";
@@ -28,6 +33,13 @@ const BACKUP_META_PATH = process.env.BACKUP_META_PATH ?? "";
 const METRICS_URL = process.env.AGENT_METRICS_URL ?? "http://api:3001/metrics";
 const EVENTS_STATS_URL = process.env.AGENT_EVENTS_STATS_URL ?? "http://api:3001/admin/events/stats";
 const EVENTS_INGEST_URL = process.env.AGENT_EVENTS_URL ?? "http://api:3001/events/ingest";
+const STORAGE_DATA_PATH = process.env.STORAGE_DATA_PATH ?? "";
+const SYSTEM_ROOT_PATH = process.env.AGENT_SYSTEM_ROOT_PATH ?? path.parse(process.cwd()).root;
+const AGENT_DB_SIZE_CMD = process.env.AGENT_DB_SIZE_CMD ?? "";
+const AGENT_STORAGE_SIZE_CMD = process.env.AGENT_STORAGE_SIZE_CMD ?? "";
+const AGENT_NETWORK_STATS_CMD = process.env.AGENT_NETWORK_STATS_CMD ?? "";
+
+const exec = promisify(execCb);
 
 const startTime = Date.now();
 
@@ -72,6 +84,132 @@ async function fetchText(url: string) {
   return res.text();
 }
 
+async function dirSizeBytes(targetPath: string): Promise<number | undefined> {
+  if (!targetPath) return undefined;
+  if (!fs.existsSync(targetPath)) return undefined;
+  const root = await fs.promises.stat(targetPath);
+  if (!root.isDirectory()) {
+    return root.size;
+  }
+
+  let total = 0;
+  const stack = [targetPath];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+    let entries: fs.Dirent[] = [];
+    try {
+      entries = await fs.promises.readdir(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const full = path.join(current, entry.name);
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) {
+        stack.push(full);
+        continue;
+      }
+      if (entry.isFile()) {
+        try {
+          const file = await fs.promises.stat(full);
+          total += file.size;
+        } catch {
+          // ignore unreadable files
+        }
+      }
+    }
+  }
+  return total;
+}
+
+function diskUsage(targetPath: string) {
+  try {
+    const stats = fs.statfsSync(targetPath);
+    const total = stats.blocks * stats.bsize;
+    const free = stats.bfree * stats.bsize;
+    return { used: total - free, total };
+  } catch {
+    return { used: undefined, total: undefined };
+  }
+}
+
+function linuxNetworkBytes(): { rx?: number; tx?: number } {
+  try {
+    if (process.platform !== "linux" || !fs.existsSync("/proc/net/dev")) {
+      return {};
+    }
+    const raw = fs.readFileSync("/proc/net/dev", "utf8");
+    const lines = raw.split("\n").slice(2);
+    let rx = 0;
+    let tx = 0;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const parts = trimmed.replace(":", " ").trim().split(/\s+/);
+      if (parts.length < 10) continue;
+      const iface = parts[0];
+      if (iface === "lo") continue;
+      const ifaceRx = Number(parts[1]);
+      const ifaceTx = Number(parts[9]);
+      if (Number.isFinite(ifaceRx)) rx += ifaceRx;
+      if (Number.isFinite(ifaceTx)) tx += ifaceTx;
+    }
+    return {
+      rx: rx > 0 ? rx : undefined,
+      tx: tx > 0 ? tx : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
+async function runNumericCommand(command: string) {
+  if (!command) return undefined;
+  try {
+    const { stdout } = await exec(command, { timeout: 7000 });
+    const value = Number(String(stdout).trim());
+    return Number.isFinite(value) ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function networkBytes() {
+  const commandResult = await runNumericCommand(AGENT_NETWORK_STATS_CMD);
+  if (commandResult != null) {
+    return { rx: commandResult, tx: undefined };
+  }
+  return linuxNetworkBytes();
+}
+
+async function dbSizeBytes() {
+  const viaCommand = await runNumericCommand(AGENT_DB_SIZE_CMD);
+  if (viaCommand != null) return viaCommand;
+  if (!DB_URL) return undefined;
+
+  const client = new PgClient({ connectionString: DB_URL });
+  try {
+    await client.connect();
+    const result = await client.query<{ size: string | number }>(
+      "select pg_database_size(current_database())::bigint as size",
+    );
+    const raw = result.rows[0]?.size;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  } finally {
+    await client.end().catch(() => undefined);
+  }
+}
+
+async function storageSizeBytes() {
+  const viaCommand = await runNumericCommand(AGENT_STORAGE_SIZE_CMD);
+  if (viaCommand != null) return viaCommand;
+  return dirSizeBytes(STORAGE_DATA_PATH);
+}
+
 async function collectHeartbeat(): Promise<HeartbeatPayload> {
   const db_ok = await tcpCheck(DB_URL, 5432);
   const redis_ok = await tcpCheck(REDIS_URL, 6379);
@@ -79,12 +217,16 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
   const search_ok = MEILI_HOST ? await tcpCheck(MEILI_HOST, 7700) : true;
 
   let jobs_failed = 0;
+  let jobs_processed_1h = 0;
+  let jobs_pending = 0;
   let secrets_expired = 0;
   let secrets_unverified = 0;
   if (OPS_URL && OPS_TOKEN) {
     try {
       const ops = await fetchJson(OPS_URL, OPS_TOKEN);
       jobs_failed = ops.jobFailures?.length ?? 0;
+      jobs_processed_1h = Number(ops.jobsProcessed1h ?? 0);
+      jobs_pending = Number(ops.jobsPending ?? 0);
       secrets_expired = ops.secrets?.expired ?? 0;
       secrets_unverified = ops.secrets?.unverified ?? 0;
     } catch {
@@ -115,15 +257,28 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
   let slo_p95_ms: number | undefined;
   let slo_error_rate: number | undefined;
   let slo_webhook_retry_rate: number | undefined;
+  let metric_jobs_processed_1h: number | undefined;
+  let metric_jobs_pending: number | undefined;
   try {
     const metrics = await fetchText(METRICS_URL);
     const summary = parseMetricsSummary(metrics);
     slo_p95_ms = summary.p95Ms;
     slo_error_rate = summary.errorRate;
     slo_webhook_retry_rate = summary.webhookRetryRate;
+    metric_jobs_processed_1h = summary.jobsProcessed1h;
+    metric_jobs_pending = summary.jobsPending;
   } catch {
     // ignore
   }
+
+  const cpuUsagePctRaw = (os.loadavg()[0] / Math.max(1, os.cpus().length)) * 100;
+  const cpu_usage_pct = Number.isFinite(cpuUsagePctRaw) && cpuUsagePctRaw > 0 ? cpuUsagePctRaw : undefined;
+  const memory_total_bytes = os.totalmem();
+  const memory_used_bytes = memory_total_bytes - os.freemem();
+  const disk = diskUsage(SYSTEM_ROOT_PATH);
+  const network = await networkBytes();
+  const db_size_bytes = await dbSizeBytes();
+  const storage_size_bytes = await storageSizeBytes();
 
   let events_total_1h: number | undefined;
   let events_failed_1h: number | undefined;
@@ -160,6 +315,17 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
     backup_checksum,
     backup_bucket,
     backup_path,
+    cpu_usage_pct,
+    memory_used_bytes,
+    memory_total_bytes,
+    disk_used_bytes: disk.used,
+    disk_total_bytes: disk.total,
+    network_rx_bytes: network.rx,
+    network_tx_bytes: network.tx,
+    db_size_bytes,
+    storage_size_bytes,
+    jobs_processed_1h: Math.max(jobs_processed_1h, metric_jobs_processed_1h ?? 0),
+    jobs_pending: Math.max(jobs_pending, metric_jobs_pending ?? 0),
     slo_p95_ms,
     slo_error_rate,
     slo_webhook_retry_rate,

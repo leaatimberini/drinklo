@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import crypto from "node:crypto";
+import { bigIntDelta, estimateMonthlyCost, toBigIntOrNull } from "../../lib/finops";
 
 async function notifyProviderAlert(message: string, payload: Record<string, any>) {
   const webhookUrl = process.env.CONTROL_PLANE_ALERT_WEBHOOK_URL ?? "";
@@ -57,6 +58,40 @@ export async function POST(req: NextRequest) {
   }
 
   const now = new Date();
+  const prevInstallation = await prisma.installation.findUnique({
+    where: { instanceId },
+    select: {
+      id: true,
+      networkRxBytes: true,
+      networkTxBytes: true,
+      dbSizeBytes: true,
+      storageSizeBytes: true,
+    },
+  });
+  const cpuUsagePct = body.cpu_usage_pct != null ? Number(body.cpu_usage_pct) : null;
+  const memoryUsedBytes = toBigIntOrNull(body.memory_used_bytes);
+  const memoryTotalBytes = toBigIntOrNull(body.memory_total_bytes);
+  const diskUsedBytes = toBigIntOrNull(body.disk_used_bytes);
+  const diskTotalBytes = toBigIntOrNull(body.disk_total_bytes);
+  const networkRxBytes = toBigIntOrNull(body.network_rx_bytes);
+  const networkTxBytes = toBigIntOrNull(body.network_tx_bytes);
+  const dbSizeBytes = toBigIntOrNull(body.db_size_bytes);
+  const storageSizeBytes = toBigIntOrNull(body.storage_size_bytes);
+  const jobsProcessed1h = body.jobs_processed_1h != null ? Number(body.jobs_processed_1h) : null;
+  const jobsPending = body.jobs_pending != null ? Number(body.jobs_pending) : null;
+  const networkRxDelta = bigIntDelta(networkRxBytes, prevInstallation?.networkRxBytes ?? null);
+  const networkTxDelta = bigIntDelta(networkTxBytes, prevInstallation?.networkTxBytes ?? null);
+  const estimatedCost = await estimateMonthlyCost({
+    cpuUsagePct: cpuUsagePct ?? undefined,
+    memoryUsedBytes,
+    diskUsedBytes,
+    networkRxDeltaBytes: networkRxDelta,
+    networkTxDeltaBytes: networkTxDelta,
+    dbSizeBytes,
+    storageSizeBytes,
+    jobsProcessed1h: jobsProcessed1h ?? undefined,
+  });
+
   const installation = await prisma.installation.upsert({
     where: { instanceId },
     update: {
@@ -74,6 +109,19 @@ export async function POST(req: NextRequest) {
       sloErrorRate: body.slo_error_rate ?? undefined,
       sloWebhookRetryRate: body.slo_webhook_retry_rate ?? undefined,
       sloUpdatedAt: body.slo_updated_at ? new Date(body.slo_updated_at) : undefined,
+      cpuUsagePct: cpuUsagePct ?? undefined,
+      memoryUsedBytes: memoryUsedBytes ?? undefined,
+      memoryTotalBytes: memoryTotalBytes ?? undefined,
+      diskUsedBytes: diskUsedBytes ?? undefined,
+      diskTotalBytes: diskTotalBytes ?? undefined,
+      networkRxBytes: networkRxBytes ?? undefined,
+      networkTxBytes: networkTxBytes ?? undefined,
+      dbSizeBytes: dbSizeBytes ?? undefined,
+      storageSizeBytes: storageSizeBytes ?? undefined,
+      jobsProcessed1h: jobsProcessed1h ?? undefined,
+      jobsPending: jobsPending ?? undefined,
+      estimatedMonthlyCostUsd: estimatedCost.totalUsd,
+      finopsUpdatedAt: now,
       eventsTotal1h: body.events_total_1h ?? undefined,
       eventsFailed1h: body.events_failed_1h ?? undefined,
       eventsAvgLagMs: body.events_avg_lag_ms ?? undefined,
@@ -94,9 +142,57 @@ export async function POST(req: NextRequest) {
       sloErrorRate: body.slo_error_rate ?? null,
       sloWebhookRetryRate: body.slo_webhook_retry_rate ?? null,
       sloUpdatedAt: body.slo_updated_at ? new Date(body.slo_updated_at) : null,
+      cpuUsagePct: cpuUsagePct,
+      memoryUsedBytes,
+      memoryTotalBytes,
+      diskUsedBytes,
+      diskTotalBytes,
+      networkRxBytes,
+      networkTxBytes,
+      dbSizeBytes,
+      storageSizeBytes,
+      jobsProcessed1h,
+      jobsPending,
+      estimatedMonthlyCostUsd: estimatedCost.totalUsd,
+      finopsUpdatedAt: now,
       eventsTotal1h: body.events_total_1h ?? null,
       eventsFailed1h: body.events_failed_1h ?? null,
       eventsAvgLagMs: body.events_avg_lag_ms ?? null,
+    },
+  });
+
+  await prisma.finOpsSnapshot.create({
+    data: {
+      installationId: installation.id,
+      recordedAt: now,
+      cpuUsagePct: cpuUsagePct ?? null,
+      memoryUsedBytes,
+      memoryTotalBytes,
+      diskUsedBytes,
+      diskTotalBytes,
+      networkRxBytes,
+      networkTxBytes,
+      dbSizeBytes,
+      storageSizeBytes,
+      jobsFailed: Number(body.jobs_failed ?? 0),
+      jobsProcessed1h,
+      jobsPending,
+      estimatedMonthlyCostUsd: estimatedCost.totalUsd,
+      meta: {
+        networkRxDeltaBytes: networkRxDelta?.toString() ?? null,
+        networkTxDeltaBytes: networkTxDelta?.toString() ?? null,
+        costBreakdown: estimatedCost.byResource,
+      },
+    },
+  });
+
+  await prisma.finOpsCostRecord.create({
+    data: {
+      installationId: installation.id,
+      periodStart: new Date(now.getTime() - 60 * 60 * 1000),
+      periodEnd: now,
+      estimatedCostUsd: estimatedCost.totalUsd,
+      breakdown: estimatedCost.byResource,
     },
   });
 
@@ -193,6 +289,79 @@ export async function POST(req: NextRequest) {
         type: alert.key,
       });
     }
+  }
+
+  const dbGrowthThresholdPct = Number(process.env.FINOPS_DB_GROWTH_ALERT_PCT ?? 25);
+  const storageGrowthThresholdPct = Number(process.env.FINOPS_STORAGE_GROWTH_ALERT_PCT ?? 25);
+  const networkRunawayGbPerHour = Number(process.env.FINOPS_NETWORK_RUNAWAY_GB_PER_HOUR ?? 5);
+  const dbBloatRatio = Number(process.env.FINOPS_DB_BLOAT_RATIO_TO_DISK_USED ?? 0.75);
+
+  const previousDbSize = prevInstallation?.dbSizeBytes ? Number(prevInstallation.dbSizeBytes) : null;
+  const previousStorageSize = prevInstallation?.storageSizeBytes ? Number(prevInstallation.storageSizeBytes) : null;
+  const currentDbSize = dbSizeBytes != null ? Number(dbSizeBytes) : null;
+  const currentStorageSize = storageSizeBytes != null ? Number(storageSizeBytes) : null;
+  const dbGrowthPct =
+    previousDbSize && currentDbSize ? ((currentDbSize - previousDbSize) / previousDbSize) * 100 : null;
+  const storageGrowthPct =
+    previousStorageSize && currentStorageSize
+      ? ((currentStorageSize - previousStorageSize) / previousStorageSize) * 100
+      : null;
+  const networkDeltaGb =
+    Number((networkRxDelta ?? 0n) + (networkTxDelta ?? 0n)) / (1024 * 1024 * 1024);
+  const diskUsed = diskUsedBytes != null ? Number(diskUsedBytes) : null;
+  const dbBloatObserved = currentDbSize && diskUsed ? currentDbSize / Math.max(1, diskUsed) : 0;
+
+  const finopsAlerts: Array<{ level: "warning" | "error"; message: string; type: string }> = [];
+  if (dbGrowthPct != null && dbGrowthThresholdPct > 0 && dbGrowthPct > dbGrowthThresholdPct) {
+    finopsAlerts.push({
+      level: "warning",
+      type: "finops_db_growth",
+      message: `FinOps anomaly: DB growth ${dbGrowthPct.toFixed(1)}% (threshold ${dbGrowthThresholdPct}%)`,
+    });
+  }
+  if (storageGrowthPct != null && storageGrowthThresholdPct > 0 && storageGrowthPct > storageGrowthThresholdPct) {
+    finopsAlerts.push({
+      level: "warning",
+      type: "finops_storage_runaway",
+      message: `FinOps anomaly: storage growth ${storageGrowthPct.toFixed(1)}% (threshold ${storageGrowthThresholdPct}%)`,
+    });
+  }
+  if (networkRunawayGbPerHour > 0 && networkDeltaGb > networkRunawayGbPerHour) {
+    finopsAlerts.push({
+      level: "warning",
+      type: "finops_network_runaway",
+      message: `FinOps anomaly: network ${networkDeltaGb.toFixed(2)}GB/h (threshold ${networkRunawayGbPerHour}GB/h)`,
+    });
+  }
+  if (dbBloatRatio > 0 && dbBloatObserved > dbBloatRatio) {
+    finopsAlerts.push({
+      level: "error",
+      type: "finops_db_bloat",
+      message: `FinOps anomaly: DB bloat ratio ${(dbBloatObserved * 100).toFixed(1)}% of used disk`,
+    });
+  }
+  for (const alert of finopsAlerts) {
+    const recent = await prisma.alert.findFirst({
+      where: {
+        installationId: installation.id,
+        message: alert.message,
+        createdAt: { gt: new Date(Date.now() - 3 * 60 * 60 * 1000) },
+      },
+    });
+    if (recent) continue;
+    await prisma.alert.create({
+      data: {
+        installationId: installation.id,
+        level: alert.level,
+        message: alert.message,
+      },
+    });
+    await notifyProviderAlert(alert.message, {
+      instanceId,
+      installationId: installation.id,
+      type: alert.type,
+      estimatedMonthlyCostUsd: estimatedCost.totalUsd,
+    });
   }
 
   const secretsExpired = Number(body.secrets_expired ?? 0);
