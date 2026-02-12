@@ -26,6 +26,8 @@ export default async function Home() {
         <Link href="/plugins">Marketplace</Link>
         {" | "}
         <Link href="/billing">Billing</Link>
+        {" | "}
+        <Link href="/rollouts">Rollouts</Link>
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>

@@ -19,6 +19,24 @@ export async function POST(req: Request) {
   const status = String(body.status ?? "").trim();
   const step = body.step ? String(body.step) : null;
   const error = body.error ? String(body.error) : null;
+  const canaryPercent =
+    body.canary_percent != null && Number.isFinite(Number(body.canary_percent))
+      ? Number(body.canary_percent)
+      : null;
+  const metricP95Ms =
+    body.metric_p95_ms != null && Number.isFinite(Number(body.metric_p95_ms))
+      ? Number(body.metric_p95_ms)
+      : null;
+  const metricErrorRate =
+    body.metric_error_rate != null && Number.isFinite(Number(body.metric_error_rate))
+      ? Number(body.metric_error_rate)
+      : null;
+  const metricWebhookRetryRate =
+    body.metric_webhook_retry_rate != null &&
+    Number.isFinite(Number(body.metric_webhook_retry_rate))
+      ? Number(body.metric_webhook_retry_rate)
+      : null;
+  const meta = body.meta && typeof body.meta === "object" ? body.meta : null;
 
   if (!jobId || !status) {
     return NextResponse.json({ error: "invalid payload" }, { status: 400 });
@@ -41,6 +59,11 @@ export async function POST(req: Request) {
       status,
       step,
       error,
+      canaryPercent,
+      metricP95Ms,
+      metricErrorRate,
+      metricWebhookRetryRate,
+      meta,
       finishedAt: finished ? new Date() : undefined,
     },
   });

@@ -24,7 +24,14 @@ export async function POST(req: Request) {
 
   const job = await prisma.updateJob.findFirst({
     where: { installationId: installation.id, status: "pending" },
-    include: { manifest: true },
+    include: {
+      manifest: true,
+      batch: {
+        include: {
+          rollout: true,
+        },
+      },
+    },
     orderBy: { createdAt: "asc" },
   });
 
@@ -47,6 +54,15 @@ export async function POST(req: Request) {
       breaking_changes: job.manifest.breakingChanges,
       released_at: job.manifest.releasedAt.toISOString(),
       signature: job.manifest.signature,
+    },
+    rollout: {
+      strategy: job.batch.rollout.strategy,
+      canary_steps: job.batch.rollout.canarySteps,
+      canary_step_wait_sec: job.batch.rollout.canaryStepWaitSec,
+      slo_p95_max: job.batch.rollout.sloP95Max,
+      slo_error_rate_max: job.batch.rollout.sloErrorRateMax,
+      slo_webhook_retry_rate_max: job.batch.rollout.sloWebhookRetryRateMax,
+      auto_rollback: job.batch.rollout.autoRollback,
     },
   });
 }

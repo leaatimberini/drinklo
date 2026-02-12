@@ -3,6 +3,20 @@ import { prisma } from "../../lib/prisma";
 import { isAdminRequest } from "../../lib/admin-auth";
 import { verifyPayloadSignature } from "../../lib/signing";
 
+export async function GET(req: NextRequest) {
+  if (!isAdminRequest(req)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const items = await prisma.releaseManifest.findMany({
+    orderBy: { releasedAt: "desc" },
+    take: 50,
+    select: { id: true, version: true, sha: true, channel: true, releasedAt: true },
+  });
+
+  return NextResponse.json({ items });
+}
+
 export async function POST(req: NextRequest) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });

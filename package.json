@@ -21,6 +21,7 @@
     "deploy:down": "docker compose -f deploy/prod/docker-compose.yml down",
     "deploy:logs": "docker compose -f deploy/prod/docker-compose.yml logs -f",
     "deploy:upgrade": "docker compose -f deploy/prod/docker-compose.yml pull && docker compose -f deploy/prod/docker-compose.yml up -d",
+    "deploy:bluegreen": "node scripts/blue-green-canary.mjs",
     "backup:run": "node scripts/backup.mjs",
     "restore:run": "node scripts/restore.mjs",
     "provision:instance": "node scripts/provision-instance.mjs",

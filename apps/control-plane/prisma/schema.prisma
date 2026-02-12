@@ -208,6 +208,13 @@ model Rollout {
   manifestId  String
   channel     String
   batchSize   Int
+  strategy    String   @default("BATCH")
+  canarySteps Int[]
+  canaryStepWaitSec Int @default(120)
+  sloP95Max   Float?
+  sloErrorRateMax Float?
+  sloWebhookRetryRateMax Float?
+  autoRollback Boolean @default(true)
   batchIndex  Int      @default(0)
   status      String   @default("running")
   createdAt   DateTime @default(now())
@@ -244,6 +251,11 @@ model UpdateJob {
   status         String   @default("pending")
   step           String?
   error          String?
+  canaryPercent  Int?
+  metricP95Ms    Float?
+  metricErrorRate Float?
+  metricWebhookRetryRate Float?
+  meta           Json?
   startedAt      DateTime?
   finishedAt     DateTime?
   createdAt      DateTime @default(now())
