@@ -1,4 +1,4 @@
-name: DAST
+name: DAST (ZAP)
 
 on:
   workflow_dispatch:
@@ -6,29 +6,71 @@ on:
     - cron: "30 4 * * 2"
 
 jobs:
-  dast:
+  zap-baseline:
     runs-on: ubuntu-latest
-    if: ${{ secrets.DAST_API_URL != '' && secrets.DAST_STOREFRONT_URL != '' }}
+    if: ${{ secrets.DAST_STAGING_STOREFRONT_URL != '' && secrets.DAST_STAGING_ADMIN_URL != '' && secrets.DAST_STAGING_API_URL != '' }}
+    env:
+      ZAP_DOCKER_IMAGE: ghcr.io/zaproxy/zaproxy:stable
+      STOREFRONT_URL: ${{ secrets.DAST_STAGING_STOREFRONT_URL }}
+      ADMIN_URL: ${{ secrets.DAST_STAGING_ADMIN_URL }}
+      API_URL: ${{ secrets.DAST_STAGING_API_URL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install
-      - run: npx playwright install --with-deps
-      - run: pnpm e2e -- tests/e2e/dast.spec.ts
-        env:
-          DAST_API_URL: ${{ secrets.DAST_API_URL }}
-          DAST_STOREFRONT_URL: ${{ secrets.DAST_STOREFRONT_URL }}
 
-  dast-report:
+      - name: Run ZAP baseline - storefront
+        run: |
+          docker run --rm -t -v "${PWD}:/zap/wrk/:rw" $ZAP_DOCKER_IMAGE \
+            zap-baseline.py -t "$STOREFRONT_URL" -J zap-storefront.json -r zap-storefront.html -w zap-storefront.md -m 5 -I
+
+      - name: Run ZAP baseline - admin
+        run: |
+          docker run --rm -t -v "${PWD}:/zap/wrk/:rw" $ZAP_DOCKER_IMAGE \
+            zap-baseline.py -t "$ADMIN_URL" -J zap-admin.json -r zap-admin.html -w zap-admin.md -m 5 -I
+
+      - name: Run ZAP baseline - api
+        run: |
+          docker run --rm -t -v "${PWD}:/zap/wrk/:rw" $ZAP_DOCKER_IMAGE \
+            zap-baseline.py -t "$API_URL" -J zap-api.json -r zap-api.html -w zap-api.md -m 5 -I
+
+      - name: Build SARIF from ZAP JSON
+        run: |
+          node scripts/zap-json-to-sarif.mjs
+        env:
+          ZAP_JSON_FILES: zap-api.json,zap-admin.json,zap-storefront.json
+          ZAP_SARIF_OUT: zap-results.sarif
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: zap-results.sarif
+          category: dast-zap
+
+      - name: Upload DAST artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dast-zap-artifacts
+          path: |
+            zap-*.html
+            zap-*.json
+            zap-*.md
+            zap-results.sarif
+
+      - name: Ingest DAST findings in control-plane
+        env:
+          CONTROL_PLANE_URL: ${{ secrets.CONTROL_PLANE_URL }}
+          CONTROL_PLANE_SECURITY_TOKEN: ${{ secrets.CONTROL_PLANE_SECURITY_TOKEN }}
+          SECURITY_REPORT_INSTANCE_ID: ${{ secrets.SECURITY_REPORT_INSTANCE_ID }}
+          SECURITY_REPORT_REPO: ${{ github.repository }}
+          SECURITY_REPORT_SHA: ${{ github.sha }}
+          SECURITY_REPORT_RUN_ID: ${{ github.run_id }}
+          SECURITY_REPORT_STATUS: completed
+          ZAP_JSON_FILES: zap-api.json,zap-admin.json,zap-storefront.json
+        run: node scripts/ingest-dast-findings.mjs
+
+  dast-status-report:
     runs-on: ubuntu-latest
     if: always()
-    needs: [dast]
+    needs: [zap-baseline]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -39,15 +81,15 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install
-      - name: Send report to control-plane
+      - name: Send status to control-plane
         env:
           CONTROL_PLANE_URL: ${{ secrets.CONTROL_PLANE_URL }}
           CONTROL_PLANE_SECURITY_TOKEN: ${{ secrets.CONTROL_PLANE_SECURITY_TOKEN }}
           SECURITY_REPORT_KIND: dast
-          SECURITY_REPORT_STATUS: ${{ needs.dast.result }}
+          SECURITY_REPORT_STATUS: ${{ needs.zap-baseline.result }}
           SECURITY_REPORT_REPO: ${{ github.repository }}
           SECURITY_REPORT_SHA: ${{ github.sha }}
           SECURITY_REPORT_RUN_ID: ${{ github.run_id }}
           SECURITY_REPORT_SUMMARY: >
-            {"dast":"${{ needs.dast.result }}"}
+            {"zapBaseline":"${{ needs.zap-baseline.result }}"}
         run: node scripts/security-report.mjs

@@ -71,11 +71,44 @@ model Installation {
   webVitals   WebVitalSample[]
   chaosRuns   ChaosRun[]
   complianceEvidence ComplianceEvidence[]
+  dastFindings DastFinding[]
 
   @@index([clientName])
   @@index([domain])
   @@index([healthStatus])
   @@index([primaryRegion])
+}
+
+model DastFinding {
+  id             String   @id @default(uuid())
+  installationId String?
+  instanceId     String?
+  securityReportId String?
+  target         String
+  scanProfile    String   @default("ZAP_BASELINE")
+  zapRuleId      String
+  title          String
+  severity       String
+  route          String
+  evidence       String?
+  recommendation String?
+  status         String   @default("open")
+  firstSeenAt    DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+  slaDueAt       DateTime?
+  triagedAt      DateTime?
+  fixedAt        DateTime?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+  report SecurityReport? @relation(fields: [securityReportId], references: [id])
+
+  @@unique([instanceId, target, zapRuleId, route])
+  @@index([installationId, severity, status])
+  @@index([status, slaDueAt])
+  @@index([lastSeenAt])
 }
 
 model ComplianceControl {
@@ -643,6 +676,7 @@ model SecurityReport {
   createdAt   DateTime @default(now())
 
   installation Installation? @relation(fields: [installationId], references: [id])
+  dastFindings DastFinding[]
 
   @@index([installationId])
   @@index([instanceId])

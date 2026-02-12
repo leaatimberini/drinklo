@@ -64,6 +64,8 @@ export default async function Home() {
         <Link href="/sandbox">Sandbox</Link>
         {" | "}
         <Link href="/compliance-evidence">Compliance Evidence</Link>
+        {" | "}
+        <Link href="/security-dast">DAST Findings</Link>
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>
