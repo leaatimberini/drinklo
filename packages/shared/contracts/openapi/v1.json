@@ -1973,6 +1973,50 @@
         "x-source": "apps/api/src/modules/sales/sales.controller.ts"
       }
     },
+    "/admin/sandbox/status": {
+      "get": {
+        "operationId": "get_admin_sandbox_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+      }
+    },
+    "/admin/sandbox/mode": {
+      "post": {
+        "operationId": "post_admin_sandbox_mode",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+      }
+    },
+    "/admin/sandbox/reset": {
+      "post": {
+        "operationId": "post_admin_sandbox_reset",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+      }
+    },
+    "/admin/sandbox/simulate-payment/:orderId": {
+      "post": {
+        "operationId": "post_admin_sandbox_simulate_payment_orderId",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+      }
+    },
     "/search": {
       "get": {
         "operationId": "get_search",

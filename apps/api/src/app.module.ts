@@ -63,6 +63,7 @@ import { DataGovernanceModule } from "./modules/data-governance/data-governance.
 import { EdgeCacheModule } from "./modules/edge-cache/edge-cache.module";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { DeveloperApiModule } from "./modules/developer-api/developer-api.module";
+import { SandboxModule } from "./modules/sandbox/sandbox.module";
 
 @Module({
   imports: [
@@ -123,6 +124,7 @@ import { DeveloperApiModule } from "./modules/developer-api/developer-api.module
     EdgeCacheModule,
     AiCopilotModule,
     DeveloperApiModule,
+    SandboxModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

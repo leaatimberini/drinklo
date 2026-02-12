@@ -37,7 +37,9 @@
     "restore:verify:schedule": "node scripts/schedule-restore-verifications.mjs",
     "plugin:sign": "node scripts/sign-plugin.mjs",
     "contract:generate": "node scripts/generate-openapi-contract.mjs",
-    "contract:test": "node scripts/contract-test.mjs"
+    "contract:test": "node scripts/contract-test.mjs",
+    "sandbox:harness": "node scripts/sandbox-harness.mjs",
+    "sandbox:harness:all": "node scripts/sandbox-harness-all.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

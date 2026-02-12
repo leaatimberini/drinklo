@@ -5,6 +5,7 @@ import { MercadoPagoAdapter } from "./adapters/mercadopago.adapter";
 import { StockReservationService } from "../stock-reservations/stock-reservation.service";
 import { SecretsService } from "../secrets/secrets.service";
 import { DeveloperApiService } from "../developer-api/developer-api.service";
+import { SandboxService } from "../sandbox/sandbox.service";
 
 @Injectable()
 export class PaymentsService {
@@ -13,6 +14,7 @@ export class PaymentsService {
     private readonly reservations: StockReservationService,
     private readonly secrets: SecretsService,
     private readonly developerApi: DeveloperApiService,
+    private readonly sandbox: SandboxService,
   ) {}
 
   private async adapter(companyId: string) {
@@ -58,6 +60,45 @@ export class PaymentsService {
       where: { companyId: order.companyId },
     });
     const currency = settings?.currency ?? "ARS";
+    if (settings?.sandboxMode) {
+      const amount = Math.max(
+        0,
+        Number(order.subtotal) +
+          Number(order.shippingCost) -
+          Number(order.discountTotal) -
+          Number(order.giftCardAmount),
+      );
+      const deterministic = this.sandbox.deterministicPreference(order.id);
+      const payload = {
+        id: deterministic.id,
+        init_point: deterministic.initPoint,
+        sandbox_init_point: deterministic.initPoint,
+        mode: "sandbox",
+      };
+      if (existing) {
+        await this.prisma.payment.update({
+          where: { id: existing.id },
+          data: {
+            preferenceId: deterministic.id,
+            status: PaymentStatus.PENDING,
+            raw: payload as any,
+          },
+        });
+      } else {
+        await this.prisma.payment.create({
+          data: {
+            orderId: order.id,
+            provider: PaymentProvider.MERCADOPAGO,
+            preferenceId: deterministic.id,
+            status: PaymentStatus.PENDING,
+            amount: new Prisma.Decimal(amount),
+            currency,
+            raw: payload as any,
+          },
+        });
+      }
+      return { preferenceId: deterministic.id, initPoint: deterministic.initPoint };
+    }
 
     const adapter = await this.adapter(order.companyId);
     const preference = await adapter.createPreference({

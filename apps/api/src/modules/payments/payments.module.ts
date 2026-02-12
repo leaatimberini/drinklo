@@ -8,9 +8,10 @@ import { SecretsModule } from "../secrets/secrets.module";
 import { MetricsModule } from "../metrics/metrics.module";
 import { FraudModule } from "../fraud/fraud.module";
 import { DeveloperApiModule } from "../developer-api/developer-api.module";
+import { SandboxModule } from "../sandbox/sandbox.module";
 
 @Module({
-  imports: [StockReservationModule, SecretsModule, MetricsModule, FraudModule, DeveloperApiModule],
+  imports: [StockReservationModule, SecretsModule, MetricsModule, FraudModule, DeveloperApiModule, SandboxModule],
   controllers: [MercadoPagoController, MercadoPagoWebhookController],
   providers: [PaymentsService, PrismaService],
   exports: [PaymentsService],

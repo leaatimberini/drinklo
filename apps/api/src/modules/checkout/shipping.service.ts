@@ -6,6 +6,7 @@ import type { QuoteRequestDto } from "./dto/checkout.dto";
 import { LicensingService } from "../licensing/licensing.service";
 import { PremiumFeatures } from "../licensing/license.types";
 import { SecretsService } from "../secrets/secrets.service";
+import { SandboxService } from "../sandbox/sandbox.service";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -27,6 +28,7 @@ export class ShippingService {
     private readonly geocoding: GeocodingService,
     private readonly licensing: LicensingService,
     private readonly secrets: SecretsService,
+    private readonly sandbox: SandboxService,
   ) {}
 
   private async buildAndreani(companyId: string) {
@@ -77,6 +79,13 @@ export class ShippingService {
     if (provider === "ANDREANI") {
       if (!settings.enableAndreani) {
         throw new Error("Andreani shipping is disabled");
+      }
+      if (settings.sandboxMode) {
+        return {
+          mode: "DELIVERY",
+          provider: "ANDREANI",
+          options: this.sandbox.deterministicShipmentOptions(dto.address.postalCode),
+        };
       }
       await this.licensing.requireFeature(companyId, PremiumFeatures.ANDREANI);
       if (process.env.INTEGRATIONS_MOCK === "true") {

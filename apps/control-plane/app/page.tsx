@@ -60,6 +60,8 @@ export default async function Home() {
         <Link href="/audit">Audit</Link>
         {" | "}
         <Link href="/developer-portal">Developer Portal</Link>
+        {" | "}
+        <Link href="/sandbox">Sandbox</Link>
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>

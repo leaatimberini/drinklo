@@ -12,9 +12,10 @@ import { EventsModule } from "../events/events.module";
 import { PromosModule } from "../promos/promos.module";
 import { FraudModule } from "../fraud/fraud.module";
 import { DeveloperApiModule } from "../developer-api/developer-api.module";
+import { SandboxModule } from "../sandbox/sandbox.module";
 
 @Module({
-  imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, PluginsModule, EventsModule, PromosModule, FraudModule, DeveloperApiModule],
+  imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, PluginsModule, EventsModule, PromosModule, FraudModule, DeveloperApiModule, SandboxModule],
   controllers: [CheckoutController],
   providers: [CheckoutService, ShippingService, GeocodingService],
 })

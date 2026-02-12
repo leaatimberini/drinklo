@@ -117,6 +117,8 @@ model CompanySettings {
   enablePedidosYa   Boolean @default(false)
   enableAndreani    Boolean @default(false)
   enableOwnDelivery Boolean @default(false)
+  sandboxMode      Boolean @default(false)
+  sandboxResetAt   DateTime?
   ageGateMode    String  @default("DISABLED")
   termsUrl       String?
   privacyUrl     String?

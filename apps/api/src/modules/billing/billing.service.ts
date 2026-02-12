@@ -6,6 +6,7 @@ import type { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { LicensingService } from "../licensing/licensing.service";
 import { PremiumFeatures } from "../licensing/license.types";
 import { SecretsService } from "../secrets/secrets.service";
+import { SandboxService } from "../sandbox/sandbox.service";
 
 @Injectable()
 export class BillingService {
@@ -13,6 +14,7 @@ export class BillingService {
     private readonly prisma: PrismaService,
     private readonly licensing: LicensingService,
     private readonly secrets: SecretsService,
+    private readonly sandbox: SandboxService,
   ) {}
 
   async createInvoice(dto: CreateInvoiceDto) {
@@ -31,6 +33,40 @@ export class BillingService {
         mode: "NO_FISCAL",
         message: "Billing disabled",
       };
+    }
+
+    if (settings.sandboxMode) {
+      const deterministic = this.sandbox.deterministicArcaInvoice({
+        orderRef: dto.saleId ?? `${dto.type}-${dto.pointOfSale}`,
+        pointOfSale: dto.pointOfSale,
+        type: dto.type,
+        total: dto.total,
+        currency: dto.currency ?? "ARS",
+      });
+      const invoice = await this.prisma.invoice.create({
+        data: {
+          companyId: company.id,
+          saleId: dto.saleId ?? null,
+          type: dto.type,
+          pointOfSale: dto.pointOfSale,
+          number: deterministic.number,
+          cae: deterministic.cae,
+          caeDue: deterministic.caeDue,
+          total: new Prisma.Decimal(dto.total),
+          currency: dto.currency ?? "ARS",
+          status: deterministic.result,
+          raw: deterministic.raw,
+        },
+      });
+      await this.prisma.afipLog.create({
+        data: {
+          companyId: company.id,
+          service: "ARCA_SANDBOX",
+          environment: "HOMO",
+          response: deterministic.raw as any,
+        },
+      });
+      return invoice;
     }
 
     await this.licensing.requireFeature(company.id, PremiumFeatures.AFIP);
