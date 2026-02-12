@@ -89,6 +89,9 @@ export const EnvSchema = z.object({
   AGENT_SECRET: z.string().optional(),
   INSTANCE_ID: z.string().optional(),
   BOT_ALERT_WEBHOOK_URL: z.string().optional(),
+  GOVERNANCE_CRON_ENABLED: z.coerce.boolean().optional(),
+  GOVERNANCE_CRON_SCHEDULE: z.string().optional(),
+  GOVERNANCE_DLP_ENABLED: z.coerce.boolean().optional(),
 
   EVENT_INGEST_TOKEN: z.string().optional(),
   EVENT_SINK_URL: z.string().optional(),

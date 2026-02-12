@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from "@nestjs/common";
 import { OpsService } from "../modules/ops/ops.service";
 import { Sentry } from "./sentry";
+import { redactDeep } from "../modules/data-governance/dlp-redactor";
 
 @Catch()
 export class ObservabilityExceptionFilter implements ExceptionFilter {
@@ -16,8 +17,8 @@ export class ObservabilityExceptionFilter implements ExceptionFilter {
       id: (req as any)?.requestId ?? String(Date.now()),
       at: new Date().toISOString(),
       route: req?.originalUrl,
-      message: exception?.message ?? "error",
-      stack: exception?.stack,
+      message: redactDeep(exception?.message ?? "error"),
+      stack: redactDeep(exception?.stack),
       requestId: (req as any)?.requestId,
       userId: (req as any)?.user?.sub,
       companyId: (req as any)?.user?.companyId,

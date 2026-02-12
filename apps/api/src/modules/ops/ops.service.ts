@@ -3,6 +3,7 @@ import { getRequestLogs } from "./log-store";
 import { SecretsService } from "../secrets/secrets.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { MetricsService } from "../metrics/metrics.service";
+import { redactDeep } from "../data-governance/dlp-redactor";
 
 export type OpsError = {
   id: string;
@@ -34,7 +35,8 @@ export class OpsService {
   private jobFailures: OpsJobFailure[] = [];
 
   addError(error: OpsError) {
-    this.errors.unshift(error);
+    const redacted = redactDeep(error);
+    this.errors.unshift(redacted);
     this.errors = this.errors.slice(0, 50);
     this.metrics.recordAppError();
   }

@@ -1,10 +1,15 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { GovernanceEntity } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 import type { RetentionPolicyDto } from "./dto/privacy.dto";
+import { DataGovernanceService } from "../data-governance/data-governance.service";
 
 @Injectable()
 export class PrivacyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly governance: DataGovernanceService,
+  ) {}
 
   async exportCustomer(companyId: string, customerId: string) {
     const customer = await this.prisma.customer.findFirst({
@@ -76,17 +81,32 @@ export class PrivacyService {
   }
 
   async getRetentionPolicy(companyId: string) {
-    return this.prisma.companySettings.findUnique({ where: { companyId } });
+    const effective = await this.governance.getEffectivePolicies(companyId);
+    const entityMap = new Map(effective.entities.map((item) => [item.entity, item.retentionDays]));
+    return {
+      retentionLogsDays: entityMap.get(GovernanceEntity.LOGS) ?? 90,
+      retentionOrdersDays: entityMap.get(GovernanceEntity.ORDERS) ?? 365,
+      retentionMarketingDays: entityMap.get(GovernanceEntity.MARKETING) ?? 365,
+      source: "data-governance",
+      currentPlan: effective.currentPlan,
+    };
   }
 
   async updateRetentionPolicy(companyId: string, dto: RetentionPolicyDto) {
-    return this.prisma.companySettings.update({
-      where: { companyId },
-      data: {
-        retentionLogsDays: dto.retentionLogsDays ?? undefined,
-        retentionOrdersDays: dto.retentionOrdersDays ?? undefined,
-        retentionMarketingDays: dto.retentionMarketingDays ?? undefined,
-      },
-    });
+    const items = [];
+    if (dto.retentionOrdersDays) {
+      items.push({ plan: "pro" as const, entity: GovernanceEntity.ORDERS, retentionDays: dto.retentionOrdersDays });
+    }
+    if (dto.retentionLogsDays) {
+      items.push({ plan: "pro" as const, entity: GovernanceEntity.LOGS, retentionDays: dto.retentionLogsDays });
+      items.push({ plan: "pro" as const, entity: GovernanceEntity.EVENTS, retentionDays: dto.retentionLogsDays });
+    }
+    if (dto.retentionMarketingDays) {
+      items.push({ plan: "pro" as const, entity: GovernanceEntity.MARKETING, retentionDays: dto.retentionMarketingDays });
+    }
+    if (items.length > 0) {
+      await this.governance.upsertPolicies(companyId, { items });
+    }
+    return this.getRetentionPolicy(companyId);
   }
 }

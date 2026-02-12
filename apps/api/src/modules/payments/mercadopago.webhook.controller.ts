@@ -6,6 +6,7 @@ import { PaymentsService } from "./payments.service";
 import { SecretsService } from "../secrets/secrets.service";
 import { MetricsService } from "../metrics/metrics.service";
 import { FraudService } from "../fraud/fraud.service";
+import { redactDeep } from "../data-governance/dlp-redactor";
 
 function verifyMercadoPagoSignature({
   secret,
@@ -60,10 +61,11 @@ export class MercadoPagoWebhookController {
     try {
       await this.prisma.webhookLog.create({
         data: {
+          companyId: null,
           provider: "mercadopago",
           eventId: String(eventId),
-          payload: body,
-          headers: { signature, requestId },
+          payload: redactDeep(body),
+          headers: redactDeep({ signature, requestId }),
           status: "received",
         },
       });
@@ -157,7 +159,7 @@ export class MercadoPagoWebhookController {
     } catch (error: any) {
       await this.prisma.webhookLog.update({
         where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
-        data: { status: "error", error: error?.message ?? String(error), processedAt: new Date() },
+        data: { status: "error", error: redactDeep(error?.message ?? String(error)), processedAt: new Date() },
       });
       this.metrics.recordWebhook("mercadopago", "error");
       if (company) {
@@ -167,3 +169,9 @@ export class MercadoPagoWebhookController {
     }
   }
 }
+    if (company) {
+      await this.prisma.webhookLog.updateMany({
+        where: { provider: "mercadopago", eventId: String(eventId), companyId: null },
+        data: { companyId: company.id },
+      });
+    }

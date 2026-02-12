@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { Roles } from "../common/rbac.decorators";
@@ -14,7 +14,7 @@ export class BotAuditController {
 
   @Post()
   @Roles("admin")
-  record(@Body() body: any) {
-    return this.audit.record(body);
+  record(@Req() req: any, @Body() body: any) {
+    return this.audit.record({ ...body, companyId: req.user.companyId });
   }
 }

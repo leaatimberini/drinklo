@@ -13,7 +13,19 @@ describe("PrivacyService", () => {
       },
     } as any;
 
-    const service = new PrivacyService(prisma);
+    const governance = {
+      getEffectivePolicies: jest.fn().mockResolvedValue({
+        currentPlan: "pro",
+        entities: [
+          { entity: "ORDERS", retentionDays: 365 },
+          { entity: "LOGS", retentionDays: 90 },
+          { entity: "MARKETING", retentionDays: 365 },
+        ],
+      }),
+      upsertPolicies: jest.fn().mockResolvedValue([]),
+    } as any;
+
+    const service = new PrivacyService(prisma, governance);
     await service.anonymizeCustomer("co", "c1", "u1", "note");
     expect(prisma.privacyRequest.create).toHaveBeenCalled();
   });

@@ -74,6 +74,11 @@ model Company {
   searchIndexState      SearchIndexState?
   fraudRules            FraudRule[]
   fraudAssessments      FraudAssessment[]
+  dataRetentionPolicies DataRetentionPolicy[]
+  legalHolds            LegalHold[]
+  governanceRuns        GovernanceRun[]
+  webhookLogs           WebhookLog[]
+  botCommandLogs        BotCommandLog[]
 }
 
 model CompanySettings {
@@ -594,6 +599,73 @@ model PrivacyRequest {
   @@index([status])
 }
 
+model DataRetentionPolicy {
+  id            String           @id @default(uuid())
+  companyId     String
+  plan          String
+  entity        GovernanceEntity
+  retentionDays Int
+  createdById   String?
+  updatedById   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  company   Company @relation(fields: [companyId], references: [id])
+  createdBy User?   @relation("DataRetentionPolicyCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?   @relation("DataRetentionPolicyUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([companyId, plan, entity])
+  @@index([companyId])
+  @@index([plan])
+}
+
+model LegalHold {
+  id           String          @id @default(uuid())
+  companyId    String
+  customerId   String
+  customerEmailSnapshot String?
+  periodFrom   DateTime?
+  periodTo     DateTime?
+  reason       String
+  status       LegalHoldStatus @default(ACTIVE)
+  createdById  String
+  releasedById String?
+  releasedAt   DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  company    Company  @relation(fields: [companyId], references: [id])
+  customer   Customer @relation(fields: [customerId], references: [id])
+  createdBy  User     @relation("LegalHoldCreatedBy", fields: [createdById], references: [id])
+  releasedBy User?    @relation("LegalHoldReleasedBy", fields: [releasedById], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([periodFrom])
+  @@index([periodTo])
+}
+
+model GovernanceRun {
+  id          String   @id @default(uuid())
+  companyId   String
+  triggeredBy String?
+  triggerType String
+  startedAt   DateTime
+  finishedAt  DateTime?
+  status      String
+  summary     Json?
+  error       String?
+  createdAt   DateTime @default(now())
+
+  company   Company @relation(fields: [companyId], references: [id])
+  triggered User?   @relation("GovernanceRunTriggeredBy", fields: [triggeredBy], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+  @@index([startedAt])
+}
+
 model ConsentRecord {
   id        String   @id @default(uuid())
   companyId String
@@ -691,6 +763,7 @@ model EmailTemplate {
 
 model BotCommandLog {
   id        String   @id @default(uuid())
+  companyId String?
   adminId   String?
   chatId    String
   command   String
@@ -699,6 +772,9 @@ model BotCommandLog {
   result    Json?
   createdAt DateTime @default(now())
 
+  company Company? @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
   @@index([chatId])
   @@index([command])
 }
@@ -745,6 +821,18 @@ enum FraudAssessmentStatus {
   OPEN
   RESOLVED
   DISMISSED
+}
+
+enum GovernanceEntity {
+  ORDERS
+  LOGS
+  EVENTS
+  MARKETING
+}
+
+enum LegalHoldStatus {
+  ACTIVE
+  RELEASED
 }
 
 enum CouponType {
@@ -1195,6 +1283,7 @@ model Payment {
 
 model WebhookLog {
   id         String   @id @default(uuid())
+  companyId  String?
   provider   String
   eventId    String
   payload    Json
@@ -1204,7 +1293,10 @@ model WebhookLog {
   status     String?
   error      String?
 
+  company Company? @relation(fields: [companyId], references: [id])
+
   @@unique([provider, eventId])
+  @@index([companyId])
   @@index([provider])
 }
 
@@ -1413,6 +1505,11 @@ model User {
   approvedPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderApprovedBy")
   receivedGoodsReceipts GoodsReceipt[] @relation("GoodsReceiptReceivedBy")
   reviewedFraudAssessments FraudAssessment[] @relation("FraudAssessmentReviewedBy")
+  createdDataRetentionPolicies DataRetentionPolicy[] @relation("DataRetentionPolicyCreatedBy")
+  updatedDataRetentionPolicies DataRetentionPolicy[] @relation("DataRetentionPolicyUpdatedBy")
+  createdLegalHolds LegalHold[] @relation("LegalHoldCreatedBy")
+  releasedLegalHolds LegalHold[] @relation("LegalHoldReleasedBy")
+  governanceRuns GovernanceRun[] @relation("GovernanceRunTriggeredBy")
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -1481,6 +1578,7 @@ model Customer {
 
   company   Company  @relation(fields: [companyId], references: [id])
   addresses Address[]
+  legalHolds LegalHold[]
   createdBy User? @relation("CustomerCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("CustomerUpdatedBy", fields: [updatedById], references: [id])
 
