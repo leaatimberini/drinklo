@@ -140,7 +140,7 @@ export default function CheckoutPage() {
           </label>
           <label>
             <input type="radio" checked={mode === "DELIVERY"} onChange={() => setMode("DELIVERY")} />
-            Envío
+            Envio
           </label>
         </div>
       </section>
@@ -163,13 +163,28 @@ export default function CheckoutPage() {
 
       {mode === "DELIVERY" && (
         <section style={{ marginBottom: 20 }}>
-          <h2 style={{ fontSize: 20, marginBottom: 8 }}>Dirección</h2>
+          <h2 style={{ fontSize: 20, marginBottom: 8 }}>Direccion</h2>
           <div style={{ display: "grid", gap: 8 }}>
-            <input placeholder="Dirección" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
-            <input placeholder="Ciudad" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-            <input placeholder="Provincia" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} />
-            <input placeholder="Código postal" value={address.postalCode} onChange={(e) => setAddress({ ...address, postalCode: e.target.value })} />
-            <input placeholder="País" value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} />
+            <label htmlFor="address-line1">
+              Direccion
+              <input id="address-line1" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
+            </label>
+            <label htmlFor="address-city">
+              Ciudad
+              <input id="address-city" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
+            </label>
+            <label htmlFor="address-state">
+              Provincia
+              <input id="address-state" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} />
+            </label>
+            <label htmlFor="address-postal">
+              Codigo postal
+              <input id="address-postal" value={address.postalCode} onChange={(e) => setAddress({ ...address, postalCode: e.target.value })} />
+            </label>
+            <label htmlFor="address-country">
+              Pais
+              <input id="address-country" value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} />
+            </label>
           </div>
         </section>
       )}
@@ -177,14 +192,23 @@ export default function CheckoutPage() {
       <section style={{ marginBottom: 20 }}>
         <h2 style={{ fontSize: 20, marginBottom: 8 }}>Promos</h2>
         <div style={{ display: "grid", gap: 8 }}>
-          <input placeholder="Cupón" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} />
-          <input placeholder="Gift card" value={giftCardCode} onChange={(e) => setGiftCardCode(e.target.value)} />
-          <input type="number" placeholder="Puntos a canjear" value={loyaltyPoints} onChange={(e) => setLoyaltyPoints(Number(e.target.value))} />
+          <label htmlFor="coupon-code">
+            Cupon
+            <input id="coupon-code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} />
+          </label>
+          <label htmlFor="gift-card-code">
+            Gift card
+            <input id="gift-card-code" value={giftCardCode} onChange={(e) => setGiftCardCode(e.target.value)} />
+          </label>
+          <label htmlFor="loyalty-points">
+            Puntos a canjear
+            <input id="loyalty-points" type="number" value={loyaltyPoints} onChange={(e) => setLoyaltyPoints(Number(e.target.value))} />
+          </label>
         </div>
       </section>
 
       <motion.button whileTap={{ scale: 0.98 }} onClick={handleQuote} disabled={!canQuote}>
-        Cotizar envío
+        Cotizar envio
       </motion.button>
 
       {quote && (

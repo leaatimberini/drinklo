@@ -29,6 +29,10 @@ export default async function Home() {
     orderBy: { createdAt: "desc" },
     take: 30,
   });
+  const accessibilityReports = await prisma.accessibilityReport.findMany({
+    orderBy: { measuredAt: "desc" },
+    take: 30,
+  });
 
   const vitalsByName = recentVitals.reduce(
     (acc, item) => {
@@ -66,6 +70,8 @@ export default async function Home() {
         <Link href="/compliance-evidence">Compliance Evidence</Link>
         {" | "}
         <Link href="/security-dast">DAST Findings</Link>
+        {" | "}
+        <Link href="/accessibility">Accessibility</Link>
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>
@@ -148,6 +154,18 @@ export default async function Home() {
           {chaosRuns.slice(0, 8).map((run) => (
             <li key={run.id}>
               {run.instanceId} - {run.scenario} - {run.status} ({new Date(run.createdAt).toLocaleString()})
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h2>Accessibility</h2>
+        <p>Recent reports: {accessibilityReports.length}</p>
+        <ul>
+          {accessibilityReports.slice(0, 8).map((report) => (
+            <li key={report.id}>
+              {report.instanceId} - {report.version} - score {Math.round(report.score)} (critical {report.criticalViolations})
             </li>
           ))}
         </ul>

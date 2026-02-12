@@ -72,6 +72,7 @@ model Installation {
   chaosRuns   ChaosRun[]
   complianceEvidence ComplianceEvidence[]
   dastFindings DastFinding[]
+  accessibilityReports AccessibilityReport[]
 
   @@index([clientName])
   @@index([domain])
@@ -188,6 +189,26 @@ model WebVitalSample {
   @@index([installationId, capturedAt])
   @@index([instanceId, capturedAt])
   @@index([name, capturedAt])
+}
+
+model AccessibilityReport {
+  id                String   @id @default(uuid())
+  installationId    String?
+  instanceId        String
+  version           String
+  score             Float
+  criticalViolations Int     @default(0)
+  seriousViolations Int      @default(0)
+  totalViolations   Int      @default(0)
+  pages             Json?
+  measuredAt        DateTime
+  createdAt         DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, measuredAt])
+  @@index([instanceId, measuredAt])
+  @@index([version, measuredAt])
 }
 
 model ChaosRun {

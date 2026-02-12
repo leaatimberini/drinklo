@@ -31,7 +31,7 @@ export default function CategoryClient({
               }}
             >
               <strong>{product.name}</strong>
-              <p style={{ marginTop: 8, color: "#666" }}>{product.description ?? "Sin descripción"}</p>
+              <p style={{ marginTop: 8, color: "var(--color-text-muted)" }}>{product.description ?? "Sin descripcion"}</p>
             </Link>
           </motion.div>
         ))}

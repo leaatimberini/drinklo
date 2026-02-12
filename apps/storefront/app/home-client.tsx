@@ -77,7 +77,7 @@ export default function HomeClient({
                 <strong>{item.name}</strong>
                 {item.sku && <p style={{ marginTop: 6 }}>SKU: {item.sku}</p>}
                 <p style={{ marginTop: 6 }}>Precio: ${item.price}</p>
-                <small style={{ color: "#666" }}>{item.reason}</small>
+                <small style={{ color: "var(--color-text-muted)" }}>{item.reason}</small>
               </Link>
             </motion.div>
           ))}
@@ -124,8 +124,8 @@ export default function HomeClient({
                   }}
                 >
                   <strong>{slot.title}</strong>
-                  <p style={{ marginTop: 8, color: "#666" }}>{slot.body}</p>
-                  <small style={{ color: "#999" }}>{slot.plugin}</small>
+                  <p style={{ marginTop: 8, color: "var(--color-text-muted)" }}>{slot.body}</p>
+                  <small style={{ color: "var(--color-text-subtle)" }}>{slot.plugin}</small>
                 </div>
               </motion.div>
             ))}
@@ -159,7 +159,7 @@ export default function HomeClient({
 
       {recommendations && !optOut && (
         <div style={{ marginBottom: 24 }}>
-          <button onClick={handleOptOut}>Ocultar recomendaciones</button>
+          <button aria-label="Ocultar recomendaciones personalizadas" onClick={handleOptOut}>Ocultar recomendaciones</button>
         </div>
       )}
 
@@ -185,7 +185,7 @@ export default function HomeClient({
                 }}
               >
                 <strong>{product.name}</strong>
-                <p style={{ marginTop: 8, color: "#666" }}>{product.description ?? "Sin descripción"}</p>
+                <p style={{ marginTop: 8, color: "var(--color-text-muted)" }}>{product.description ?? "Sin descripción"}</p>
                 {product.plugins && product.plugins.length > 0 && (
                   <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                     {product.plugins.map((pluginItem, index) => (
@@ -196,7 +196,7 @@ export default function HomeClient({
                           padding: "2px 8px",
                           borderRadius: 999,
                           border: "1px solid var(--card-border)",
-                          color: "#444",
+                          color: "var(--color-text-subtle)",
                         }}
                       >
                         {pluginItem.data?.label ?? pluginItem.plugin}

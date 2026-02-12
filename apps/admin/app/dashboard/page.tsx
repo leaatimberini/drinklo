@@ -14,8 +14,8 @@ export default function DashboardPage() {
   const [slots, setSlots] = useState<any[]>([]);
 
   const rangeLabel = useMemo(() => {
-    if (!from || !to) return "Últimos 7 días";
-    return `${from} ? ${to}`;
+    if (!from || !to) return "Ultimos 7 dias";
+    return `${from} - ${to}`;
   }, [from, to]);
 
   async function fetchData() {
@@ -31,8 +31,8 @@ export default function DashboardPage() {
 
   async function fetchFx() {
     const res = await fetch(`${apiUrl}/fx/latest?codes=USD,BRL,EUR`);
-    const data = await res.json();
-    setFx(data ?? []);
+    const payload = await res.json();
+    setFx(payload ?? []);
   }
 
   async function fetchSlots() {
@@ -59,7 +59,7 @@ export default function DashboardPage() {
   return (
     <main style={{ padding: 32 }}>
       <h1 style={{ fontSize: 32, fontFamily: "var(--font-heading)" }}>Dashboard</h1>
-      <p style={{ color: "#555" }}>Zona horaria: America/Argentina/Buenos_Aires</p>
+      <p style={{ color: "var(--color-text-subtle)" }}>Zona horaria: America/Argentina/Buenos_Aires</p>
 
       <section style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "end" }}>
         <label>
@@ -121,18 +121,18 @@ export default function DashboardPage() {
             <div style={{ display: "grid", gap: 8 }}>
               {data.topProducts.map((item: any) => (
                 <div key={item.productId} style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)" }}>
-                  {item.name} — ${item.revenue} ({item.qty})
+                  {item.name} - ${item.revenue} ({item.qty})
                 </div>
               ))}
             </div>
           </div>
 
           <div style={{ marginTop: 24 }}>
-            <h3>Stock crítico</h3>
+            <h3>Stock critico</h3>
             <div style={{ display: "grid", gap: 8 }}>
               {data.lowStock.map((item: any) => (
                 <div key={item.variantId} style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)" }}>
-                  {item.sku} — {item.quantity}
+                  {item.sku} - {item.quantity}
                 </div>
               ))}
             </div>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
               <div key={`${slot.plugin}-${index}`} style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)" }}>
                 <strong>{slot.title}</strong>
                 <p style={{ marginTop: 8 }}>{slot.body}</p>
-                <small style={{ color: "#666" }}>{slot.plugin}</small>
+                <small style={{ color: "var(--color-text-subtle)" }}>{slot.plugin}</small>
               </div>
             ))}
           </div>

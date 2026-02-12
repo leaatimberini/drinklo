@@ -17,9 +17,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <a className="skip-link" href="#main-content">Skip to content</a>
         <ThemeProvider target="admin" />
         <SwRegister />
-        {children}
+        <div id="main-content">{children}</div>
       </body>
     </html>
   );

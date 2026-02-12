@@ -29,6 +29,7 @@ export default function CartPage() {
                 <input
                   type="number"
                   min={1}
+                  aria-label={`Cantidad para ${item.name}`}
                   value={item.quantity}
                   onChange={(e) => updateItem(item.id, Number(e.target.value))}
                 />
@@ -42,8 +43,25 @@ export default function CartPage() {
         <button onClick={clear} disabled={items.length === 0}>
           Vaciar
         </button>
-        <Link href="/checkout">
-          <button disabled={items.length === 0}>Ir a checkout</button>
+        <Link
+          href={items.length === 0 ? "#" : "/checkout"}
+          aria-disabled={items.length === 0}
+          tabIndex={items.length === 0 ? -1 : 0}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "10px 16px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--card-border)",
+            background: "var(--button-bg)",
+            color: "var(--button-text)",
+            textDecoration: "none",
+            pointerEvents: items.length === 0 ? "none" : "auto",
+            opacity: items.length === 0 ? 0.5 : 1,
+          }}
+        >
+          Ir a checkout
         </Link>
       </div>
     </main>

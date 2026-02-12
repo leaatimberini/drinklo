@@ -85,11 +85,11 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
   return (
     <main style={{ padding: 32 }}>
       <h1 style={{ fontSize: 32, marginBottom: 8, fontFamily: "var(--font-heading)" }}>{product.name}</h1>
-      <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripción"}</p>
+      <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripcion"}</p>
       {abVariant?.payload?.badge && (
-        <p style={{ marginBottom: 16, color: "#b45309" }}>{abVariant.payload.badge}</p>
+        <p style={{ marginBottom: 16, color: "#92400e" }}>{abVariant.payload.badge}</p>
       )}
-      {variant && <p style={{ marginBottom: 16, color: "#666" }}>SKU: {variant.sku}</p>}
+      {variant && <p style={{ marginBottom: 16, color: "var(--color-text-muted)" }}>SKU: {variant.sku}</p>}
 
       <motion.button
         whileTap={{ scale: 0.98 }}
@@ -110,15 +110,17 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
 
       {added && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: 12 }}>
-          Se agregó al carrito.
+          Se agrego al carrito.
         </motion.p>
       )}
 
       <section style={{ marginTop: 28, borderTop: "1px solid #e5e5e5", paddingTop: 16 }}>
-        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Modo admin: próximos a vencer</h2>
-        <p style={{ color: "#666" }}>Solo para usuarios admin con permiso de inventario.</p>
+        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Modo admin: proximos a vencer</h2>
+        <p style={{ color: "var(--color-text-muted)" }}>Solo para usuarios admin con permiso de inventario.</p>
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          <label htmlFor="admin-token" className="sr-only">JWT admin</label>
           <input
+            id="admin-token"
             value={adminToken}
             onChange={(e) => setAdminToken(e.target.value)}
             placeholder="JWT admin"
@@ -133,17 +135,17 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
           <div style={{ marginTop: 10 }}>
             <p>
               {nearExpiry.hasNearExpiry
-                ? `Lote próximo: ${nearExpiry.nextLotCode ?? "-"}`
-                : "Sin lotes próximos a vencer"}
+                ? `Lote proximo: ${nearExpiry.nextLotCode ?? "-"}`
+                : "Sin lotes proximos a vencer"}
             </p>
             {nearExpiry.hasNearExpiry && (
-              <p style={{ color: "#a36d00" }}>
-                Próximo a vencer: {new Date(nearExpiry.nextExpiryDate).toLocaleDateString()}
+              <p style={{ color: "#92400e" }}>
+                Proximo a vencer: {new Date(nearExpiry.nextExpiryDate).toLocaleDateString()}
               </p>
             )}
             {rotationHints.length > 0 && (
               <div style={{ marginTop: 8 }}>
-                <strong>Sugerencias de rotación</strong>
+                <strong>Sugerencias de rotacion</strong>
                 <ul style={{ marginTop: 6 }}>
                   {rotationHints.map((hint) => (
                     <li key={hint.lotId}>

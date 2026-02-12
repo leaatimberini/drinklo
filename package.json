@@ -42,6 +42,7 @@
     "sandbox:harness:all": "node scripts/sandbox-harness-all.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@playwright/test": "^1.49.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",

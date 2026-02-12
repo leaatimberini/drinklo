@@ -14,10 +14,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <a className="skip-link" href="#main-content">Skip to content</a>
         <WebVitalsReporter />
         <ThemeProvider />
         <AgeGate />
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          <div id="main-content">{children}</div>
+        </CartProvider>
       </body>
     </html>
   );
