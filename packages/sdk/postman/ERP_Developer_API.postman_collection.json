@@ -1,0 +1,65 @@
+{
+  "info": {
+    "name": "ERP Developer API",
+    "description": "Public Developer API collection (v1)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "{{api_key}}" }
+        ],
+        "url": "{{base_url}}/developer/v1/products?page=1&pageSize=20"
+      }
+    },
+    {
+      "name": "Categories",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "{{api_key}}" }
+        ],
+        "url": "{{base_url}}/developer/v1/categories"
+      }
+    },
+    {
+      "name": "Price Lists",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "{{api_key}}" }
+        ],
+        "url": "{{base_url}}/developer/v1/pricelists"
+      }
+    },
+    {
+      "name": "Stock Availability",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "{{api_key}}" }
+        ],
+        "url": "{{base_url}}/developer/v1/stock/availability"
+      }
+    },
+    {
+      "name": "Create Order (Checkout)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "x-api-key", "value": "{{api_key}}" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "{{$guid}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerName\": \"Cliente Demo\",\n  \"customerEmail\": \"cliente@example.com\",\n  \"shippingMode\": \"PICKUP\",\n  \"items\": [{ \"productId\": \"prod_id\", \"quantity\": 1 }]\n}"
+        },
+        "url": "{{base_url}}/checkout/orders"
+      }
+    }
+  ]
+}
