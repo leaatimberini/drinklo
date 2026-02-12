@@ -56,6 +56,7 @@ import { RecommendationsModule } from "./modules/recommendations/recommendations
 import { IamModule } from "./modules/iam/iam.module";
 import { ImmutableAuditModule } from "./modules/immutable-audit/immutable-audit.module";
 import { ImmutableAuditInterceptor } from "./modules/immutable-audit/immutable-audit.interceptor";
+import { PurchasingModule } from "./modules/purchasing/purchasing.module";
 
 @Module({
   imports: [
@@ -109,6 +110,7 @@ import { ImmutableAuditInterceptor } from "./modules/immutable-audit/immutable-a
     RecommendationsModule,
     IamModule,
     ImmutableAuditModule,
+    PurchasingModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

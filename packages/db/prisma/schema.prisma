@@ -50,6 +50,13 @@ model Company {
   suppressionLists      SuppressionList[]
   automationSendLogs    AutomationSendLog[]
   flowMetrics           FlowMetric[]
+  suppliers             Supplier[]
+  purchaseOrders        PurchaseOrder[]
+  purchaseOrderItems    PurchaseOrderItem[]
+  goodsReceipts         GoodsReceipt[]
+  goodsReceiptItems     GoodsReceiptItem[]
+  supplierInvoices      SupplierInvoice[]
+  inventoryCostLayers   InventoryCostLayer[]
   coupons               Coupon[]
   couponRedemptions     CouponRedemption[]
   giftCards             GiftCard[]
@@ -104,6 +111,7 @@ model CompanySettings {
   retentionLogsDays      Int @default(90)
   retentionOrdersDays    Int @default(365)
   retentionMarketingDays Int @default(365)
+  inventoryCostMethod   String @default("WAVG")
   supportPlan String? @default("standard")
   supportSlaFirstResponseHours Int? @default(48)
   supportSlaResolutionHours Int? @default(120)
@@ -1331,6 +1339,9 @@ model User {
   createdUsers User[] @relation("UserCreatedBy")
   updatedUsers User[] @relation("UserUpdatedBy")
   mfaConfig UserMfaConfig?
+  createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreatedBy")
+  approvedPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderApprovedBy")
+  receivedGoodsReceipts GoodsReceipt[] @relation("GoodsReceiptReceivedBy")
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -1548,6 +1559,9 @@ model ProductVariant {
   stockItems  StockItem[]
   createdBy   User? @relation("VariantCreatedBy", fields: [createdById], references: [id])
   updatedBy   User? @relation("VariantUpdatedBy", fields: [updatedById], references: [id])
+  purchaseOrderItems PurchaseOrderItem[]
+  goodsReceiptItems  GoodsReceiptItem[]
+  inventoryCostLayers InventoryCostLayer[]
 
   @@unique([companyId, sku])
   @@unique([companyId, barcode])
@@ -1555,6 +1569,183 @@ model ProductVariant {
   @@index([barcode])
   @@index([productId])
   @@index([companyId])
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  APPROVED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELED
+}
+
+enum SupplierInvoiceStatus {
+  OPEN
+  PARTIAL
+  PAID
+  VOID
+}
+
+model Supplier {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  taxId       String?
+  email       String?
+  phone       String?
+  address     String?
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  company        Company           @relation(fields: [companyId], references: [id])
+  purchaseOrders PurchaseOrder[]
+  invoices       SupplierInvoice[]
+
+  @@index([companyId])
+  @@index([name])
+}
+
+model PurchaseOrder {
+  id            String              @id @default(uuid())
+  companyId     String
+  supplierId    String
+  status        PurchaseOrderStatus @default(DRAFT)
+  currency      String              @default("ARS")
+  expectedAt    DateTime?
+  approvedAt    DateTime?
+  totalAmount   Decimal             @default(0) @db.Numeric(12, 2)
+  notes         String?
+  createdById   String?
+  approvedById  String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  company      Company            @relation(fields: [companyId], references: [id])
+  supplier     Supplier           @relation(fields: [supplierId], references: [id])
+  createdBy    User?              @relation("PurchaseOrderCreatedBy", fields: [createdById], references: [id])
+  approvedBy   User?              @relation("PurchaseOrderApprovedBy", fields: [approvedById], references: [id])
+  items        PurchaseOrderItem[]
+  receipts     GoodsReceipt[]
+  invoices     SupplierInvoice[]
+
+  @@index([companyId])
+  @@index([supplierId])
+  @@index([status])
+}
+
+model PurchaseOrderItem {
+  id                String   @id @default(uuid())
+  companyId         String
+  purchaseOrderId   String
+  variantId         String
+  quantityOrdered   Int
+  quantityReceived  Int      @default(0)
+  unitCost          Decimal  @db.Numeric(12, 4)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  company       Company        @relation(fields: [companyId], references: [id])
+  purchaseOrder PurchaseOrder  @relation(fields: [purchaseOrderId], references: [id])
+  variant       ProductVariant @relation(fields: [variantId], references: [id])
+  receiptItems  GoodsReceiptItem[]
+
+  @@index([companyId])
+  @@index([purchaseOrderId])
+  @@index([variantId])
+}
+
+model GoodsReceipt {
+  id              String   @id @default(uuid())
+  companyId       String
+  purchaseOrderId String
+  receivedById    String?
+  receivedAt      DateTime @default(now())
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company       Company            @relation(fields: [companyId], references: [id])
+  purchaseOrder PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id])
+  receivedBy    User?              @relation("GoodsReceiptReceivedBy", fields: [receivedById], references: [id])
+  items         GoodsReceiptItem[]
+  invoices      SupplierInvoice[]
+
+  @@index([companyId])
+  @@index([purchaseOrderId])
+}
+
+model GoodsReceiptItem {
+  id                   String   @id @default(uuid())
+  companyId            String
+  goodsReceiptId       String
+  purchaseOrderItemId  String
+  variantId            String
+  quantityReceived     Int
+  unitCost             Decimal  @db.Numeric(12, 4)
+  quantityDifference   Int      @default(0)
+  createdAt            DateTime @default(now())
+
+  company          Company           @relation(fields: [companyId], references: [id])
+  goodsReceipt     GoodsReceipt      @relation(fields: [goodsReceiptId], references: [id])
+  purchaseOrderItem PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
+  variant          ProductVariant    @relation(fields: [variantId], references: [id])
+  costLayers       InventoryCostLayer[]
+
+  @@index([companyId])
+  @@index([goodsReceiptId])
+  @@index([purchaseOrderItemId])
+  @@index([variantId])
+}
+
+model SupplierInvoice {
+  id              String                @id @default(uuid())
+  companyId       String
+  supplierId      String
+  purchaseOrderId String?
+  goodsReceiptId  String?
+  number          String
+  issuedAt        DateTime
+  dueAt           DateTime
+  subtotal        Decimal               @default(0) @db.Numeric(12, 2)
+  taxAmount       Decimal               @default(0) @db.Numeric(12, 2)
+  totalAmount     Decimal               @default(0) @db.Numeric(12, 2)
+  paidAmount      Decimal               @default(0) @db.Numeric(12, 2)
+  status          SupplierInvoiceStatus @default(OPEN)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  company       Company       @relation(fields: [companyId], references: [id])
+  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  goodsReceipt  GoodsReceipt? @relation(fields: [goodsReceiptId], references: [id])
+
+  @@index([companyId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([dueAt])
+}
+
+model InventoryCostLayer {
+  id               String   @id @default(uuid())
+  companyId        String
+  variantId        String
+  goodsReceiptItemId String?
+  quantityInitial  Int
+  quantityRemaining Int
+  unitCost         Decimal  @db.Numeric(12, 4)
+  receivedAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  company          Company           @relation(fields: [companyId], references: [id])
+  variant          ProductVariant    @relation(fields: [variantId], references: [id])
+  goodsReceiptItem GoodsReceiptItem? @relation(fields: [goodsReceiptItemId], references: [id])
+
+  @@index([companyId])
+  @@index([variantId])
+  @@index([receivedAt])
 }
 
 model SearchConfig {
