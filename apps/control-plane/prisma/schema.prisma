@@ -441,17 +441,27 @@ model RestoreVerification {
 
 model PluginRelease {
   id            String   @id @default(uuid())
+  publisherId   String?
+  sourceSubmissionId String?
   name          String
   version       String
   channel       String
   compatibility String?
   changelog     String?
   signature     String
+  permissions   String[] @default([])
+  dependencies  String[] @default([])
+  reviewStatus  String   @default("approved")
   createdAt     DateTime @default(now())
 
+  publisher     Publisher? @relation(fields: [publisherId], references: [id])
+  sourceSubmission PluginSubmission? @relation(fields: [sourceSubmissionId], references: [id])
+
+  @@unique([name, version, channel])
   @@index([name])
   @@index([version])
   @@index([channel])
+  @@index([publisherId])
 }
 
 model PluginRequest {
@@ -467,6 +477,57 @@ model PluginRequest {
   @@index([instanceId])
   @@index([pluginName])
   @@index([status])
+}
+
+model Publisher {
+  id                   String   @id @default(uuid())
+  name                 String
+  email                String
+  website              String?
+  verificationStatus   String   @default("PENDING")
+  verificationNotes    String?
+  verifiedAt           DateTime?
+  apiKey               String   @unique
+  signingSecret        String
+  defaultRevenueShareBps Int?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  submissions PluginSubmission[]
+  releases    PluginRelease[]
+
+  @@index([verificationStatus])
+  @@index([email])
+}
+
+model PluginSubmission {
+  id                 String   @id @default(uuid())
+  publisherId        String
+  pluginName         String
+  version            String
+  channel            String
+  compatibility      String?
+  changelog          String?
+  bundleUrl          String
+  manifest           Json
+  signature          String
+  requestedPermissions String[] @default([])
+  dependencies       String[] @default([])
+  revenueShareBps    Int?
+  status             String   @default("UNDER_REVIEW")
+  reviewReport       Json?
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  publisher Publisher @relation(fields: [publisherId], references: [id])
+  releases  PluginRelease[]
+
+  @@unique([publisherId, pluginName, version, channel])
+  @@index([publisherId])
+  @@index([status])
+  @@index([pluginName, version])
 }
 
 model PluginRollout {

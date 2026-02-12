@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
   const compatibility = body.compatibility ?? null;
   const changelog = body.changelog ?? null;
   const signature = String(body.signature ?? "").trim();
+  const permissions = Array.isArray(body.permissions) ? body.permissions.map((x: any) => String(x)) : [];
+  const dependencies = Array.isArray(body.dependencies) ? body.dependencies.map((x: any) => String(x)) : [];
+  const publisherId = body.publisherId ? String(body.publisherId) : null;
 
   if (!name || !version || !channel || !signature) {
     return NextResponse.json({ error: "invalid payload" }, { status: 400 });
@@ -26,7 +29,18 @@ export async function POST(req: NextRequest) {
   }
 
   const release = await prisma.pluginRelease.create({
-    data: { name, version, channel, compatibility, changelog, signature },
+    data: {
+      name,
+      version,
+      channel,
+      compatibility,
+      changelog,
+      signature,
+      permissions,
+      dependencies,
+      publisherId,
+      reviewStatus: "approved",
+    },
   });
 
   return NextResponse.json({ id: release.id });
@@ -40,6 +54,15 @@ export async function GET(req: NextRequest) {
   const channel = searchParams.get("channel");
   const releases = await prisma.pluginRelease.findMany({
     where: channel ? { channel } : undefined,
+    include: {
+      publisher: {
+        select: {
+          id: true,
+          name: true,
+          verificationStatus: true,
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
     take: 200,
   });

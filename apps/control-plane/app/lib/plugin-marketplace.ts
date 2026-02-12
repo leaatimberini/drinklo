@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-function stableStringify(value: any): string {
+export function stableStringify(value: any): string {
   if (value === null || typeof value !== "object") {
     return JSON.stringify(value);
   }
@@ -17,4 +17,12 @@ export function verifyPluginReleaseSignature(payload: Record<string, any>, signa
   const expected = crypto.createHmac("sha256", secret).update(stableStringify(payload)).digest("hex");
   if (expected.length !== signature.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+
+export function signPluginPayload(payload: Record<string, any>, secret: string) {
+  return crypto.createHmac("sha256", secret).update(stableStringify(payload)).digest("hex");
+}
+
+export function verifyPublisherBundleSignature(payload: Record<string, any>, signature: string, signingSecret: string) {
+  return verifyPluginReleaseSignature(payload, signature, signingSecret);
 }
