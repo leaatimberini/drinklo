@@ -24,6 +24,19 @@ export default async function InstallationDetail({ params }: { params: { id: str
     take: 20,
   });
 
+  const [invalidations, vitals] = await Promise.all([
+    prisma.edgeInvalidation.findMany({
+      where: { installationId: installation.id },
+      orderBy: { requestedAt: "desc" },
+      take: 20,
+    }),
+    prisma.webVitalSample.findMany({
+      where: { installationId: installation.id, name: { in: ["LCP", "TTFB"] } },
+      orderBy: { capturedAt: "desc" },
+      take: 40,
+    }),
+  ]);
+
   return (
     <main>
       <Link href="/">? Back</Link>
@@ -62,6 +75,28 @@ export default async function InstallationDetail({ params }: { params: { id: str
         <ul>
           {jobs.map((job) => (
             <li key={job.id}>{job.message} ({job.createdAt.toISOString()})</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>Edge invalidations</h3>
+        <ul>
+          {invalidations.map((item) => (
+            <li key={item.id}>
+              {item.reason} ({item.status}) - {item.paths.slice(0, 3).join(", ")} ({item.requestedAt.toISOString()})
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>Web vitals (LCP/TTFB)</h3>
+        <ul>
+          {vitals.map((sample) => (
+            <li key={sample.id}>
+              {sample.name}: {Math.round(sample.value)}ms {sample.path ? `(${sample.path})` : ""} ({sample.capturedAt.toISOString()})
+            </li>
           ))}
         </ul>
       </div>

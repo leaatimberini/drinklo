@@ -30,6 +30,10 @@ export class CatalogService {
     this.cache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
   }
 
+  invalidateAll() {
+    this.cache.clear();
+  }
+
   async listCategories() {
     const cached = this.getCached<any>("categories");
     if (cached) return cached;

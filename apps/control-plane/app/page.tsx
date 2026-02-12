@@ -14,6 +14,28 @@ export default async function Home() {
     orderBy: { startedAt: "desc" },
     take: 10,
   });
+  const [recentInvalidations, recentVitals] = await Promise.all([
+    prisma.edgeInvalidation.findMany({
+      orderBy: { requestedAt: "desc" },
+      take: 20,
+    }),
+    prisma.webVitalSample.findMany({
+      where: { name: { in: ["LCP", "TTFB"] } },
+      orderBy: { capturedAt: "desc" },
+      take: 100,
+    }),
+  ]);
+
+  const vitalsByName = recentVitals.reduce(
+    (acc, item) => {
+      const bucket = acc[item.name] ?? { sum: 0, count: 0 };
+      bucket.sum += item.value;
+      bucket.count += 1;
+      acc[item.name] = bucket;
+      return acc;
+    },
+    {} as Record<string, { sum: number; count: number }>,
+  );
 
   return (
     <main>
@@ -88,6 +110,23 @@ export default async function Home() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h2>Edge Cache</h2>
+        <p>Invalidations (last 20): {recentInvalidations.length}</p>
+        <p>
+          Avg LCP:{" "}
+          {vitalsByName.LCP?.count
+            ? `${Math.round(vitalsByName.LCP.sum / vitalsByName.LCP.count)} ms`
+            : "-"}
+        </p>
+        <p>
+          Avg TTFB:{" "}
+          {vitalsByName.TTFB?.count
+            ? `${Math.round(vitalsByName.TTFB.sum / vitalsByName.TTFB.count)} ms`
+            : "-"}
+        </p>
       </div>
 
       <div className="card">

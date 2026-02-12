@@ -85,6 +85,7 @@ export const EnvSchema = z.object({
   PLUGIN_ALLOW_UNSIGNED: z.string().optional(),
 
   CONTROL_PLANE_URL: z.string().optional(),
+  CONTROL_PLANE_INGEST_TOKEN: z.string().optional(),
   CONTROL_PLANE_ALERT_WEBHOOK_URL: z.string().optional(),
   CONTROL_PLANE_ALERT_WEBHOOK_TOKEN: z.string().optional(),
   AGENT_SECRET: z.string().optional(),

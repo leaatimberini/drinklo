@@ -67,11 +67,53 @@ model Installation {
   billingAccounts BillingAccount[]
   finopsSnapshots FinOpsSnapshot[]
   finopsCosts   FinOpsCostRecord[]
+  edgeInvalidations EdgeInvalidation[]
+  webVitals   WebVitalSample[]
 
   @@index([clientName])
   @@index([domain])
   @@index([healthStatus])
   @@index([primaryRegion])
+}
+
+model EdgeInvalidation {
+  id             String   @id @default(uuid())
+  installationId String?
+  instanceId     String
+  companyId      String?
+  reason         String
+  tags           String[]
+  paths          String[]
+  payload        Json?
+  status         String   @default("queued")
+  requestedAt    DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, requestedAt])
+  @@index([instanceId, requestedAt])
+  @@index([status])
+}
+
+model WebVitalSample {
+  id             String   @id @default(uuid())
+  installationId String?
+  instanceId     String
+  name           String
+  value          Float
+  rating         String?
+  path           String?
+  metricId       String?
+  userAgent      String?
+  ip             String?
+  capturedAt     DateTime
+  createdAt      DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, capturedAt])
+  @@index([instanceId, capturedAt])
+  @@index([name, capturedAt])
 }
 
 enum BillingAccountStatus {

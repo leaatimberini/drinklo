@@ -7,7 +7,7 @@ describe("ImportExportService", () => {
   it("validates products CSV", () => {
     const buffer = fs.readFileSync(path.join("tests", "fixtures", "imports", "products.csv"));
     const { rows } = parseFile(buffer);
-    const service = new ImportExportService({} as any);
+    const service = new ImportExportService({} as any, {} as any, {} as any);
     const result = service.validate("products", rows);
     expect(result.errors.length).toBe(0);
     expect(result.preview.length).toBeGreaterThan(0);
@@ -16,8 +16,41 @@ describe("ImportExportService", () => {
   it("detects invalid products", () => {
     const buffer = fs.readFileSync(path.join("tests", "fixtures", "imports", "products_invalid.csv"));
     const { rows } = parseFile(buffer);
-    const service = new ImportExportService({} as any);
+    const service = new ImportExportService({} as any, {} as any, {} as any);
     const result = service.validate("products", rows);
     expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  it("dispatches invalidation when prices are imported", async () => {
+    const tx = {
+      priceList: {
+        findFirst: jest.fn().mockResolvedValue({ id: "pl1" }),
+      },
+      productVariant: {
+        findFirst: jest.fn().mockResolvedValue({ id: "v1" }),
+      },
+      priceRule: {
+        create: jest.fn().mockResolvedValue({ id: "pr1" }),
+      },
+    } as any;
+
+    const prisma = {
+      $transaction: jest.fn(async (run: any) => run(tx)),
+    } as any;
+
+    const edgeCache = {
+      purgePricing: jest.fn().mockResolvedValue(undefined),
+    } as any;
+
+    const catalog = {
+      invalidateAll: jest.fn(),
+    } as any;
+
+    const service = new ImportExportService(prisma, edgeCache, catalog);
+
+    await service.apply("prices", "c1", [{ priceList: "Minorista", variantSku: "SKU-1", price: "1000" }]);
+
+    expect(catalog.invalidateAll).toHaveBeenCalledTimes(1);
+    expect(edgeCache.purgePricing).toHaveBeenCalledWith("c1", ["SKU-1"], "price_imported");
   });
 });

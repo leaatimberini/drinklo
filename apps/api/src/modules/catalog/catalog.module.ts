@@ -7,5 +7,6 @@ import { PluginsModule } from "../plugins/plugins.module";
   imports: [PluginsModule],
   controllers: [CatalogController],
   providers: [CatalogService],
+  exports: [CatalogService],
 })
 export class CatalogModule {}

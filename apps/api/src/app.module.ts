@@ -60,6 +60,7 @@ import { PurchasingModule } from "./modules/purchasing/purchasing.module";
 import { LotsModule } from "./modules/lots/lots.module";
 import { FraudModule } from "./modules/fraud/fraud.module";
 import { DataGovernanceModule } from "./modules/data-governance/data-governance.module";
+import { EdgeCacheModule } from "./modules/edge-cache/edge-cache.module";
 
 @Module({
   imports: [
@@ -117,6 +118,7 @@ import { DataGovernanceModule } from "./modules/data-governance/data-governance.
     LotsModule,
     FraudModule,
     DataGovernanceModule,
+    EdgeCacheModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

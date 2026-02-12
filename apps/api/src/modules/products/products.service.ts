@@ -2,12 +2,16 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { PluginsService } from "../plugins/plugins.service";
 import type { CreateProductDto, UpdateProductDto } from "./dto/product.dto";
+import { CatalogService } from "../catalog/catalog.service";
+import { EdgeCacheService } from "../edge-cache/edge-cache.service";
 
 @Injectable()
 export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly plugins: PluginsService,
+    private readonly catalog: CatalogService,
+    private readonly edgeCache: EdgeCacheService,
   ) {}
 
   async list(companyId: string) {
@@ -30,7 +34,7 @@ export class ProductsService {
   }
 
   async create(companyId: string, dto: CreateProductDto, createdById?: string) {
-    return this.prisma.$transaction(async (tx) => {
+    const product = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
           companyId,
@@ -57,11 +61,15 @@ export class ProductsService {
 
       return product;
     });
+
+    this.catalog.invalidateAll();
+    await this.edgeCache.purgeProduct(companyId, product.id, "product_created");
+    return product;
   }
 
   async update(companyId: string, id: string, dto: UpdateProductDto, updatedById?: string) {
     await this.get(companyId, id);
-    return this.prisma.product.update({
+    const product = await this.prisma.product.update({
       where: { id },
       data: {
         name: dto.name ?? undefined,
@@ -72,13 +80,19 @@ export class ProductsService {
         updatedById,
       },
     });
+    this.catalog.invalidateAll();
+    await this.edgeCache.purgeProduct(companyId, product.id, "product_updated");
+    return product;
   }
 
   async remove(companyId: string, id: string, updatedById?: string) {
     await this.get(companyId, id);
-    return this.prisma.product.update({
+    const product = await this.prisma.product.update({
       where: { id },
       data: { deletedAt: new Date(), updatedById },
     });
+    this.catalog.invalidateAll();
+    await this.edgeCache.purgeProduct(companyId, product.id, "product_deleted");
+    return product;
   }
 }

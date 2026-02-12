@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 import { ImportError } from "./import.helpers";
+import { EdgeCacheService } from "../edge-cache/edge-cache.service";
+import { CatalogService } from "../catalog/catalog.service";
 
 const SUPPORTED = ["products", "variants", "prices", "stock", "customers"] as const;
 
@@ -29,7 +31,11 @@ function asNumber(value: any) {
 
 @Injectable()
 export class ImportExportService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly edgeCache: EdgeCacheService,
+    private readonly catalog: CatalogService,
+  ) {}
 
   getSupportedTypes() {
     return SUPPORTED;
@@ -195,7 +201,8 @@ export class ImportExportService {
   }
 
   private async importPrices(companyId: string, rows: Record<string, any>[]) {
-    return this.prisma.$transaction(async (tx) => {
+    const touchedSkus: string[] = [];
+    await this.prisma.$transaction(async (tx) => {
       for (const row of rows) {
         const priceList = await tx.priceList.findFirst({ where: { companyId, name: row.priceList } });
         if (!priceList) {
@@ -213,8 +220,11 @@ export class ImportExportService {
             price: new Prisma.Decimal(asNumber(row.price) ?? 0),
           },
         });
+        touchedSkus.push(String(row.variantSku));
       }
     });
+    this.catalog.invalidateAll();
+    await this.edgeCache.purgePricing(companyId, touchedSkus, "price_imported");
   }
 
   private async importStock(companyId: string, rows: Record<string, any>[]) {
