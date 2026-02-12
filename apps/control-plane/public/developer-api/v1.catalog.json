@@ -1,0 +1,1382 @@
+{
+  "generatedAt": "2026-02-12T16:39:05.456Z",
+  "version": "v1",
+  "title": "ERP API v1",
+  "endpointCount": 229,
+  "endpoints": [
+    {
+      "method": "GET",
+      "route": "/admin/audit",
+      "operationId": "get_admin_audit",
+      "source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/audit/evidence-pack",
+      "operationId": "get_admin_audit_evidence_pack",
+      "source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/audit/verify",
+      "operationId": "get_admin_audit_verify",
+      "source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/automation/actions/:id",
+      "operationId": "patch_admin_automation_actions_id",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/actions/:id/delete",
+      "operationId": "post_admin_automation_actions_id_delete",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/campaigns",
+      "operationId": "get_admin_automation_campaigns",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/campaigns",
+      "operationId": "post_admin_automation_campaigns",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/flows",
+      "operationId": "get_admin_automation_flows",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/flows",
+      "operationId": "post_admin_automation_flows",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/flows/:id",
+      "operationId": "get_admin_automation_flows_id",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/automation/flows/:id",
+      "operationId": "patch_admin_automation_flows_id",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/flows/:id/actions",
+      "operationId": "post_admin_automation_flows_id_actions",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/flows/:id/metrics",
+      "operationId": "get_admin_automation_flows_id_metrics",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/flows/:id/metrics",
+      "operationId": "post_admin_automation_flows_id_metrics",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/flows/:id/test-run",
+      "operationId": "post_admin_automation_flows_id_test_run",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/segments",
+      "operationId": "get_admin_automation_segments",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/segments",
+      "operationId": "post_admin_automation_segments",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/suppressions",
+      "operationId": "get_admin_automation_suppressions",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/suppressions",
+      "operationId": "post_admin_automation_suppressions",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/automation/triggers",
+      "operationId": "get_admin_automation_triggers",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/automation/triggers",
+      "operationId": "post_admin_automation_triggers",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/automation/triggers/:id",
+      "operationId": "patch_admin_automation_triggers_id",
+      "source": "apps/api/src/modules/automation/automation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/bi/cohorts",
+      "operationId": "get_admin_bi_cohorts",
+      "source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/bi/etl/run",
+      "operationId": "post_admin_bi_etl_run",
+      "source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/bi/ltv",
+      "operationId": "get_admin_bi_ltv",
+      "source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/bi/retention",
+      "operationId": "get_admin_bi_retention",
+      "source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/bi/rfm",
+      "operationId": "get_admin_bi_rfm",
+      "source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/bot-audit",
+      "operationId": "post_admin_bot_audit",
+      "source": "apps/api/src/modules/bot-audit/bot-audit.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/branding/export",
+      "operationId": "post_admin_branding_export",
+      "source": "apps/api/src/modules/branding/branding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/branding/favicon",
+      "operationId": "post_admin_branding_favicon",
+      "source": "apps/api/src/modules/branding/branding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/branding/import",
+      "operationId": "post_admin_branding_import",
+      "source": "apps/api/src/modules/branding/branding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/branding/logo",
+      "operationId": "post_admin_branding_logo",
+      "source": "apps/api/src/modules/branding/branding.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/compliance",
+      "operationId": "get_admin_compliance",
+      "source": "apps/api/src/modules/compliance/compliance.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/compliance",
+      "operationId": "patch_admin_compliance",
+      "source": "apps/api/src/modules/compliance/compliance.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/copilot/chat",
+      "operationId": "post_admin_copilot_chat",
+      "source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/copilot/proposals",
+      "operationId": "get_admin_copilot_proposals",
+      "source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/copilot/proposals/:id/approve",
+      "operationId": "post_admin_copilot_proposals_id_approve",
+      "source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/developer-api/keys",
+      "operationId": "get_admin_developer_api_keys",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/developer-api/keys",
+      "operationId": "post_admin_developer_api_keys",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/developer-api/keys/:id",
+      "operationId": "patch_admin_developer_api_keys_id",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/developer-api/keys/:id/revoke",
+      "operationId": "post_admin_developer_api_keys_id_revoke",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/developer-api/scopes",
+      "operationId": "get_admin_developer_api_scopes",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/developer-api/usage",
+      "operationId": "get_admin_developer_api_usage",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/developer-api/webhooks",
+      "operationId": "get_admin_developer_api_webhooks",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/developer-api/webhooks",
+      "operationId": "post_admin_developer_api_webhooks",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/developer-api/webhooks/:id/revoke",
+      "operationId": "post_admin_developer_api_webhooks_id_revoke",
+      "source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/email-domain",
+      "operationId": "get_admin_email_domain",
+      "source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/email-domain",
+      "operationId": "patch_admin_email_domain",
+      "source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/email-domain/confirm",
+      "operationId": "post_admin_email_domain_confirm",
+      "source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/email-templates",
+      "operationId": "get_admin_email_templates",
+      "source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/email-templates/:id",
+      "operationId": "get_admin_email_templates_id",
+      "source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/email-templates/:id",
+      "operationId": "patch_admin_email_templates_id",
+      "source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/email-templates/:id/approve",
+      "operationId": "post_admin_email_templates_id_approve",
+      "source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/email-templates/:id/send-test",
+      "operationId": "post_admin_email_templates_id_send_test",
+      "source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/email-templates/generate",
+      "operationId": "post_admin_email_templates_generate",
+      "source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/events/stats",
+      "operationId": "get_admin_events_stats",
+      "source": "apps/api/src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/experiments",
+      "operationId": "get_admin_experiments",
+      "source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/experiments",
+      "operationId": "post_admin_experiments",
+      "source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/experiments/:id/report",
+      "operationId": "get_admin_experiments_id_report",
+      "source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/experiments/:id/variants",
+      "operationId": "post_admin_experiments_id_variants",
+      "source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/fraud/evaluate/order/:orderId",
+      "operationId": "post_admin_fraud_evaluate_order_orderId",
+      "source": "apps/api/src/modules/fraud/fraud.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/fraud/queue",
+      "operationId": "get_admin_fraud_queue",
+      "source": "apps/api/src/modules/fraud/fraud.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/fraud/review/:id",
+      "operationId": "post_admin_fraud_review_id",
+      "source": "apps/api/src/modules/fraud/fraud.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/fraud/rules",
+      "operationId": "get_admin_fraud_rules",
+      "source": "apps/api/src/modules/fraud/fraud.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/fraud/rules/:code",
+      "operationId": "patch_admin_fraud_rules_code",
+      "source": "apps/api/src/modules/fraud/fraud.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/governance/legal-holds",
+      "operationId": "get_admin_governance_legal_holds",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/governance/legal-holds",
+      "operationId": "post_admin_governance_legal_holds",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/governance/legal-holds/:id/release",
+      "operationId": "post_admin_governance_legal_holds_id_release",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/governance/policies",
+      "operationId": "get_admin_governance_policies",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "PUT",
+      "route": "/admin/governance/policies",
+      "operationId": "put_admin_governance_policies",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/governance/policies/effective",
+      "operationId": "get_admin_governance_policies_effective",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/governance/purge/run",
+      "operationId": "post_admin_governance_purge_run",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/governance/purge/runs",
+      "operationId": "get_admin_governance_purge_runs",
+      "source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/iam/config",
+      "operationId": "get_admin_iam_config",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/iam/config",
+      "operationId": "patch_admin_iam_config",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/iam/mfa/setup",
+      "operationId": "post_admin_iam_mfa_setup",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/iam/mfa/verify",
+      "operationId": "post_admin_iam_mfa_verify",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/iam/status",
+      "operationId": "get_admin_iam_status",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/iam/test-connection",
+      "operationId": "post_admin_iam_test_connection",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/import",
+      "operationId": "post_admin_import",
+      "source": "apps/api/src/modules/import-export/import-export.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/import/export",
+      "operationId": "get_admin_import_export",
+      "source": "apps/api/src/modules/import-export/import-export.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/integrations/health",
+      "operationId": "get_admin_integrations_health",
+      "source": "apps/api/src/modules/integrations-health/integrations-health.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/integrations/health/mercadopago/webhook-test",
+      "operationId": "post_admin_integrations_health_mercadopago_webhook_test",
+      "source": "apps/api/src/modules/integrations-health/integrations-health.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/integrations/logs",
+      "operationId": "get_admin_integrations_logs",
+      "source": "apps/api/src/modules/integrations-health/integrations-health.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/license",
+      "operationId": "get_admin_license",
+      "source": "apps/api/src/modules/licensing/licensing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/license/apply",
+      "operationId": "post_admin_license_apply",
+      "source": "apps/api/src/modules/licensing/licensing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/license/enforcement",
+      "operationId": "get_admin_license_enforcement",
+      "source": "apps/api/src/modules/licensing/licensing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/license/generate",
+      "operationId": "post_admin_license_generate",
+      "source": "apps/api/src/modules/licensing/licensing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/ops",
+      "operationId": "get_admin_ops",
+      "source": "apps/api/src/modules/ops/ops.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/ops/diagnostic",
+      "operationId": "get_admin_ops_diagnostic",
+      "source": "apps/api/src/modules/ops/ops.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/plugins",
+      "operationId": "get_admin_plugins",
+      "source": "apps/api/src/modules/plugins/plugins.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/plugins",
+      "operationId": "post_admin_plugins",
+      "source": "apps/api/src/modules/plugins/plugins.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/plugins/request",
+      "operationId": "post_admin_plugins_request",
+      "source": "apps/api/src/modules/plugin-marketplace/plugin-marketplace.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/privacy/customers/:id/anonymize",
+      "operationId": "post_admin_privacy_customers_id_anonymize",
+      "source": "apps/api/src/modules/privacy/privacy.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/privacy/customers/:id/export",
+      "operationId": "get_admin_privacy_customers_id_export",
+      "source": "apps/api/src/modules/privacy/privacy.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/privacy/policies",
+      "operationId": "get_admin_privacy_policies",
+      "source": "apps/api/src/modules/privacy/privacy.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/admin/privacy/policies",
+      "operationId": "patch_admin_privacy_policies",
+      "source": "apps/api/src/modules/privacy/privacy.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/promos/coupons",
+      "operationId": "get_admin_promos_coupons",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/promos/coupons",
+      "operationId": "post_admin_promos_coupons",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/promos/coupons/validate",
+      "operationId": "post_admin_promos_coupons_validate",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/promos/giftcards",
+      "operationId": "get_admin_promos_giftcards",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/promos/giftcards",
+      "operationId": "post_admin_promos_giftcards",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/promos/giftcards/:code/balance",
+      "operationId": "get_admin_promos_giftcards_code_balance",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/promos/loyalty/rules",
+      "operationId": "get_admin_promos_loyalty_rules",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/promos/loyalty/rules",
+      "operationId": "post_admin_promos_loyalty_rules",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/promos/loyalty/tiers",
+      "operationId": "get_admin_promos_loyalty_tiers",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/promos/loyalty/tiers",
+      "operationId": "post_admin_promos_loyalty_tiers",
+      "source": "apps/api/src/modules/promos/promos.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/reconciliation/export",
+      "operationId": "get_admin_reconciliation_export",
+      "source": "apps/api/src/modules/reconciliation/reconciliation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/reconciliation/report",
+      "operationId": "get_admin_reconciliation_report",
+      "source": "apps/api/src/modules/reconciliation/reconciliation.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/search/config",
+      "operationId": "get_admin_search_config",
+      "source": "apps/api/src/modules/search/search.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/search/config",
+      "operationId": "post_admin_search_config",
+      "source": "apps/api/src/modules/search/search.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/search/reindex",
+      "operationId": "post_admin_search_reindex",
+      "source": "apps/api/src/modules/search/search.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/secrets",
+      "operationId": "get_admin_secrets",
+      "source": "apps/api/src/modules/secrets/secrets.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/secrets/rotate",
+      "operationId": "post_admin_secrets_rotate",
+      "source": "apps/api/src/modules/secrets/secrets.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/secrets/verify",
+      "operationId": "post_admin_secrets_verify",
+      "source": "apps/api/src/modules/secrets/secrets.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/starter-packs/apply",
+      "operationId": "post_admin_starter_packs_apply",
+      "source": "apps/api/src/modules/starter-packs/starter-packs.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/starter-packs/packages",
+      "operationId": "get_admin_starter_packs_packages",
+      "source": "apps/api/src/modules/starter-packs/starter-packs.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/support/customers",
+      "operationId": "post_admin_support_customers",
+      "source": "apps/api/src/modules/support/support.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/support/latency",
+      "operationId": "get_admin_support_latency",
+      "source": "apps/api/src/modules/support/support.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/support/smoke",
+      "operationId": "post_admin_support_smoke",
+      "source": "apps/api/src/modules/support/support.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/support/status",
+      "operationId": "get_admin_support_status",
+      "source": "apps/api/src/modules/support/support.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/support/summary",
+      "operationId": "get_admin_support_summary",
+      "source": "apps/api/src/modules/support/support.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/auth/login",
+      "operationId": "post_auth_login",
+      "source": "apps/api/src/modules/auth/auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/auth/sso/login",
+      "operationId": "post_auth_sso_login",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/billing/invoices",
+      "operationId": "post_billing_invoices",
+      "source": "apps/api/src/modules/billing/billing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/billing/invoices/:id/pdf",
+      "operationId": "get_billing_invoices_id_pdf",
+      "source": "apps/api/src/modules/billing/billing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/catalog/cart/sync",
+      "operationId": "post_catalog_cart_sync",
+      "source": "apps/api/src/modules/catalog/catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/catalog/categories",
+      "operationId": "get_catalog_categories",
+      "source": "apps/api/src/modules/catalog/catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/catalog/products",
+      "operationId": "get_catalog_products",
+      "source": "apps/api/src/modules/catalog/catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/catalog/products/:id",
+      "operationId": "get_catalog_products_id",
+      "source": "apps/api/src/modules/catalog/catalog.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/checkout/orders",
+      "operationId": "post_checkout_orders",
+      "source": "apps/api/src/modules/checkout/checkout.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/checkout/orders/:id/pdf",
+      "operationId": "get_checkout_orders_id_pdf",
+      "source": "apps/api/src/modules/checkout/checkout.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/checkout/orders/:id/status",
+      "operationId": "get_checkout_orders_id_status",
+      "source": "apps/api/src/modules/checkout/checkout.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/checkout/quote",
+      "operationId": "post_checkout_quote",
+      "source": "apps/api/src/modules/checkout/checkout.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/companies",
+      "operationId": "get_companies",
+      "source": "apps/api/src/modules/companies/companies.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/companies/:id",
+      "operationId": "get_companies_id",
+      "source": "apps/api/src/modules/companies/companies.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/compliance/consent",
+      "operationId": "post_compliance_consent",
+      "source": "apps/api/src/modules/compliance/compliance.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/compliance/public",
+      "operationId": "get_compliance_public",
+      "source": "apps/api/src/modules/compliance/compliance.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/customers",
+      "operationId": "get_customers",
+      "source": "apps/api/src/modules/customers/customers.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/customers",
+      "operationId": "post_customers",
+      "source": "apps/api/src/modules/customers/customers.controller.ts"
+    },
+    {
+      "method": "DELETE",
+      "route": "/customers/:id",
+      "operationId": "delete_customers_id",
+      "source": "apps/api/src/modules/customers/customers.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/customers/:id",
+      "operationId": "get_customers_id",
+      "source": "apps/api/src/modules/customers/customers.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/customers/:id",
+      "operationId": "patch_customers_id",
+      "source": "apps/api/src/modules/customers/customers.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/dashboard/export.csv",
+      "operationId": "get_dashboard_export.csv",
+      "source": "apps/api/src/modules/dashboard/dashboard.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/dashboard/export.xlsx",
+      "operationId": "get_dashboard_export.xlsx",
+      "source": "apps/api/src/modules/dashboard/dashboard.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/dashboard/summary",
+      "operationId": "get_dashboard_summary",
+      "source": "apps/api/src/modules/dashboard/dashboard.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/developer/v1/categories",
+      "operationId": "get_developer_v1_categories",
+      "source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/developer/v1/pricelists",
+      "operationId": "get_developer_v1_pricelists",
+      "source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/developer/v1/products",
+      "operationId": "get_developer_v1_products",
+      "source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/developer/v1/stock/availability",
+      "operationId": "get_developer_v1_stock_availability",
+      "source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/events/ingest",
+      "operationId": "post_events_ingest",
+      "source": "apps/api/src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/events/schema",
+      "operationId": "get_events_schema",
+      "source": "apps/api/src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/experiments/assign",
+      "operationId": "get_experiments_assign",
+      "source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/experiments/event",
+      "operationId": "post_experiments_event",
+      "source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/fulfillment/orders",
+      "operationId": "get_fulfillment_orders",
+      "source": "apps/api/src/modules/fulfillment/fulfillment.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/fulfillment/orders/:id/status",
+      "operationId": "post_fulfillment_orders_id_status",
+      "source": "apps/api/src/modules/fulfillment/fulfillment.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/fx/latest",
+      "operationId": "get_fx_latest",
+      "source": "apps/api/src/modules/fx/fx.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/fx/range",
+      "operationId": "get_fx_range",
+      "source": "apps/api/src/modules/fx/fx.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/health",
+      "operationId": "get_health",
+      "source": "apps/api/src/modules/health/health.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/health/regions",
+      "operationId": "get_health_regions",
+      "source": "apps/api/src/modules/health/health.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/metrics",
+      "operationId": "get_metrics",
+      "source": "apps/api/src/modules/metrics/metrics.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/payments/mercadopago/preference",
+      "operationId": "post_payments_mercadopago_preference",
+      "source": "apps/api/src/modules/payments/mercadopago.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/plugins/ui",
+      "operationId": "get_plugins_ui",
+      "source": "apps/api/src/modules/plugins/plugins.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/portal/auth/login",
+      "operationId": "post_portal_auth_login",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/portal/email/inbound",
+      "operationId": "post_portal_email_inbound",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/portal/incidents",
+      "operationId": "get_portal_incidents",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/portal/integrations",
+      "operationId": "get_portal_integrations",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/portal/tickets",
+      "operationId": "get_portal_tickets",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/portal/tickets",
+      "operationId": "post_portal_tickets",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/portal/tickets/detail",
+      "operationId": "get_portal_tickets_detail",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/portal/tickets/diagnostic",
+      "operationId": "post_portal_tickets_diagnostic",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/portal/tickets/message",
+      "operationId": "post_portal_tickets_message",
+      "source": "apps/api/src/modules/support-portal/portal.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/products",
+      "operationId": "get_products",
+      "source": "apps/api/src/modules/products/products.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/products",
+      "operationId": "post_products",
+      "source": "apps/api/src/modules/products/products.controller.ts"
+    },
+    {
+      "method": "DELETE",
+      "route": "/products/:id",
+      "operationId": "delete_products_id",
+      "source": "apps/api/src/modules/products/products.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/products/:id",
+      "operationId": "get_products_id",
+      "source": "apps/api/src/modules/products/products.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/products/:id",
+      "operationId": "patch_products_id",
+      "source": "apps/api/src/modules/products/products.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/products/:id/image",
+      "operationId": "post_products_id_image",
+      "source": "apps/api/src/modules/products/products.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/public/edge/vitals",
+      "operationId": "post_public_edge_vitals",
+      "source": "apps/api/src/modules/edge-cache/edge-cache.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/purchasing/orders",
+      "operationId": "get_purchasing_orders",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/purchasing/orders",
+      "operationId": "post_purchasing_orders",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/purchasing/orders/:id/approve",
+      "operationId": "post_purchasing_orders_id_approve",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/purchasing/orders/:id/receive",
+      "operationId": "post_purchasing_orders_id_receive",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/purchasing/reports/accounts-payable",
+      "operationId": "get_purchasing_reports_accounts_payable",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/purchasing/reports/by-supplier",
+      "operationId": "get_purchasing_reports_by_supplier",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/purchasing/reports/cost-variance",
+      "operationId": "get_purchasing_reports_cost_variance",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/purchasing/supplier-invoices",
+      "operationId": "post_purchasing_supplier_invoices",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/purchasing/suppliers",
+      "operationId": "get_purchasing_suppliers",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/purchasing/suppliers",
+      "operationId": "post_purchasing_suppliers",
+      "source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/quotes",
+      "operationId": "get_quotes",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/quotes",
+      "operationId": "post_quotes",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "DELETE",
+      "route": "/quotes/:id",
+      "operationId": "delete_quotes_id",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/quotes/:id",
+      "operationId": "get_quotes_id",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "PUT",
+      "route": "/quotes/:id",
+      "operationId": "put_quotes_id",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/quotes/:id/convert",
+      "operationId": "post_quotes_id_convert",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/quotes/:id/pdf",
+      "operationId": "get_quotes_id_pdf",
+      "source": "apps/api/src/modules/quotes/quotes.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/recommendations",
+      "operationId": "get_recommendations",
+      "source": "apps/api/src/modules/recommendations/recommendations.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/sales",
+      "operationId": "post_sales",
+      "source": "apps/api/src/modules/sales/sales.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/sales/offline/catalog",
+      "operationId": "get_sales_offline_catalog",
+      "source": "apps/api/src/modules/sales/sales.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/sales/offline/sync",
+      "operationId": "post_sales_offline_sync",
+      "source": "apps/api/src/modules/sales/sales.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/sales/products",
+      "operationId": "get_sales_products",
+      "source": "apps/api/src/modules/sales/sales.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/scim/v2/Users",
+      "operationId": "post_scim_v2_Users",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/scim/v2/Users/:id",
+      "operationId": "patch_scim_v2_Users_id",
+      "source": "apps/api/src/modules/iam/iam.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/search",
+      "operationId": "get_search",
+      "source": "apps/api/src/modules/search/search.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/setup/initialize",
+      "operationId": "post_setup_initialize",
+      "source": "apps/api/src/modules/setup/setup.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/setup/status",
+      "operationId": "get_setup_status",
+      "source": "apps/api/src/modules/setup/setup.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/items",
+      "operationId": "get_stock_items",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/stock/items",
+      "operationId": "post_stock_items",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/stock/items/:id",
+      "operationId": "patch_stock_items_id",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/locations",
+      "operationId": "get_stock_locations",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/stock/locations",
+      "operationId": "post_stock_locations",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/lookup",
+      "operationId": "get_stock_lookup",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/lots/alerts",
+      "operationId": "get_stock_lots_alerts",
+      "source": "apps/api/src/modules/lots/lots.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/lots/alerts/windows",
+      "operationId": "get_stock_lots_alerts_windows",
+      "source": "apps/api/src/modules/lots/lots.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/lots/config",
+      "operationId": "get_stock_lots_config",
+      "source": "apps/api/src/modules/lots/lots.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/stock/lots/config",
+      "operationId": "patch_stock_lots_config",
+      "source": "apps/api/src/modules/lots/lots.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/lots/product/:productId",
+      "operationId": "get_stock_lots_product_productId",
+      "source": "apps/api/src/modules/lots/lots.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/stock/lots/rotation",
+      "operationId": "get_stock_lots_rotation",
+      "source": "apps/api/src/modules/lots/lots.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/stock/movements/receive",
+      "operationId": "post_stock_movements_receive",
+      "source": "apps/api/src/modules/stock/stock.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/themes",
+      "operationId": "patch_themes",
+      "source": "apps/api/src/modules/themes/themes.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/themes/public",
+      "operationId": "get_themes_public",
+      "source": "apps/api/src/modules/themes/themes.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/users",
+      "operationId": "get_users",
+      "source": "apps/api/src/modules/users/users.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/users",
+      "operationId": "post_users",
+      "source": "apps/api/src/modules/users/users.controller.ts"
+    },
+    {
+      "method": "DELETE",
+      "route": "/users/:id",
+      "operationId": "delete_users_id",
+      "source": "apps/api/src/modules/users/users.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/users/:id",
+      "operationId": "get_users_id",
+      "source": "apps/api/src/modules/users/users.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "route": "/users/:id",
+      "operationId": "patch_users_id",
+      "source": "apps/api/src/modules/users/users.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/version",
+      "operationId": "get_version",
+      "source": "apps/api/src/modules/health/health.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/webhooks/email",
+      "operationId": "post_webhooks_email",
+      "source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/webhooks/mercadopago",
+      "operationId": "post_webhooks_mercadopago",
+      "source": "apps/api/src/modules/payments/mercadopago.webhook.controller.ts"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-02-12T16:39:05.507Z",
+  "entries": [
+    {
+      "sha": "673d1e2",
+      "date": "2026-02-12",
+      "subject": "feat(api): add public developer api keys scopes and webhooks"
+    },
+    {
+      "sha": "720dcd8",
+      "date": "2026-02-12",
+      "subject": "feat(copilot): add secure AI copilot with approval workflow"
+    },
+    {
+      "sha": "82db8c2",
+      "date": "2026-02-12",
+      "subject": "feat(edge): add CDN cache policy, invalidation events and vitals reporting"
+    },
+    {
+      "sha": "17fc190",
+      "date": "2026-02-12",
+      "subject": "feat(multiregion): add optional regional failover and read fallback"
+    },
+    {
+      "sha": "62cac79",
+      "date": "2026-02-12",
+      "subject": "feat(governance): add retention, legal hold and DLP controls"
+    },
+    {
+      "sha": "6cfa41a",
+      "date": "2026-02-12",
+      "subject": "feat(fraud): add anomaly scoring, review queue and alerts"
+    },
+    {
+      "sha": "7cc8261",
+      "date": "2026-02-12",
+      "subject": "feat(stock): implement lots, expiry alerts and FEFO picking"
+    },
+    {
+      "sha": "667745a",
+      "date": "2026-02-12",
+      "subject": "feat: add purchasing module with suppliers, PO flow and cost methods"
+    },
+    {
+      "sha": "2a4cebb",
+      "date": "2026-02-12",
+      "subject": "feat: add tamper-evident immutable audit ledger and evidence export"
+    },
+    {
+      "sha": "0080151",
+      "date": "2026-02-12",
+      "subject": "feat: add enterprise IAM with SSO MFA and SCIM"
+    },
+    {
+      "sha": "9dac8a7",
+      "date": "2026-02-12",
+      "subject": "feat: add advanced billing trials, usage tiers and enforcer"
+    },
+    {
+      "sha": "a985e01",
+      "date": "2026-02-11",
+      "subject": "feat: add api contract testing with versioning and deprecation"
+    },
+    {
+      "sha": "b2056cd",
+      "date": "2026-02-11",
+      "subject": "feat: recommendations engine"
+    },
+    {
+      "sha": "78a3c81",
+      "date": "2026-02-11",
+      "subject": "feat: search engine and mobile ops"
+    },
+    {
+      "sha": "c2e95e7",
+      "date": "2026-02-11",
+      "subject": "Drinklo Software"
+    }
+  ]
+}

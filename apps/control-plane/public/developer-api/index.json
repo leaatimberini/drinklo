@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-02-12T16:39:05.461Z",
+  "versions": [
+    {
+      "version": "v1",
+      "endpointCount": 229,
+      "title": "ERP API v1"
+    },
+    {
+      "version": "v2",
+      "endpointCount": 229,
+      "title": "ERP API v2"
+    }
+  ]
+}

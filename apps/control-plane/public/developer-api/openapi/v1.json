@@ -1,0 +1,2459 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ERP API v1",
+    "version": "v1",
+    "description": "Deprecated on 2026-02-12. Sunset on 2026-08-31. Migrate to v2."
+  },
+  "paths": {
+    "/admin/experiments": {
+      "get": {
+        "operationId": "get_admin_experiments",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_experiments",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+      }
+    },
+    "/admin/experiments/:id/variants": {
+      "post": {
+        "operationId": "post_admin_experiments_id_variants",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+      }
+    },
+    "/admin/experiments/:id/report": {
+      "get": {
+        "operationId": "get_admin_experiments_id_report",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+      }
+    },
+    "/experiments/assign": {
+      "get": {
+        "operationId": "get_experiments_assign",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+      }
+    },
+    "/experiments/event": {
+      "post": {
+        "operationId": "post_experiments_event",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ab-testing/ab-testing.controller.ts"
+      }
+    },
+    "/admin/copilot/chat": {
+      "post": {
+        "operationId": "post_admin_copilot_chat",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+      }
+    },
+    "/admin/copilot/proposals": {
+      "get": {
+        "operationId": "get_admin_copilot_proposals",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+      }
+    },
+    "/admin/copilot/proposals/:id/approve": {
+      "post": {
+        "operationId": "post_admin_copilot_proposals_id_approve",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "post_auth_login",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/auth/auth.controller.ts"
+      }
+    },
+    "/admin/automation/segments": {
+      "get": {
+        "operationId": "get_admin_automation_segments",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_automation_segments",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/campaigns": {
+      "get": {
+        "operationId": "get_admin_automation_campaigns",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_automation_campaigns",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/triggers": {
+      "get": {
+        "operationId": "get_admin_automation_triggers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_automation_triggers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/triggers/:id": {
+      "patch": {
+        "operationId": "patch_admin_automation_triggers_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/flows": {
+      "get": {
+        "operationId": "get_admin_automation_flows",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_automation_flows",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/flows/:id": {
+      "get": {
+        "operationId": "get_admin_automation_flows_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_admin_automation_flows_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/flows/:id/actions": {
+      "post": {
+        "operationId": "post_admin_automation_flows_id_actions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/actions/:id": {
+      "patch": {
+        "operationId": "patch_admin_automation_actions_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/actions/:id/delete": {
+      "post": {
+        "operationId": "post_admin_automation_actions_id_delete",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/suppressions": {
+      "get": {
+        "operationId": "get_admin_automation_suppressions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_automation_suppressions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/flows/:id/test-run": {
+      "post": {
+        "operationId": "post_admin_automation_flows_id_test_run",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/admin/automation/flows/:id/metrics": {
+      "get": {
+        "operationId": "get_admin_automation_flows_id_metrics",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_automation_flows_id_metrics",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/automation/automation.controller.ts"
+      }
+    },
+    "/billing/invoices": {
+      "post": {
+        "operationId": "post_billing_invoices",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/invoices/:id/pdf": {
+      "get": {
+        "operationId": "get_billing_invoices_id_pdf",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/admin/bot-audit": {
+      "post": {
+        "operationId": "post_admin_bot_audit",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/bot-audit/bot-audit.controller.ts"
+      }
+    },
+    "/admin/branding/export": {
+      "post": {
+        "operationId": "post_admin_branding_export",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/branding/branding.controller.ts"
+      }
+    },
+    "/admin/branding/import": {
+      "post": {
+        "operationId": "post_admin_branding_import",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/branding/branding.controller.ts"
+      }
+    },
+    "/admin/branding/logo": {
+      "post": {
+        "operationId": "post_admin_branding_logo",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/branding/branding.controller.ts"
+      }
+    },
+    "/admin/branding/favicon": {
+      "post": {
+        "operationId": "post_admin_branding_favicon",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/branding/branding.controller.ts"
+      }
+    },
+    "/catalog/categories": {
+      "get": {
+        "operationId": "get_catalog_categories",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/catalog/catalog.controller.ts"
+      }
+    },
+    "/catalog/products": {
+      "get": {
+        "operationId": "get_catalog_products",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/catalog/catalog.controller.ts"
+      }
+    },
+    "/catalog/products/:id": {
+      "get": {
+        "operationId": "get_catalog_products_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/catalog/catalog.controller.ts"
+      }
+    },
+    "/catalog/cart/sync": {
+      "post": {
+        "operationId": "post_catalog_cart_sync",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/catalog/catalog.controller.ts"
+      }
+    },
+    "/checkout/quote": {
+      "post": {
+        "operationId": "post_checkout_quote",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/checkout/checkout.controller.ts"
+      }
+    },
+    "/checkout/orders": {
+      "post": {
+        "operationId": "post_checkout_orders",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/checkout/checkout.controller.ts"
+      }
+    },
+    "/checkout/orders/:id/status": {
+      "get": {
+        "operationId": "get_checkout_orders_id_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/checkout/checkout.controller.ts"
+      }
+    },
+    "/checkout/orders/:id/pdf": {
+      "get": {
+        "operationId": "get_checkout_orders_id_pdf",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/checkout/checkout.controller.ts"
+      }
+    },
+    "/companies": {
+      "get": {
+        "operationId": "get_companies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/companies/companies.controller.ts"
+      }
+    },
+    "/companies/:id": {
+      "get": {
+        "operationId": "get_companies_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/companies/companies.controller.ts"
+      }
+    },
+    "/compliance/public": {
+      "get": {
+        "operationId": "get_compliance_public",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/compliance/compliance.controller.ts"
+      }
+    },
+    "/compliance/consent": {
+      "post": {
+        "operationId": "post_compliance_consent",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/compliance/compliance.controller.ts"
+      }
+    },
+    "/admin/compliance": {
+      "get": {
+        "operationId": "get_admin_compliance",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/compliance/compliance.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_admin_compliance",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/compliance/compliance.controller.ts"
+      }
+    },
+    "/customers": {
+      "get": {
+        "operationId": "get_customers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/customers/customers.controller.ts"
+      },
+      "post": {
+        "operationId": "post_customers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/customers/customers.controller.ts"
+      }
+    },
+    "/customers/:id": {
+      "get": {
+        "operationId": "get_customers_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/customers/customers.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_customers_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/customers/customers.controller.ts"
+      },
+      "delete": {
+        "operationId": "delete_customers_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/customers/customers.controller.ts"
+      }
+    },
+    "/dashboard/summary": {
+      "get": {
+        "operationId": "get_dashboard_summary",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/dashboard/dashboard.controller.ts"
+      }
+    },
+    "/dashboard/export.csv": {
+      "get": {
+        "operationId": "get_dashboard_export.csv",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/dashboard/dashboard.controller.ts"
+      }
+    },
+    "/dashboard/export.xlsx": {
+      "get": {
+        "operationId": "get_dashboard_export.xlsx",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/dashboard/dashboard.controller.ts"
+      }
+    },
+    "/admin/governance/policies/effective": {
+      "get": {
+        "operationId": "get_admin_governance_policies_effective",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      }
+    },
+    "/admin/governance/policies": {
+      "get": {
+        "operationId": "get_admin_governance_policies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      },
+      "put": {
+        "operationId": "put_admin_governance_policies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      }
+    },
+    "/admin/governance/legal-holds": {
+      "post": {
+        "operationId": "post_admin_governance_legal_holds",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      },
+      "get": {
+        "operationId": "get_admin_governance_legal_holds",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      }
+    },
+    "/admin/governance/legal-holds/:id/release": {
+      "post": {
+        "operationId": "post_admin_governance_legal_holds_id_release",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      }
+    },
+    "/admin/governance/purge/run": {
+      "post": {
+        "operationId": "post_admin_governance_purge_run",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      }
+    },
+    "/admin/governance/purge/runs": {
+      "get": {
+        "operationId": "get_admin_governance_purge_runs",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/data-governance/data-governance.controller.ts"
+      }
+    },
+    "/admin/developer-api/scopes": {
+      "get": {
+        "operationId": "get_admin_developer_api_scopes",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/admin/developer-api/keys": {
+      "get": {
+        "operationId": "get_admin_developer_api_keys",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_developer_api_keys",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/admin/developer-api/keys/:id": {
+      "patch": {
+        "operationId": "patch_admin_developer_api_keys_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/admin/developer-api/keys/:id/revoke": {
+      "post": {
+        "operationId": "post_admin_developer_api_keys_id_revoke",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/admin/developer-api/usage": {
+      "get": {
+        "operationId": "get_admin_developer_api_usage",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/admin/developer-api/webhooks": {
+      "get": {
+        "operationId": "get_admin_developer_api_webhooks",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_developer_api_webhooks",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/admin/developer-api/webhooks/:id/revoke": {
+      "post": {
+        "operationId": "post_admin_developer_api_webhooks_id_revoke",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-admin.controller.ts"
+      }
+    },
+    "/developer/v1/products": {
+      "get": {
+        "operationId": "get_developer_v1_products",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+      }
+    },
+    "/developer/v1/categories": {
+      "get": {
+        "operationId": "get_developer_v1_categories",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+      }
+    },
+    "/developer/v1/pricelists": {
+      "get": {
+        "operationId": "get_developer_v1_pricelists",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+      }
+    },
+    "/developer/v1/stock/availability": {
+      "get": {
+        "operationId": "get_developer_v1_stock_availability",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/developer-api/developer-api-public.controller.ts"
+      }
+    },
+    "/admin/email-domain": {
+      "get": {
+        "operationId": "get_admin_email_domain",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_admin_email_domain",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+      }
+    },
+    "/admin/email-domain/confirm": {
+      "post": {
+        "operationId": "post_admin_email_domain_confirm",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+      }
+    },
+    "/webhooks/email": {
+      "post": {
+        "operationId": "post_webhooks_email",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/domain-email/domain-email.controller.ts"
+      }
+    },
+    "/public/edge/vitals": {
+      "post": {
+        "operationId": "post_public_edge_vitals",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/edge-cache/edge-cache.controller.ts"
+      }
+    },
+    "/admin/email-templates": {
+      "get": {
+        "operationId": "get_admin_email_templates",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+      }
+    },
+    "/admin/email-templates/:id": {
+      "get": {
+        "operationId": "get_admin_email_templates_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_admin_email_templates_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+      }
+    },
+    "/admin/email-templates/generate": {
+      "post": {
+        "operationId": "post_admin_email_templates_generate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+      }
+    },
+    "/admin/email-templates/:id/approve": {
+      "post": {
+        "operationId": "post_admin_email_templates_id_approve",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+      }
+    },
+    "/admin/email-templates/:id/send-test": {
+      "post": {
+        "operationId": "post_admin_email_templates_id_send_test",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/email-templates/email-templates.controller.ts"
+      }
+    },
+    "/events/ingest": {
+      "post": {
+        "operationId": "post_events_ingest",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/events/events.controller.ts"
+      }
+    },
+    "/admin/events/stats": {
+      "get": {
+        "operationId": "get_admin_events_stats",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/events/events.controller.ts"
+      }
+    },
+    "/events/schema": {
+      "get": {
+        "operationId": "get_events_schema",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/events/events.controller.ts"
+      }
+    },
+    "/admin/fraud/rules": {
+      "get": {
+        "operationId": "get_admin_fraud_rules",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fraud/fraud.controller.ts"
+      }
+    },
+    "/admin/fraud/rules/:code": {
+      "patch": {
+        "operationId": "patch_admin_fraud_rules_code",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fraud/fraud.controller.ts"
+      }
+    },
+    "/admin/fraud/queue": {
+      "get": {
+        "operationId": "get_admin_fraud_queue",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fraud/fraud.controller.ts"
+      }
+    },
+    "/admin/fraud/review/:id": {
+      "post": {
+        "operationId": "post_admin_fraud_review_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fraud/fraud.controller.ts"
+      }
+    },
+    "/admin/fraud/evaluate/order/:orderId": {
+      "post": {
+        "operationId": "post_admin_fraud_evaluate_order_orderId",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fraud/fraud.controller.ts"
+      }
+    },
+    "/fulfillment/orders": {
+      "get": {
+        "operationId": "get_fulfillment_orders",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fulfillment/fulfillment.controller.ts"
+      }
+    },
+    "/fulfillment/orders/:id/status": {
+      "post": {
+        "operationId": "post_fulfillment_orders_id_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fulfillment/fulfillment.controller.ts"
+      }
+    },
+    "/fx/latest": {
+      "get": {
+        "operationId": "get_fx_latest",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fx/fx.controller.ts"
+      }
+    },
+    "/fx/range": {
+      "get": {
+        "operationId": "get_fx_range",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/fx/fx.controller.ts"
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/health/health.controller.ts"
+      }
+    },
+    "/version": {
+      "get": {
+        "operationId": "get_version",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/health/health.controller.ts"
+      }
+    },
+    "/health/regions": {
+      "get": {
+        "operationId": "get_health_regions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/health/health.controller.ts"
+      }
+    },
+    "/admin/iam/config": {
+      "get": {
+        "operationId": "get_admin_iam_config",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_admin_iam_config",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/admin/iam/test-connection": {
+      "post": {
+        "operationId": "post_admin_iam_test_connection",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/admin/iam/mfa/setup": {
+      "post": {
+        "operationId": "post_admin_iam_mfa_setup",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/admin/iam/mfa/verify": {
+      "post": {
+        "operationId": "post_admin_iam_mfa_verify",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/auth/sso/login": {
+      "post": {
+        "operationId": "post_auth_sso_login",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/scim/v2/Users": {
+      "post": {
+        "operationId": "post_scim_v2_Users",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/scim/v2/Users/:id": {
+      "patch": {
+        "operationId": "patch_scim_v2_Users_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/admin/iam/status": {
+      "get": {
+        "operationId": "get_admin_iam_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/iam/iam.controller.ts"
+      }
+    },
+    "/admin/audit": {
+      "get": {
+        "operationId": "get_admin_audit",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
+      }
+    },
+    "/admin/audit/verify": {
+      "get": {
+        "operationId": "get_admin_audit_verify",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
+      }
+    },
+    "/admin/audit/evidence-pack": {
+      "get": {
+        "operationId": "get_admin_audit_evidence_pack",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
+      }
+    },
+    "/admin/import": {
+      "post": {
+        "operationId": "post_admin_import",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      }
+    },
+    "/admin/import/export": {
+      "get": {
+        "operationId": "get_admin_import_export",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      }
+    },
+    "/admin/integrations/health": {
+      "get": {
+        "operationId": "get_admin_integrations_health",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integrations-health/integrations-health.controller.ts"
+      }
+    },
+    "/admin/integrations/health/mercadopago/webhook-test": {
+      "post": {
+        "operationId": "post_admin_integrations_health_mercadopago_webhook_test",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integrations-health/integrations-health.controller.ts"
+      }
+    },
+    "/admin/integrations/logs": {
+      "get": {
+        "operationId": "get_admin_integrations_logs",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integrations-health/integrations-health.controller.ts"
+      }
+    },
+    "/admin/license": {
+      "get": {
+        "operationId": "get_admin_license",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/licensing/licensing.controller.ts"
+      }
+    },
+    "/admin/license/apply": {
+      "post": {
+        "operationId": "post_admin_license_apply",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/licensing/licensing.controller.ts"
+      }
+    },
+    "/admin/license/generate": {
+      "post": {
+        "operationId": "post_admin_license_generate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/licensing/licensing.controller.ts"
+      }
+    },
+    "/admin/license/enforcement": {
+      "get": {
+        "operationId": "get_admin_license_enforcement",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/licensing/licensing.controller.ts"
+      }
+    },
+    "/stock/lots/config": {
+      "get": {
+        "operationId": "get_stock_lots_config",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/lots/lots.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_stock_lots_config",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/lots/lots.controller.ts"
+      }
+    },
+    "/stock/lots/alerts": {
+      "get": {
+        "operationId": "get_stock_lots_alerts",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/lots/lots.controller.ts"
+      }
+    },
+    "/stock/lots/alerts/windows": {
+      "get": {
+        "operationId": "get_stock_lots_alerts_windows",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/lots/lots.controller.ts"
+      }
+    },
+    "/stock/lots/rotation": {
+      "get": {
+        "operationId": "get_stock_lots_rotation",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/lots/lots.controller.ts"
+      }
+    },
+    "/stock/lots/product/:productId": {
+      "get": {
+        "operationId": "get_stock_lots_product_productId",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/lots/lots.controller.ts"
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "get_metrics",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/metrics/metrics.controller.ts"
+      }
+    },
+    "/admin/ops": {
+      "get": {
+        "operationId": "get_admin_ops",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ops/ops.controller.ts"
+      }
+    },
+    "/admin/ops/diagnostic": {
+      "get": {
+        "operationId": "get_admin_ops_diagnostic",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ops/ops.controller.ts"
+      }
+    },
+    "/payments/mercadopago/preference": {
+      "post": {
+        "operationId": "post_payments_mercadopago_preference",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/payments/mercadopago.controller.ts"
+      }
+    },
+    "/webhooks/mercadopago": {
+      "post": {
+        "operationId": "post_webhooks_mercadopago",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/payments/mercadopago.webhook.controller.ts"
+      }
+    },
+    "/admin/plugins/request": {
+      "post": {
+        "operationId": "post_admin_plugins_request",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plugin-marketplace/plugin-marketplace.controller.ts"
+      }
+    },
+    "/plugins/ui": {
+      "get": {
+        "operationId": "get_plugins_ui",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plugins/plugins.controller.ts"
+      }
+    },
+    "/admin/plugins": {
+      "get": {
+        "operationId": "get_admin_plugins",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plugins/plugins.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_plugins",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plugins/plugins.controller.ts"
+      }
+    },
+    "/admin/privacy/customers/:id/export": {
+      "get": {
+        "operationId": "get_admin_privacy_customers_id_export",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/privacy/privacy.controller.ts"
+      }
+    },
+    "/admin/privacy/customers/:id/anonymize": {
+      "post": {
+        "operationId": "post_admin_privacy_customers_id_anonymize",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/privacy/privacy.controller.ts"
+      }
+    },
+    "/admin/privacy/policies": {
+      "get": {
+        "operationId": "get_admin_privacy_policies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/privacy/privacy.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_admin_privacy_policies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/privacy/privacy.controller.ts"
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "get_products",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/products/products.controller.ts"
+      },
+      "post": {
+        "operationId": "post_products",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/products/products.controller.ts"
+      }
+    },
+    "/products/:id": {
+      "get": {
+        "operationId": "get_products_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/products/products.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_products_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/products/products.controller.ts"
+      },
+      "delete": {
+        "operationId": "delete_products_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/products/products.controller.ts"
+      }
+    },
+    "/products/:id/image": {
+      "post": {
+        "operationId": "post_products_id_image",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/products/products.controller.ts"
+      }
+    },
+    "/admin/promos/coupons": {
+      "get": {
+        "operationId": "get_admin_promos_coupons",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_promos_coupons",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      }
+    },
+    "/admin/promos/coupons/validate": {
+      "post": {
+        "operationId": "post_admin_promos_coupons_validate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      }
+    },
+    "/admin/promos/giftcards": {
+      "get": {
+        "operationId": "get_admin_promos_giftcards",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_promos_giftcards",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      }
+    },
+    "/admin/promos/giftcards/:code/balance": {
+      "get": {
+        "operationId": "get_admin_promos_giftcards_code_balance",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      }
+    },
+    "/admin/promos/loyalty/tiers": {
+      "get": {
+        "operationId": "get_admin_promos_loyalty_tiers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_promos_loyalty_tiers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      }
+    },
+    "/admin/promos/loyalty/rules": {
+      "get": {
+        "operationId": "get_admin_promos_loyalty_rules",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_promos_loyalty_rules",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/promos/promos.controller.ts"
+      }
+    },
+    "/purchasing/suppliers": {
+      "get": {
+        "operationId": "get_purchasing_suppliers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      },
+      "post": {
+        "operationId": "post_purchasing_suppliers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/orders": {
+      "get": {
+        "operationId": "get_purchasing_orders",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      },
+      "post": {
+        "operationId": "post_purchasing_orders",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/orders/:id/approve": {
+      "post": {
+        "operationId": "post_purchasing_orders_id_approve",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/orders/:id/receive": {
+      "post": {
+        "operationId": "post_purchasing_orders_id_receive",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/supplier-invoices": {
+      "post": {
+        "operationId": "post_purchasing_supplier_invoices",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/reports/accounts-payable": {
+      "get": {
+        "operationId": "get_purchasing_reports_accounts_payable",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/reports/by-supplier": {
+      "get": {
+        "operationId": "get_purchasing_reports_by_supplier",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/purchasing/reports/cost-variance": {
+      "get": {
+        "operationId": "get_purchasing_reports_cost_variance",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/purchasing/purchasing.controller.ts"
+      }
+    },
+    "/quotes": {
+      "get": {
+        "operationId": "get_quotes",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      },
+      "post": {
+        "operationId": "post_quotes",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      }
+    },
+    "/quotes/:id": {
+      "get": {
+        "operationId": "get_quotes_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      },
+      "put": {
+        "operationId": "put_quotes_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      },
+      "delete": {
+        "operationId": "delete_quotes_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      }
+    },
+    "/quotes/:id/convert": {
+      "post": {
+        "operationId": "post_quotes_id_convert",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      }
+    },
+    "/quotes/:id/pdf": {
+      "get": {
+        "operationId": "get_quotes_id_pdf",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/quotes/quotes.controller.ts"
+      }
+    },
+    "/recommendations": {
+      "get": {
+        "operationId": "get_recommendations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/recommendations/recommendations.controller.ts"
+      }
+    },
+    "/admin/reconciliation/report": {
+      "get": {
+        "operationId": "get_admin_reconciliation_report",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/reconciliation/reconciliation.controller.ts"
+      }
+    },
+    "/admin/reconciliation/export": {
+      "get": {
+        "operationId": "get_admin_reconciliation_export",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/reconciliation/reconciliation.controller.ts"
+      }
+    },
+    "/sales/products": {
+      "get": {
+        "operationId": "get_sales_products",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sales/sales.controller.ts"
+      }
+    },
+    "/sales": {
+      "post": {
+        "operationId": "post_sales",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sales/sales.controller.ts"
+      }
+    },
+    "/sales/offline/catalog": {
+      "get": {
+        "operationId": "get_sales_offline_catalog",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sales/sales.controller.ts"
+      }
+    },
+    "/sales/offline/sync": {
+      "post": {
+        "operationId": "post_sales_offline_sync",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sales/sales.controller.ts"
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "get_search",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/search/search.controller.ts"
+      }
+    },
+    "/admin/search/config": {
+      "get": {
+        "operationId": "get_admin_search_config",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/search/search.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_search_config",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/search/search.controller.ts"
+      }
+    },
+    "/admin/search/reindex": {
+      "post": {
+        "operationId": "post_admin_search_reindex",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/search/search.controller.ts"
+      }
+    },
+    "/admin/secrets": {
+      "get": {
+        "operationId": "get_admin_secrets",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/secrets/secrets.controller.ts"
+      }
+    },
+    "/admin/secrets/rotate": {
+      "post": {
+        "operationId": "post_admin_secrets_rotate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/secrets/secrets.controller.ts"
+      }
+    },
+    "/admin/secrets/verify": {
+      "post": {
+        "operationId": "post_admin_secrets_verify",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/secrets/secrets.controller.ts"
+      }
+    },
+    "/setup/status": {
+      "get": {
+        "operationId": "get_setup_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/setup/setup.controller.ts"
+      }
+    },
+    "/setup/initialize": {
+      "post": {
+        "operationId": "post_setup_initialize",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/setup/setup.controller.ts"
+      }
+    },
+    "/admin/starter-packs/apply": {
+      "post": {
+        "operationId": "post_admin_starter_packs_apply",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/starter-packs/starter-packs.controller.ts"
+      }
+    },
+    "/admin/starter-packs/packages": {
+      "get": {
+        "operationId": "get_admin_starter_packs_packages",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/starter-packs/starter-packs.controller.ts"
+      }
+    },
+    "/stock/locations": {
+      "get": {
+        "operationId": "get_stock_locations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      },
+      "post": {
+        "operationId": "post_stock_locations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      }
+    },
+    "/stock/items": {
+      "get": {
+        "operationId": "get_stock_items",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      },
+      "post": {
+        "operationId": "post_stock_items",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      }
+    },
+    "/stock/lookup": {
+      "get": {
+        "operationId": "get_stock_lookup",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      }
+    },
+    "/stock/movements/receive": {
+      "post": {
+        "operationId": "post_stock_movements_receive",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      }
+    },
+    "/stock/items/:id": {
+      "patch": {
+        "operationId": "patch_stock_items_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      }
+    },
+    "/admin/support/summary": {
+      "get": {
+        "operationId": "get_admin_support_summary",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support/support.controller.ts"
+      }
+    },
+    "/admin/support/status": {
+      "get": {
+        "operationId": "get_admin_support_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support/support.controller.ts"
+      }
+    },
+    "/admin/support/latency": {
+      "get": {
+        "operationId": "get_admin_support_latency",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support/support.controller.ts"
+      }
+    },
+    "/admin/support/smoke": {
+      "post": {
+        "operationId": "post_admin_support_smoke",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support/support.controller.ts"
+      }
+    },
+    "/admin/support/customers": {
+      "post": {
+        "operationId": "post_admin_support_customers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support/support.controller.ts"
+      }
+    },
+    "/portal/auth/login": {
+      "post": {
+        "operationId": "post_portal_auth_login",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/tickets": {
+      "get": {
+        "operationId": "get_portal_tickets",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      },
+      "post": {
+        "operationId": "post_portal_tickets",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/tickets/detail": {
+      "get": {
+        "operationId": "get_portal_tickets_detail",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/tickets/message": {
+      "post": {
+        "operationId": "post_portal_tickets_message",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/tickets/diagnostic": {
+      "post": {
+        "operationId": "post_portal_tickets_diagnostic",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/incidents": {
+      "get": {
+        "operationId": "get_portal_incidents",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/integrations": {
+      "get": {
+        "operationId": "get_portal_integrations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/portal/email/inbound": {
+      "post": {
+        "operationId": "post_portal_email_inbound",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/themes/public": {
+      "get": {
+        "operationId": "get_themes_public",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/themes/themes.controller.ts"
+      }
+    },
+    "/themes": {
+      "patch": {
+        "operationId": "patch_themes",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/themes/themes.controller.ts"
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "get_users",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/users/users.controller.ts"
+      },
+      "post": {
+        "operationId": "post_users",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/users/users.controller.ts"
+      }
+    },
+    "/users/:id": {
+      "get": {
+        "operationId": "get_users_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/users/users.controller.ts"
+      },
+      "patch": {
+        "operationId": "patch_users_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/users/users.controller.ts"
+      },
+      "delete": {
+        "operationId": "delete_users_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/users/users.controller.ts"
+      }
+    },
+    "/admin/bi/cohorts": {
+      "get": {
+        "operationId": "get_admin_bi_cohorts",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+      }
+    },
+    "/admin/bi/retention": {
+      "get": {
+        "operationId": "get_admin_bi_retention",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+      }
+    },
+    "/admin/bi/ltv": {
+      "get": {
+        "operationId": "get_admin_bi_ltv",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+      }
+    },
+    "/admin/bi/rfm": {
+      "get": {
+        "operationId": "get_admin_bi_rfm",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+      }
+    },
+    "/admin/bi/etl/run": {
+      "post": {
+        "operationId": "post_admin_bi_etl_run",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/warehouse/warehouse.controller.ts"
+      }
+    }
+  },
+  "x-api-version": 1,
+  "x-default-version": 1,
+  "x-supported-versions": [
+    1,
+    2
+  ],
+  "x-deprecation": {
+    "deprecatedOn": "2026-02-12",
+    "sunsetOn": "2026-08-31",
+    "successor": 2,
+    "note": "Version 1 remains supported during migration window."
+  }
+}
