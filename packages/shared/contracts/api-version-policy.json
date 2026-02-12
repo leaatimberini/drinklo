@@ -1,0 +1,13 @@
+﻿{
+  "supportedVersions": [1, 2],
+  "defaultVersion": 1,
+  "latestVersion": 2,
+  "deprecations": {
+    "1": {
+      "deprecatedOn": "2026-02-12",
+      "sunsetOn": "2026-08-31",
+      "successor": 2,
+      "note": "Version 1 remains supported during migration window."
+    }
+  }
+}

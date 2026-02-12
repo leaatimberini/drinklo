@@ -1,0 +1,24 @@
+﻿{
+  "schemaVersion": 1,
+  "requiredEnvelopeFields": [
+    "id",
+    "name",
+    "schemaVersion",
+    "occurredAt",
+    "source",
+    "payload"
+  ],
+  "eventNames": [
+    "OrderCreated",
+    "CheckoutStarted",
+    "ProductViewed",
+    "AddToCart",
+    "PurchaseCompleted",
+    "CartUpdated",
+    "EmailSent",
+    "PromoApplied",
+    "BotCommand",
+    "AgentHeartbeat",
+    "DashboardViewed"
+  ]
+}
