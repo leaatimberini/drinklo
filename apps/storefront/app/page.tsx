@@ -15,6 +15,10 @@ type CatalogResponse = { items: Product[] };
 
 type SlotBlock = { plugin: string; title: string; body: string };
 
+type RecommendationBlock = { items: Array<{ productId: string; name: string; sku?: string | null; price: number; stock: number; reason: string }> };
+
+type RecommendationsResponse = { blocks: { reorder?: RecommendationBlock; cross?: RecommendationBlock; upsell?: RecommendationBlock } };
+
 async function fetchCategories() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/catalog/categories`, {
     next: { revalidate: 30 },
@@ -49,11 +53,38 @@ async function fetchExperiment(target: string) {
   return data?.variant ?? null;
 }
 
+async function fetchRecommendations(ageVerified: boolean, optOut: boolean) {
+  if (optOut) return null;
+  const params = new URLSearchParams({
+    blocks: "reorder,cross,upsell",
+    limit: "6",
+    ageVerified: ageVerified ? "true" : "false",
+    optOut: optOut ? "true" : "false",
+  });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/recommendations?${params.toString()}`, {
+    next: { revalidate: 30 },
+  });
+  if (!res.ok) return null;
+  return res.json() as Promise<RecommendationsResponse>;
+}
+
 export default async function Page() {
   const categories = await fetchCategories();
   const products = await fetchProducts();
   const slots = await fetchSlots();
   const abVariant = await fetchExperiment("HOME");
+  const cookieStore = cookies();
+  const ageVerified = cookieStore.get("age_gate_ok")?.value === "true";
+  const optOut = cookieStore.get("reco_opt_out")?.value === "true";
+  const recommendations = await fetchRecommendations(ageVerified, optOut);
 
-  return <HomeClient categories={categories.items} products={products.items} slots={slots} abVariant={abVariant} />;
+  return (
+    <HomeClient
+      categories={categories.items}
+      products={products.items}
+      slots={slots}
+      recommendations={recommendations?.blocks ?? undefined}
+      abVariant={abVariant}
+    />
+  );
 }

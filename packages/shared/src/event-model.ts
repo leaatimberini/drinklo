@@ -2,6 +2,8 @@ export const EventNames = [
   "OrderCreated",
   "CheckoutStarted",
   "ProductViewed",
+  "AddToCart",
+  "PurchaseCompleted",
   "CartUpdated",
   "EmailSent",
   "PromoApplied",

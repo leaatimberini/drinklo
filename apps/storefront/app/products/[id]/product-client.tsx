@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -62,7 +62,7 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
   return (
     <main style={{ padding: 32 }}>
       <h1 style={{ fontSize: 32, marginBottom: 8, fontFamily: "var(--font-heading)" }}>{product.name}</h1>
-      <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripción"}</p>
+      <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripciÃ³n"}</p>
       {abVariant?.payload?.badge && (
         <p style={{ marginBottom: 16, color: "#b45309" }}>{abVariant.payload.badge}</p>
       )}
@@ -87,9 +87,10 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
 
       {added && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: 12 }}>
-          Se agregó al carrito.
+          Se agregÃ³ al carrito.
         </motion.p>
       )}
     </main>
   );
 }
+

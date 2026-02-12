@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -36,6 +36,7 @@ export function AgeGate() {
 
   async function confirmAge() {
     window.localStorage.setItem("age_gate_ok", "true");
+    document.cookie = "age_gate_ok=true; path=/; max-age=31536000";
     setAllowed(true);
     await fetch(`${apiUrl}/compliance/consent`, {
       method: "POST",
@@ -78,8 +79,8 @@ export function AgeGate() {
           maxWidth: 420,
         }}
       >
-        <h2 style={{ marginTop: 0 }}>Verificación de edad</h2>
-        <p>Debes ser mayor de {ageLabel} años para ver productos alcohólicos.</p>
+        <h2 style={{ marginTop: 0 }}>VerificaciÃ³n de edad</h2>
+        <p>Debes ser mayor de {ageLabel} aÃ±os para ver productos alcohÃ³licos.</p>
 
         {settings.marketingConsentRequired && (
           <label style={{ display: "block", marginTop: 12 }}>
@@ -99,7 +100,7 @@ export function AgeGate() {
         <div style={{ marginTop: 12, fontSize: 12, color: "var(--color-muted)" }}>
           {settings.termsUrl && (
             <a href={settings.termsUrl} style={{ marginRight: 8 }}>
-              Términos
+              TÃ©rminos
             </a>
           )}
           {settings.privacyUrl && (
@@ -113,3 +114,4 @@ export function AgeGate() {
     </div>
   );
 }
+
