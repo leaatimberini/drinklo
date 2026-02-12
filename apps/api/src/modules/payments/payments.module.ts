@@ -6,9 +6,10 @@ import { PaymentsService } from "./payments.service";
 import { StockReservationModule } from "../stock-reservations/stock-reservation.module";
 import { SecretsModule } from "../secrets/secrets.module";
 import { MetricsModule } from "../metrics/metrics.module";
+import { FraudModule } from "../fraud/fraud.module";
 
 @Module({
-  imports: [StockReservationModule, SecretsModule, MetricsModule],
+  imports: [StockReservationModule, SecretsModule, MetricsModule, FraudModule],
   controllers: [MercadoPagoController, MercadoPagoWebhookController],
   providers: [PaymentsService, PrismaService],
   exports: [PaymentsService],

@@ -58,6 +58,7 @@ import { ImmutableAuditModule } from "./modules/immutable-audit/immutable-audit.
 import { ImmutableAuditInterceptor } from "./modules/immutable-audit/immutable-audit.interceptor";
 import { PurchasingModule } from "./modules/purchasing/purchasing.module";
 import { LotsModule } from "./modules/lots/lots.module";
+import { FraudModule } from "./modules/fraud/fraud.module";
 
 @Module({
   imports: [
@@ -113,6 +114,7 @@ import { LotsModule } from "./modules/lots/lots.module";
     ImmutableAuditModule,
     PurchasingModule,
     LotsModule,
+    FraudModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

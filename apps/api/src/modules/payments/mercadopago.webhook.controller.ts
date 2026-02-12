@@ -5,6 +5,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { PaymentsService } from "./payments.service";
 import { SecretsService } from "../secrets/secrets.service";
 import { MetricsService } from "../metrics/metrics.service";
+import { FraudService } from "../fraud/fraud.service";
 
 function verifyMercadoPagoSignature({
   secret,
@@ -43,6 +44,7 @@ export class MercadoPagoWebhookController {
     private readonly payments: PaymentsService,
     private readonly secrets: SecretsService,
     private readonly metrics: MetricsService,
+    private readonly fraud: FraudService,
   ) {}
 
   @Post()
@@ -68,8 +70,18 @@ export class MercadoPagoWebhookController {
       this.metrics.recordWebhook("mercadopago", "received");
     } catch (error) {
       // Idempotency: if event already exists, skip processing
+      await this.prisma.webhookLog
+        .updateMany({
+          where: { provider: "mercadopago", eventId: String(eventId) },
+          data: { status: "duplicate", processedAt: new Date() },
+        })
+        .catch(() => undefined);
       this.metrics.recordWebhook("mercadopago", "duplicate");
       this.metrics.recordWebhookRetry("mercadopago");
+      const company = await this.prisma.company.findFirst({ select: { id: true } });
+      if (company) {
+        await this.fraud.recordWebhookSignal(company.id, "mercadopago", "duplicate");
+      }
       return { ok: true, duplicate: true };
     }
 
@@ -92,6 +104,9 @@ export class MercadoPagoWebhookController {
         data: { status: "invalid_signature" },
       });
       this.metrics.recordWebhook("mercadopago", "invalid_signature");
+      if (company) {
+        await this.fraud.recordWebhookSignal(company.id, "mercadopago", "invalid_signature");
+      }
       return { ok: false };
     }
 
@@ -102,6 +117,9 @@ export class MercadoPagoWebhookController {
         data: { status: "ignored", processedAt: new Date() },
       });
       this.metrics.recordWebhook("mercadopago", "ignored");
+      if (company) {
+        await this.fraud.recordWebhookSignal(company.id, "mercadopago", "ignored");
+      }
       return { ok: true, ignored: true };
     }
 
@@ -131,6 +149,9 @@ export class MercadoPagoWebhookController {
         data: { status: "processed", processedAt: new Date() },
       });
       this.metrics.recordWebhook("mercadopago", "processed");
+      if (company) {
+        await this.fraud.recordWebhookSignal(company.id, "mercadopago", "processed");
+      }
 
       return { ok: true };
     } catch (error: any) {
@@ -139,6 +160,9 @@ export class MercadoPagoWebhookController {
         data: { status: "error", error: error?.message ?? String(error), processedAt: new Date() },
       });
       this.metrics.recordWebhook("mercadopago", "error");
+      if (company) {
+        await this.fraud.recordWebhookSignal(company.id, "mercadopago", "error");
+      }
       return { ok: false };
     }
   }

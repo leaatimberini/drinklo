@@ -72,6 +72,8 @@ model Company {
   experimentEvents      ExperimentEvent[]
   searchConfig          SearchConfig?
   searchIndexState      SearchIndexState?
+  fraudRules            FraudRule[]
+  fraudAssessments      FraudAssessment[]
 }
 
 model CompanySettings {
@@ -732,6 +734,19 @@ enum PaymentStatus {
   CANCELED
 }
 
+enum FraudAction {
+  NONE
+  HOLD_ORDER
+  REQUIRE_VERIFICATION
+  NOTIFY_ONLY
+}
+
+enum FraudAssessmentStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
 enum CouponType {
   PERCENT
   FIXED
@@ -1113,6 +1128,7 @@ model Order {
   items        OrderItem[]
   statusEvents OrderStatusEvent[]
   payments     Payment[]
+  fraudAssessments FraudAssessment[]
   coupon       Coupon?         @relation(fields: [couponId], references: [id])
   giftCard     GiftCard?       @relation(fields: [giftCardId], references: [id])
   couponRedemptions CouponRedemption[]
@@ -1171,6 +1187,7 @@ model Payment {
   updatedAt      DateTime       @updatedAt
 
   order Order @relation(fields: [orderId], references: [id])
+  fraudAssessments FraudAssessment[]
 
   @@index([orderId])
   @@index([paymentId])
@@ -1189,6 +1206,55 @@ model WebhookLog {
 
   @@unique([provider, eventId])
   @@index([provider])
+}
+
+model FraudRule {
+  id          String   @id @default(uuid())
+  companyId   String
+  code        String
+  name        String
+  enabled     Boolean  @default(true)
+  weight      Int
+  threshold   Decimal? @db.Numeric(12, 2)
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model FraudAssessment {
+  id             String                 @id @default(uuid())
+  companyId      String
+  orderId        String?
+  paymentId      String?
+  score          Int
+  riskLevel      String
+  action         FraudAction
+  status         FraudAssessmentStatus  @default(OPEN)
+  reasonSummary  String
+  reasons        Json
+  context        Json?
+  source         String
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  company    Company  @relation(fields: [companyId], references: [id])
+  order      Order?   @relation(fields: [orderId], references: [id])
+  payment    Payment? @relation(fields: [paymentId], references: [id])
+  reviewedBy User?    @relation("FraudAssessmentReviewedBy", fields: [reviewedById], references: [id])
+
+  @@index([companyId])
+  @@index([orderId])
+  @@index([paymentId])
+  @@index([status])
+  @@index([riskLevel])
+  @@index([createdAt])
 }
 
 model Sale {
@@ -1346,6 +1412,7 @@ model User {
   createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreatedBy")
   approvedPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderApprovedBy")
   receivedGoodsReceipts GoodsReceipt[] @relation("GoodsReceiptReceivedBy")
+  reviewedFraudAssessments FraudAssessment[] @relation("FraudAssessmentReviewedBy")
 
   @@unique([companyId, email])
   @@index([companyId])

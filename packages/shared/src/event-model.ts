@@ -10,6 +10,9 @@ export const EventNames = [
   "BotCommand",
   "AgentHeartbeat",
   "DashboardViewed",
+  "FraudScored",
+  "FraudAlertRaised",
+  "FraudReviewUpdated",
 ] as const;
 
 export type EventName = (typeof EventNames)[number];

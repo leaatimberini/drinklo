@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, Res } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CheckoutService } from "./checkout.service";
 import { ShippingService } from "./shipping.service";
@@ -6,6 +6,7 @@ import { CreateOrderDto, QuoteRequestDto } from "./dto/checkout.dto";
 import { PdfService } from "../shared/pdf.service";
 import { StorageService } from "../storage/storage.service";
 import type { Response } from "express";
+import type { Request } from "express";
 
 @ApiTags("checkout")
 @Controller("checkout")
@@ -24,8 +25,11 @@ export class CheckoutController {
   }
 
   @Post("orders")
-  create(@Body() body: CreateOrderDto) {
-    return this.checkout.createOrder(body);
+  create(@Body() body: CreateOrderDto, @Req() req: Request) {
+    const forwarded = req.headers["x-forwarded-for"];
+    const ip = Array.isArray(forwarded) ? forwarded[0] : String(forwarded ?? req.ip ?? "");
+    const geoCountry = String(req.headers["x-geo-country"] ?? req.headers["cf-ipcountry"] ?? "");
+    return this.checkout.createOrder(body, { ip, geoCountry });
   }
 
   @Get("orders/:id/status")

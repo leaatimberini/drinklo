@@ -10,9 +10,10 @@ import { SecretsModule } from "../secrets/secrets.module";
 import { PluginsModule } from "../plugins/plugins.module";
 import { EventsModule } from "../events/events.module";
 import { PromosModule } from "../promos/promos.module";
+import { FraudModule } from "../fraud/fraud.module";
 
 @Module({
-  imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, PluginsModule, EventsModule, PromosModule],
+  imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, PluginsModule, EventsModule, PromosModule, FraudModule],
   controllers: [CheckoutController],
   providers: [CheckoutService, ShippingService, GeocodingService],
 })

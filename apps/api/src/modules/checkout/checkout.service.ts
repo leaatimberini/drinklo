@@ -7,6 +7,7 @@ import { StockReservationService } from "../stock-reservations/stock-reservation
 import { PluginsService } from "../plugins/plugins.service";
 import { EventsService } from "../events/events.service";
 import { PromosService } from "../promos/promos.service";
+import { FraudService } from "../fraud/fraud.service";
 
 @Injectable()
 export class CheckoutService {
@@ -17,6 +18,7 @@ export class CheckoutService {
     private readonly plugins: PluginsService,
     private readonly events: EventsService,
     private readonly promos: PromosService,
+    private readonly fraud: FraudService,
   ) {}
 
   async getCompany() {
@@ -27,7 +29,7 @@ export class CheckoutService {
     return company;
   }
 
-  async createOrder(dto: CreateOrderDto) {
+  async createOrder(dto: CreateOrderDto, riskContext?: { ip?: string; geoCountry?: string }) {
     const company = await this.getCompany();
 
     const quote = await this.shipping.quote(company.id, {
@@ -228,6 +230,14 @@ export class CheckoutService {
         },
       },
     ]);
+
+    await this.fraud
+      .assessOrder(company.id, order.id, {
+        source: "checkout",
+        ip: riskContext?.ip,
+        geoCountry: riskContext?.geoCountry,
+      })
+      .catch(() => undefined);
 
     return order;
   }

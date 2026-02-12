@@ -1,0 +1,26 @@
+﻿{
+  "highRisk": {
+    "amount": 120000,
+    "avgAmount30d": 20000,
+    "ordersLast1h": 6,
+    "ordersLast24h": 15,
+    "ipOrderCountLast24h": 7,
+    "shippingCountry": "AR",
+    "geoCountry": "BR",
+    "paymentFailuresLast24h": 6,
+    "webhookErrorsLast1h": 12,
+    "webhookDuplicatesLast1h": 21
+  },
+  "clean": {
+    "amount": 10000,
+    "avgAmount30d": 8000,
+    "ordersLast1h": 1,
+    "ordersLast24h": 2,
+    "ipOrderCountLast24h": 1,
+    "shippingCountry": "AR",
+    "geoCountry": "AR",
+    "paymentFailuresLast24h": 0,
+    "webhookErrorsLast1h": 0,
+    "webhookDuplicatesLast1h": 0
+  }
+}
