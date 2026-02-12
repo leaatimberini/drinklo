@@ -60,4 +60,29 @@ describe("LicensingService", () => {
     const allowed = await service.isFeatureEnabled("c1", "andreani" as any);
     expect(allowed).toBe(false);
   });
+
+  it("keeps basic sales and blocks premium in soft/hard limits", async () => {
+    const almostExpired = {
+      companyId: "c1",
+      key: "k",
+      plan: "pro",
+      expiresAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      features: ["afip"],
+    };
+    const { service } = makeService(almostExpired);
+    const soft = await service.getEnforcement("c1", "andreani" as any);
+    expect(soft.stage).toBe("soft_limit");
+    expect(soft.basicSalesAllowed).toBe(true);
+    expect(soft.premiumBlocked).toBe(true);
+
+    const longExpired = {
+      ...almostExpired,
+      expiresAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
+    };
+    const { service: service2 } = makeService(longExpired);
+    const hard = await service2.getEnforcement("c1", "andreani" as any);
+    expect(hard.stage).toBe("hard_limit");
+    expect(hard.basicSalesAllowed).toBe(true);
+    expect(hard.premiumBlocked).toBe(true);
+  });
 });

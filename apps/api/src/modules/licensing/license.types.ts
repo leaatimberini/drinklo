@@ -15,6 +15,13 @@ export type LicenseValidationResult = {
   reason?: string;
 };
 
+export type LicenseEnforcementResult = {
+  stage: "ok" | "warning" | "soft_limit" | "hard_limit";
+  message?: string;
+  basicSalesAllowed: true;
+  premiumBlocked: boolean;
+};
+
 export const PremiumFeatures = {
   AFIP: "afip",
   ANDREANI: "andreani",

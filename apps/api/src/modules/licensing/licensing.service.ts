@@ -1,7 +1,12 @@
 import crypto from "node:crypto";
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import type { LicensePayload, LicenseValidationResult, PremiumFeature } from "./license.types";
+import type {
+  LicenseEnforcementResult,
+  LicensePayload,
+  LicenseValidationResult,
+  PremiumFeature,
+} from "./license.types";
 
 function base64UrlEncode(value: string) {
   return Buffer.from(value).toString("base64").replace(/=+$/g, "").replace(/\+/g, "-").replace(/\//g, "_");
@@ -145,9 +150,47 @@ export class LicensingService {
   }
 
   async requireFeature(companyId: string, feature: PremiumFeature) {
-    const enabled = await this.isFeatureEnabled(companyId, feature);
-    if (!enabled) {
+    const enforcement = await this.getEnforcement(companyId, feature);
+    if (enforcement.premiumBlocked) {
       throw new ForbiddenException(`Feature ${feature} not licensed`);
     }
+  }
+
+  async getEnforcement(companyId: string, feature?: PremiumFeature): Promise<LicenseEnforcementResult> {
+    const status = await this.getStatus(companyId);
+    if (status.valid && (!feature || status.features.includes(feature))) {
+      return {
+        stage: "ok",
+        basicSalesAllowed: true,
+        premiumBlocked: false,
+      };
+    }
+
+    const now = Date.now();
+    const expiresAt = status.expiresAt ? new Date(status.expiresAt).getTime() : 0;
+    const daysExpired = expiresAt > 0 ? Math.floor((now - expiresAt) / (24 * 60 * 60 * 1000)) : 999;
+
+    if (daysExpired <= 0) {
+      return {
+        stage: "warning",
+        message: "Licencia por vencer. Se mantienen features premium.",
+        basicSalesAllowed: true,
+        premiumBlocked: false,
+      };
+    }
+    if (daysExpired <= 14) {
+      return {
+        stage: "soft_limit",
+        message: "Licencia vencida: limite soft sobre premium. Ventas basicas siguen activas.",
+        basicSalesAllowed: true,
+        premiumBlocked: true,
+      };
+    }
+    return {
+      stage: "hard_limit",
+      message: "Licencia vencida: limite hard sobre premium. Ventas basicas siguen activas.",
+      basicSalesAllowed: true,
+      premiumBlocked: true,
+    };
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
+import { calculateDynamicPricing, calculateProration, evaluateTrialAndEnforcement } from "../../lib/billing-advanced";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -13,7 +14,12 @@ export async function GET(req: NextRequest) {
   }
   const plans = await prisma.billingPlan.findMany({ orderBy: { createdAt: "desc" } });
   const accounts = await prisma.billingAccount.findMany({
-    include: { plan: true, invoices: { orderBy: { createdAt: "desc" }, take: 5 } },
+    include: {
+      plan: true,
+      invoices: { orderBy: { createdAt: "desc" }, take: 5 },
+      usageRecords: { orderBy: { createdAt: "desc" }, take: 10 },
+      planChanges: { orderBy: { createdAt: "desc" }, take: 10 },
+    },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json({ plans, accounts });
@@ -32,11 +38,16 @@ export async function POST(req: NextRequest) {
         name: body.name,
         price: body.price,
         currency: body.currency,
-        period: body.period,
-        features: body.features ?? [],
-        rpoTargetMin: body.rpoTargetMin ?? null,
-        rtoTargetMin: body.rtoTargetMin ?? null,
-      },
+      period: body.period,
+      features: body.features ?? [],
+      trialDays: body.trialDays ?? 0,
+      includedOrdersPerMonth: body.includedOrdersPerMonth ?? 0,
+      gmvIncludedArs: body.gmvIncludedArs ?? 0,
+      overagePerOrderArs: body.overagePerOrderArs ?? 0,
+      gmvTiers: body.gmvTiers ?? null,
+      rpoTargetMin: body.rpoTargetMin ?? null,
+      rtoTargetMin: body.rtoTargetMin ?? null,
+    },
     });
     return NextResponse.json(plan);
   }
@@ -47,6 +58,7 @@ export async function POST(req: NextRequest) {
     const plan = await prisma.billingPlan.findUnique({ where: { id: body.planId } });
     if (!plan) return NextResponse.json({ error: "plan not found" }, { status: 404 });
     const account = await prisma.billingAccount.create({
+      include: { plan: true },
       data: {
         installationId: installation.id,
         instanceId: body.instanceId,
@@ -56,6 +68,12 @@ export async function POST(req: NextRequest) {
         status: body.status ?? "ACTIVE",
         provider: body.provider ?? "MANUAL",
         nextBillingAt: body.nextBillingAt ? new Date(body.nextBillingAt) : null,
+        trialEndsAt:
+          (plan.trialDays ?? 0) > 0
+            ? new Date(Date.now() + Number(plan.trialDays) * 24 * 60 * 60 * 1000)
+            : null,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + (plan.period === "YEARLY" ? 365 : 30) * 24 * 60 * 60 * 1000),
       },
     });
     await prisma.installation.update({
@@ -68,6 +86,123 @@ export async function POST(req: NextRequest) {
       },
     });
     return NextResponse.json(account);
+  }
+
+  if (body.kind === "usage") {
+    const account = await prisma.billingAccount.findUnique({
+      where: { instanceId: String(body.instanceId ?? "") },
+      include: { plan: true, invoices: { where: { status: "OPEN" }, orderBy: { dueAt: "asc" }, take: 1 } },
+    });
+    if (!account) return NextResponse.json({ error: "account not found" }, { status: 404 });
+    const monthlyOrders = Math.max(0, account.monthlyOrders + Number(body.ordersDelta ?? 0));
+    const monthlyGmvArs = Math.max(0, account.monthlyGmvArs + Number(body.gmvDeltaArs ?? 0));
+    const pricing = calculateDynamicPricing(
+      {
+        basePrice: account.plan.price,
+        includedOrdersPerMonth: account.plan.includedOrdersPerMonth,
+        overagePerOrderArs: account.plan.overagePerOrderArs,
+        gmvIncludedArs: account.plan.gmvIncludedArs,
+        gmvTiers: (account.plan.gmvTiers as any) ?? [],
+      },
+      { monthlyOrders, monthlyGmvArs },
+    );
+    const due = account.invoices[0]?.dueAt;
+    const pastDueDays = due ? Math.max(0, Math.floor((Date.now() - due.getTime()) / (24 * 60 * 60 * 1000))) : 0;
+    const enforcement = evaluateTrialAndEnforcement({
+      now: new Date(),
+      trialEndsAt: account.trialEndsAt,
+      invoicePastDueDays: pastDueDays,
+      premiumFeaturesEnabled: true,
+    });
+
+    const updated = await prisma.billingAccount.update({
+      where: { id: account.id },
+      data: {
+        monthlyOrders,
+        monthlyGmvArs,
+        warningCount: account.warningCount + (enforcement.warnings.length > 0 ? 1 : 0),
+        softLimitedAt: enforcement.softLimitPremium ? new Date() : null,
+        hardLimitedAt: enforcement.hardLimitPremium ? new Date() : null,
+      },
+    });
+
+    await prisma.billingUsageRecord.create({
+      data: {
+        accountId: account.id,
+        periodStart: account.currentPeriodStart ?? new Date(),
+        periodEnd: account.currentPeriodEnd ?? new Date(),
+        ordersCount: monthlyOrders,
+        gmvArs: monthlyGmvArs,
+        estimatedAmount: pricing.totalArs,
+      },
+    });
+
+    return NextResponse.json({ account: updated, pricing, enforcement });
+  }
+
+  if (body.kind === "changePlan") {
+    const instanceId = String(body.instanceId ?? "").trim();
+    const targetPlanId = String(body.targetPlanId ?? "").trim();
+    if (!instanceId || !targetPlanId) {
+      return NextResponse.json({ error: "instanceId and targetPlanId required" }, { status: 400 });
+    }
+    const account = await prisma.billingAccount.findUnique({
+      where: { instanceId },
+      include: { plan: true },
+    });
+    if (!account) return NextResponse.json({ error: "account not found" }, { status: 404 });
+    const targetPlan = await prisma.billingPlan.findUnique({ where: { id: targetPlanId } });
+    if (!targetPlan) return NextResponse.json({ error: "target plan not found" }, { status: 404 });
+    if (targetPlan.id === account.planId) {
+      return NextResponse.json({ error: "plan unchanged" }, { status: 400 });
+    }
+
+    const now = new Date();
+    const periodStart = account.currentPeriodStart ?? account.createdAt;
+    const periodEnd = account.currentPeriodEnd ?? new Date(periodStart.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const proration = calculateProration({
+      fromPlanAmount: account.plan.price,
+      toPlanAmount: targetPlan.price,
+      periodStart,
+      periodEnd,
+      effectiveAt: now,
+    });
+    const updated = await prisma.billingAccount.update({
+      where: { id: account.id },
+      data: {
+        planId: targetPlan.id,
+        currentPeriodStart: now,
+        currentPeriodEnd: new Date(now.getTime() + (targetPlan.period === "YEARLY" ? 365 : 30) * 24 * 60 * 60 * 1000),
+        nextBillingAt: new Date(now.getTime() + (targetPlan.period === "YEARLY" ? 365 : 30) * 24 * 60 * 60 * 1000),
+      },
+      include: { plan: true },
+    });
+    await prisma.billingPlanChange.create({
+      data: {
+        accountId: updated.id,
+        fromPlanId: account.planId,
+        toPlanId: targetPlan.id,
+        prorationAmount: proration.prorationAmount,
+        reason: body.reason ?? "customer_request",
+      },
+    });
+
+    if (proration.prorationAmount !== 0) {
+      await prisma.billingInvoice.create({
+        data: {
+          accountId: updated.id,
+          amount: Math.abs(proration.prorationAmount),
+          currency: targetPlan.currency,
+          status: proration.prorationAmount > 0 ? "OPEN" : "PAID",
+          dueAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+          paidAt: proration.prorationAmount < 0 ? now : null,
+          provider: updated.provider,
+          externalId: null,
+        },
+      });
+    }
+
+    return NextResponse.json({ account: updated, proration });
   }
 
   return NextResponse.json({ error: "unsupported kind" }, { status: 400 });

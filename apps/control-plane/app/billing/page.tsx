@@ -8,7 +8,17 @@ export default function BillingPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [message, setMessage] = useState<string | null>(null);
-  const [planForm, setPlanForm] = useState({ name: "", price: 0, currency: "ARS", period: "MONTHLY", features: "" });
+  const [planForm, setPlanForm] = useState({
+    name: "",
+    price: 0,
+    currency: "ARS",
+    period: "MONTHLY",
+    features: "",
+    trialDays: 14,
+    includedOrdersPerMonth: 0,
+    gmvIncludedArs: 0,
+    overagePerOrderArs: 0,
+  });
   const [accountForm, setAccountForm] = useState({ instanceId: "", planId: "", email: "", clientName: "" });
 
   async function loadAll() {
@@ -35,6 +45,10 @@ export default function BillingPage() {
         currency: planForm.currency,
         period: planForm.period,
         features: planForm.features.split(",").map((f) => f.trim()).filter(Boolean),
+        trialDays: Number(planForm.trialDays),
+        includedOrdersPerMonth: Number(planForm.includedOrdersPerMonth),
+        gmvIncludedArs: Number(planForm.gmvIncludedArs),
+        overagePerOrderArs: Number(planForm.overagePerOrderArs),
       }),
     });
     if (!res.ok) return setMessage("Error creando plan");
@@ -80,6 +94,10 @@ export default function BillingPage() {
           <option value="YEARLY">Anual</option>
         </select>
         <input placeholder="Features (comma)" value={planForm.features} onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })} />
+        <input type="number" placeholder="Trial days" value={planForm.trialDays} onChange={(e) => setPlanForm({ ...planForm, trialDays: Number(e.target.value) })} />
+        <input type="number" placeholder="Orders incluidos/mes" value={planForm.includedOrdersPerMonth} onChange={(e) => setPlanForm({ ...planForm, includedOrdersPerMonth: Number(e.target.value) })} />
+        <input type="number" placeholder="GMV incluido ARS" value={planForm.gmvIncludedArs} onChange={(e) => setPlanForm({ ...planForm, gmvIncludedArs: Number(e.target.value) })} />
+        <input type="number" placeholder="Overage por orden ARS" value={planForm.overagePerOrderArs} onChange={(e) => setPlanForm({ ...planForm, overagePerOrderArs: Number(e.target.value) })} />
         <button onClick={createPlan}>Crear plan</button>
       </section>
 
@@ -102,6 +120,9 @@ export default function BillingPage() {
         {accounts.map((account) => (
           <div key={account.id} style={{ borderBottom: "1px solid #ddd", padding: "8px 0" }}>
             <strong>{account.instanceId}</strong> - {account.status} - {account.plan?.name}
+            <div>Trial end: {account.trialEndsAt ? new Date(account.trialEndsAt).toLocaleDateString() : "-"}</div>
+            <div>Uso: {account.monthlyOrders ?? 0} ordenes / {account.monthlyGmvArs ?? 0} ARS GMV</div>
+            <div>Soft/hard: {account.softLimitedAt ? "soft " : ""}{account.hardLimitedAt ? "hard" : ""}</div>
           </div>
         ))}
       </section>

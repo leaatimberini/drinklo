@@ -97,6 +97,11 @@ model BillingPlan {
   currency   String
   period     BillingPeriod
   features   String[]
+  trialDays  Int      @default(0)
+  includedOrdersPerMonth Int @default(0)
+  gmvIncludedArs Float @default(0)
+  overagePerOrderArs Float @default(0)
+  gmvTiers    Json?
   rpoTargetMin Int?
   rtoTargetMin Int?
   createdAt  DateTime @default(now())
@@ -119,6 +124,13 @@ model BillingAccount {
   externalId   String?
   nextBillingAt DateTime?
   warningCount Int @default(0)
+  trialEndsAt  DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd DateTime?
+  monthlyOrders Int @default(0)
+  monthlyGmvArs Float @default(0)
+  softLimitedAt DateTime?
+  hardLimitedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -126,10 +138,42 @@ model BillingAccount {
   plan         BillingPlan  @relation(fields: [planId], references: [id])
   invoices     BillingInvoice[]
   payments     BillingPayment[]
+  usageRecords BillingUsageRecord[]
+  planChanges  BillingPlanChange[]
 
   @@index([installationId])
   @@index([planId])
   @@index([status])
+}
+
+model BillingUsageRecord {
+  id         String   @id @default(uuid())
+  accountId  String
+  periodStart DateTime
+  periodEnd  DateTime
+  ordersCount Int @default(0)
+  gmvArs     Float @default(0)
+  estimatedAmount Float @default(0)
+  createdAt  DateTime @default(now())
+
+  account BillingAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, periodStart, periodEnd])
+}
+
+model BillingPlanChange {
+  id         String   @id @default(uuid())
+  accountId  String
+  fromPlanId String
+  toPlanId   String
+  effectiveAt DateTime @default(now())
+  prorationAmount Float @default(0)
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  account BillingAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, effectiveAt])
 }
 
 model BillingInvoice {

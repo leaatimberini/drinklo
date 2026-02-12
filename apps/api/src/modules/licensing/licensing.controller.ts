@@ -6,6 +6,7 @@ import { Roles } from "../common/rbac.decorators";
 import { SuperAdminGuard } from "../branding/superadmin.guard";
 import { LicensingService } from "./licensing.service";
 import { LicenseApplyDto, LicenseGenerateDto } from "./dto/license.dto";
+import { PremiumFeatures } from "./license.types";
 
 @ApiTags("licensing")
 @Controller("admin/license")
@@ -30,5 +31,15 @@ export class LicensingController {
   @UseGuards(SuperAdminGuard)
   generate(@Req() req: any, @Body() body: LicenseGenerateDto) {
     return this.licensing.generate(req.user.companyId, body.plan, body.expiresAt, body.features ?? []);
+  }
+
+  @Get("enforcement")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Roles("admin")
+  enforcement(@Req() req: any) {
+    const feature = req.query?.feature as keyof typeof PremiumFeatures | undefined;
+    const selected = feature ? PremiumFeatures[feature] : undefined;
+    return this.licensing.getEnforcement(req.user.companyId, selected);
   }
 }

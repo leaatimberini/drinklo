@@ -41,6 +41,7 @@ export default function PortalPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [billingInstanceId, setBillingInstanceId] = useState("");
   const [billingData, setBillingData] = useState<any | null>(null);
+  const [targetPlanId, setTargetPlanId] = useState("");
 
   useEffect(() => {
     const stored = window.localStorage.getItem("portal_token");
@@ -112,8 +113,34 @@ export default function PortalPage() {
       headers: { "x-portal-token": portalToken },
     });
     if (res.ok) {
-      setBillingData(await res.json());
+      const data = await res.json();
+      setBillingData(data);
+      if (!targetPlanId && data.account?.plan?.id) {
+        setTargetPlanId(data.account.plan.id);
+      }
     }
+  }
+
+  async function changePlan() {
+    if (!billingInstanceId || !targetPlanId || !portalToken) return;
+    const res = await fetch(`${controlPlaneUrl}/api/billing/portal`, {
+      method: "POST",
+      headers: {
+        "x-portal-token": portalToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        instanceId: billingInstanceId,
+        targetPlanId,
+      }),
+    });
+    if (!res.ok) {
+      setInfo("No se pudo cambiar plan.");
+      return;
+    }
+    const data = await res.json();
+    setInfo(`Plan actualizado. Prorrateo: ${data.proration?.prorationAmount ?? 0}`);
+    await loadBilling();
   }
 
   if (!token) {
@@ -168,10 +195,37 @@ export default function PortalPage() {
           <div style={{ marginTop: 12 }}>
             <strong>Plan:</strong> {billingData.account?.plan?.name} ({billingData.account?.status})
             <div>Proximo cobro: {billingData.account?.nextBillingAt ? new Date(billingData.account.nextBillingAt).toLocaleDateString() : "-"}</div>
+            <div>Trial: {billingData.account?.trialEndsAt ? new Date(billingData.account.trialEndsAt).toLocaleDateString() : "-"}</div>
+            <div>Uso mes: {billingData.account?.monthlyOrders ?? 0} ordenes / GMV {billingData.account?.monthlyGmvArs ?? 0} ARS</div>
+            <div>Estimado: {billingData.account?.pricingPreview?.totalArs ?? 0} ARS</div>
+            {(billingData.account?.warnings ?? []).map((warning: string, idx: number) => (
+              <div key={idx} style={{ color: "#b05a00" }}>{warning}</div>
+            ))}
+            <div style={{ marginTop: 8 }}>
+              <label>
+                Cambiar plan
+                <select value={targetPlanId} onChange={(e) => setTargetPlanId(e.target.value)}>
+                  {(billingData.plans ?? []).map((plan: any) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name} - {plan.price} {plan.currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button className="secondary" onClick={changePlan}>
+                Upgrade / Downgrade
+              </button>
+            </div>
             <h3>Facturas</h3>
             {(billingData.invoices ?? []).map((inv: any) => (
               <div key={inv.id} style={{ borderBottom: "1px solid #ddd", padding: "8px 0" }}>
                 {inv.status} - {inv.amount} {inv.currency} - venc. {new Date(inv.dueAt).toLocaleDateString()}
+              </div>
+            ))}
+            <h3>Historial de cambios</h3>
+            {(billingData.history ?? []).map((change: any) => (
+              <div key={change.id} style={{ borderBottom: "1px solid #ddd", padding: "8px 0" }}>
+                {new Date(change.effectiveAt).toLocaleString()} - {change.fromPlanId} a {change.toPlanId} (prorrateo {change.prorationAmount})
               </div>
             ))}
           </div>
