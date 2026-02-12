@@ -1,3 +1,12 @@
+export type RegionalHealthSample = {
+  region: string;
+  role?: "primary" | "secondary";
+  ok: boolean;
+  latency_ms?: number;
+  checked_at: string;
+  endpoint?: string;
+};
+
 export type HeartbeatPayload = {
   instance_id: string;
   domain?: string;
@@ -41,6 +50,8 @@ export type HeartbeatPayload = {
   iam_mfa_enforced?: boolean;
   iam_scim_enabled?: boolean;
   iam_last_sync_at?: string;
+  primary_region?: string;
+  regional_health?: RegionalHealthSample[];
   alerts?: Array<{ level: string; message: string }>;
   job_failures?: Array<{ queue?: string; message: string }>;
 };

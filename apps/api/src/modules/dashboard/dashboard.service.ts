@@ -13,25 +13,30 @@ export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async summary(query: DashboardQueryDto) {
-    const now = new Date();
-    const to = parseDate(query.to, now);
-    const from = parseDate(query.from, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
-    const top = query.top ?? 10;
-    const lowStock = query.lowStock ?? 5;
+    const runOnReadClient = (this.prisma as any).withReadClient as
+      | (<T>(run: (client: any) => Promise<T>) => Promise<T>)
+      | undefined;
 
-    const company = await this.prisma.company.findFirst();
-    if (!company) {
-      return {
-        range: { from, to },
-        kpis: { sales: 0, margin: 0, avgTicket: 0, tickets: 0, expenses: 0 },
-        topProducts: [],
-        lowStock: [],
-      };
-    }
+    const run = async (client: any) => {
+      const now = new Date();
+      const to = parseDate(query.to, now);
+      const from = parseDate(query.from, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
+      const top = query.top ?? 10;
+      const lowStock = query.lowStock ?? 5;
 
-    const kpiRows = await this.prisma.$queryRaw<
-      Array<{ sales: number; tickets: number }>
-    >`
+      const company = await client.company.findFirst();
+      if (!company) {
+        return {
+          range: { from, to },
+          kpis: { sales: 0, margin: 0, avgTicket: 0, tickets: 0, expenses: 0 },
+          topProducts: [],
+          lowStock: [],
+        };
+      }
+
+      const kpiRows = await client.$queryRaw<
+        Array<{ sales: number; tickets: number }>
+      >`
       SELECT COALESCE(SUM("total"),0) as sales,
              COUNT(*) as tickets
       FROM "Sale"
@@ -40,16 +45,16 @@ export class DashboardService {
         AND "createdAt" <= ${to}
     `;
 
-    const kpiRow = kpiRows[0];
-    const sales = Number(kpiRow?.sales ?? 0);
-    const tickets = Number(kpiRow?.tickets ?? 0);
-    const avgTicket = tickets > 0 ? sales / tickets : 0;
-    const margin = sales * 0.25;
-    const expenses = 0;
+      const kpiRow = kpiRows[0];
+      const sales = Number(kpiRow?.sales ?? 0);
+      const tickets = Number(kpiRow?.tickets ?? 0);
+      const avgTicket = tickets > 0 ? sales / tickets : 0;
+      const margin = sales * 0.25;
+      const expenses = 0;
 
-    const topProducts = await this.prisma.$queryRaw<
-      Array<{ productId: string; name: string; revenue: number; qty: number }>
-    >`
+      const topProducts = await client.$queryRaw<
+        Array<{ productId: string; name: string; revenue: number; qty: number }>
+      >`
       SELECT si."productId" as "productId",
              si."name" as "name",
              COALESCE(SUM(si."total"),0) as revenue,
@@ -64,9 +69,9 @@ export class DashboardService {
       LIMIT ${top}
     `;
 
-    const lowStockRows = await this.prisma.$queryRaw<
-      Array<{ variantId: string; sku: string; quantity: number }>
-    >`
+      const lowStockRows = await client.$queryRaw<
+        Array<{ variantId: string; sku: string; quantity: number }>
+      >`
       SELECT v."id" as "variantId",
              v."sku" as "sku",
              COALESCE(SUM(si."quantity"),0) as quantity
@@ -80,17 +85,23 @@ export class DashboardService {
       LIMIT 50
     `;
 
-    return {
-      range: { from, to },
-      kpis: {
-        sales,
-        margin,
-        avgTicket,
-        tickets,
-        expenses,
-      },
-      topProducts,
-      lowStock: lowStockRows,
+      return {
+        range: { from, to },
+        kpis: {
+          sales,
+          margin,
+          avgTicket,
+          tickets,
+          expenses,
+        },
+        topProducts,
+        lowStock: lowStockRows,
+      };
     };
+
+    if (runOnReadClient) {
+      return runOnReadClient(run);
+    }
+    return run(this.prisma as any);
   }
 }

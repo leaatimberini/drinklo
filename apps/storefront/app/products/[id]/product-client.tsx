@@ -1,9 +1,10 @@
-ï»¿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "../../cart/cart-context";
 import { emitEvent } from "../../lib/events";
+import { fetchCatalogJson } from "../../lib/catalog-fetch";
 
 type Product = {
   id: string;
@@ -23,11 +24,10 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
   const eventToken = process.env.NEXT_PUBLIC_EVENT_TOKEN;
 
   useEffect(() => {
-    fetch(`${apiUrl}/catalog/products/${id}`)
-      .then((res) => res.json())
+    fetchCatalogJson<any>(`/catalog/products/${id}`)
       .then((data) => setProduct(data))
       .catch(() => setProduct(null));
-  }, [apiUrl, id]);
+  }, [id]);
 
   useEffect(() => {
     if (!product) return;
@@ -85,7 +85,7 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
   return (
     <main style={{ padding: 32 }}>
       <h1 style={{ fontSize: 32, marginBottom: 8, fontFamily: "var(--font-heading)" }}>{product.name}</h1>
-      <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripciÃ³n"}</p>
+      <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripción"}</p>
       {abVariant?.payload?.badge && (
         <p style={{ marginBottom: 16, color: "#b45309" }}>{abVariant.payload.badge}</p>
       )}
@@ -110,12 +110,12 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
 
       {added && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: 12 }}>
-          Se agregÃ³ al carrito.
+          Se agregó al carrito.
         </motion.p>
       )}
 
       <section style={{ marginTop: 28, borderTop: "1px solid #e5e5e5", paddingTop: 16 }}>
-        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Modo admin: prÃ³ximos a vencer</h2>
+        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Modo admin: próximos a vencer</h2>
         <p style={{ color: "#666" }}>Solo para usuarios admin con permiso de inventario.</p>
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
           <input
@@ -133,17 +133,17 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
           <div style={{ marginTop: 10 }}>
             <p>
               {nearExpiry.hasNearExpiry
-                ? `Lote prÃ³ximo: ${nearExpiry.nextLotCode ?? "-"}`
-                : "Sin lotes prÃ³ximos a vencer"}
+                ? `Lote próximo: ${nearExpiry.nextLotCode ?? "-"}`
+                : "Sin lotes próximos a vencer"}
             </p>
             {nearExpiry.hasNearExpiry && (
               <p style={{ color: "#a36d00" }}>
-                PrÃ³ximo a vencer: {new Date(nearExpiry.nextExpiryDate).toLocaleDateString()}
+                Próximo a vencer: {new Date(nearExpiry.nextExpiryDate).toLocaleDateString()}
               </p>
             )}
             {rotationHints.length > 0 && (
               <div style={{ marginTop: 8 }}>
-                <strong>Sugerencias de rotaciÃ³n</strong>
+                <strong>Sugerencias de rotación</strong>
                 <ul style={{ marginTop: 6 }}>
                   {rotationHints.map((hint) => (
                     <li key={hint.lotId}>
@@ -159,4 +159,3 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
     </main>
   );
 }
-

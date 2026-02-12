@@ -99,6 +99,8 @@ export default async function Home() {
               <th style={{ textAlign: "left" }}>Domain</th>
               <th style={{ textAlign: "left" }}>Version</th>
               <th style={{ textAlign: "left" }}>Channel</th>
+              <th style={{ textAlign: "left" }}>Primary Region</th>
+              <th style={{ textAlign: "left" }}>Regional Health</th>
               <th style={{ textAlign: "left" }}>Health</th>
               <th style={{ textAlign: "left" }}>p95 ms</th>
               <th style={{ textAlign: "left" }}>Error Rate</th>
@@ -118,6 +120,12 @@ export default async function Home() {
                 <td>{inst.domain ?? "-"}</td>
                 <td>{inst.version ?? "-"}</td>
                 <td>{inst.releaseChannel ?? "-"}</td>
+                <td>{inst.primaryRegion ?? "-"}</td>
+                <td>
+                  {Array.isArray(inst.regionalHealth)
+                    ? `${inst.regionalHealth.filter((region: any) => region?.ok).length}/${inst.regionalHealth.length} OK`
+                    : "-"}
+                </td>
                 <td>{inst.healthStatus ?? "-"}</td>
                 <td>{inst.sloP95Ms ? Math.round(inst.sloP95Ms) : "-"}</td>
                 <td>{inst.sloErrorRate ? `${(inst.sloErrorRate * 100).toFixed(2)}%` : "-"}</td>

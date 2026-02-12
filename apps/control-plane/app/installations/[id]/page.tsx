@@ -34,10 +34,27 @@ export default async function InstallationDetail({ params }: { params: { id: str
         <p><strong>Domain:</strong> {installation.domain ?? "-"}</p>
         <p><strong>Version:</strong> {installation.version ?? "-"}</p>
         <p><strong>Release:</strong> {installation.releaseChannel ?? "-"}</p>
+        <p><strong>Primary region:</strong> {installation.primaryRegion ?? "-"}</p>
         <p><strong>Health:</strong> {installation.healthStatus ?? "-"}</p>
         <p><strong>Last seen:</strong> {installation.lastSeenAt ? new Date(installation.lastSeenAt).toLocaleString() : "-"}</p>
         <p><strong>Last backup:</strong> {installation.lastBackupAt ? new Date(installation.lastBackupAt).toLocaleString() : "-"}</p>
         <p><strong>Backup status:</strong> {installation.backupStatus ?? "-"}</p>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>Regional health</h3>
+        {Array.isArray(installation.regionalHealth) && installation.regionalHealth.length > 0 ? (
+          <ul>
+            {installation.regionalHealth.map((sample: any) => (
+              <li key={`${sample.region}-${sample.checked_at}`}>
+                {sample.region} [{sample.role ?? "secondary"}]: {sample.ok ? "OK" : "FAIL"}
+                {sample.latency_ms != null ? ` (${sample.latency_ms}ms)` : ""}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No regional probes reported yet.</p>
+        )}
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>

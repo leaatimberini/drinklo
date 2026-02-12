@@ -52,6 +52,16 @@ services:
     volumes:
       - erp_pgdata:/var/lib/postgresql/data
 
+  postgres-replica:
+    image: postgres:16
+    container_name: erp-postgres-replica
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+      POSTGRES_DB: erp
+    volumes:
+      - erp_pgdata_replica:/var/lib/postgresql/data
+
   redis:
     image: redis:7
     container_name: erp-redis
@@ -128,6 +138,7 @@ services:
 
 volumes:
   erp_pgdata:
+  erp_pgdata_replica:
   erp_redis:
   erp_clickhouse:
   erp_meili:

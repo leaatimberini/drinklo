@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { cookies } from "next/headers";
 import HomeClient from "./home-client";
+import { fetchCatalogJson } from "./lib/catalog-fetch";
 
 export const metadata: Metadata = {
   title: "Storefront",
@@ -20,17 +21,15 @@ type RecommendationBlock = { items: Array<{ productId: string; name: string; sku
 type RecommendationsResponse = { blocks: { reorder?: RecommendationBlock; cross?: RecommendationBlock; upsell?: RecommendationBlock } };
 
 async function fetchCategories() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/catalog/categories`, {
+  return fetchCatalogJson<{ items: Category[] }>("/catalog/categories", {
     next: { revalidate: 30 },
   });
-  return res.json() as Promise<{ items: Category[] }>;
 }
 
 async function fetchProducts() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/catalog/products?page=1&pageSize=6`, {
+  return fetchCatalogJson<CatalogResponse>("/catalog/products?page=1&pageSize=6", {
     next: { revalidate: 30 },
   });
-  return res.json() as Promise<CatalogResponse>;
 }
 
 async function fetchSlots() {

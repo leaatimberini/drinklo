@@ -4,6 +4,7 @@ export const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "staging", "production"]).default("development"),
   PORT: z.coerce.number().default(3001),
   DATABASE_URL: z.string().min(1),
+  DATABASE_READ_REPLICA_URLS: z.string().optional().default(""),
   REDIS_URL: z.string().min(1),
   JWT_SECRET: z.string().min(1),
   CORS_ORIGINS: z.string().optional().default(""),

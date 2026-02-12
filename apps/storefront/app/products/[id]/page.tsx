@@ -1,9 +1,10 @@
 import { Metadata } from "next";
 import { cookies } from "next/headers";
 import ProductClient from "./product-client";
+import { fetchCatalog } from "../../lib/catalog-fetch";
 
 async function fetchProduct(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/catalog/products/${id}`, {
+  const res = await fetchCatalog(`/catalog/products/${id}`, {
     next: { revalidate: 30 },
   });
   if (!res.ok) return null;

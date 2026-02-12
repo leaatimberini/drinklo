@@ -97,6 +97,8 @@ export async function POST(req: NextRequest) {
     update: {
       domain: body.domain ?? undefined,
       clientName: body.client ?? undefined,
+      primaryRegion: body.primary_region ?? undefined,
+      regionalHealth: Array.isArray(body.regional_health) ? body.regional_health : undefined,
       version: body.version ?? undefined,
       releaseChannel: body.release_channel ?? undefined,
       healthStatus: body.health ?? undefined,
@@ -134,6 +136,8 @@ export async function POST(req: NextRequest) {
       instanceId,
       domain: body.domain ?? null,
       clientName: body.client ?? null,
+      primaryRegion: body.primary_region ?? null,
+      regionalHealth: Array.isArray(body.regional_health) ? body.regional_health : null,
       version: body.version ?? null,
       releaseChannel: body.release_channel ?? null,
       healthStatus: body.health ?? null,

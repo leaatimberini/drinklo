@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import CategoriesClient from "./categories-client";
+import { fetchCatalogJson } from "../lib/catalog-fetch";
 
 export const metadata: Metadata = {
   title: "Categorías",
@@ -11,10 +12,9 @@ type Category = { id: string; name: string };
 type CategoryResponse = { items: Category[] };
 
 async function fetchCategories() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/catalog/categories`, {
+  return fetchCatalogJson<CategoryResponse>("/catalog/categories", {
     next: { revalidate: 30 },
   });
-  return res.json() as Promise<CategoryResponse>;
 }
 
 export default async function CategoriesPage() {

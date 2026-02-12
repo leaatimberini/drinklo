@@ -3,13 +3,12 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { fetchCatalogJson } from "../lib/catalog-fetch";
 
 export default function ProductsPage() {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
   const canSearch = useMemo(() => q.trim().length > 1, [q]);
 
@@ -17,8 +16,7 @@ export default function ProductsPage() {
     if (!canSearch) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/catalog/products?q=${encodeURIComponent(q)}&page=1&pageSize=24`);
-      const data = await res.json();
+      const data = await fetchCatalogJson<any>(`/catalog/products?q=${encodeURIComponent(q)}&page=1&pageSize=24`);
       setResults(data.items ?? []);
     } finally {
       setIsLoading(false);

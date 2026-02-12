@@ -1,6 +1,10 @@
 import express from "express";
 import { signPayload } from "./signing";
-import { validateHeartbeat, type HeartbeatPayload } from "./payload";
+import {
+  validateHeartbeat,
+  type HeartbeatPayload,
+  type RegionalHealthSample,
+} from "./payload";
 import { startUpdateLoop } from "./update";
 import { startPluginLoop } from "./plugin-update";
 import { parseMetricsSummary } from "./metrics";
@@ -41,6 +45,8 @@ const SYSTEM_ROOT_PATH = process.env.AGENT_SYSTEM_ROOT_PATH ?? path.parse(proces
 const AGENT_DB_SIZE_CMD = process.env.AGENT_DB_SIZE_CMD ?? "";
 const AGENT_STORAGE_SIZE_CMD = process.env.AGENT_STORAGE_SIZE_CMD ?? "";
 const AGENT_NETWORK_STATS_CMD = process.env.AGENT_NETWORK_STATS_CMD ?? "";
+const PRIMARY_REGION = process.env.PRIMARY_REGION ?? "";
+const REGIONAL_HEALTH_ENDPOINTS = process.env.REGIONAL_HEALTH_ENDPOINTS ?? "";
 
 const exec = promisify(execCb);
 
@@ -85,6 +91,52 @@ async function fetchText(url: string) {
   const res = await fetch(url);
   if (!res.ok) throw new Error("fetch failed");
   return res.text();
+}
+
+function parseRegionalEndpoints() {
+  if (!REGIONAL_HEALTH_ENDPOINTS) return [] as Array<{ region: string; endpoint: string }>;
+  try {
+    const parsed = JSON.parse(REGIONAL_HEALTH_ENDPOINTS) as Array<{ region?: string; endpoint?: string }>;
+    return parsed
+      .map((item) => ({ region: item.region?.trim() ?? "", endpoint: item.endpoint?.trim() ?? "" }))
+      .filter((item) => item.region && item.endpoint);
+  } catch {
+    return [];
+  }
+}
+
+async function probeRegionalHealth(): Promise<RegionalHealthSample[]> {
+  const endpoints = parseRegionalEndpoints();
+  const checkedAt = new Date().toISOString();
+  if (endpoints.length === 0) return [];
+
+  const probes = endpoints.map(async (target) => {
+    const started = Date.now();
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(target.endpoint, { signal: controller.signal, cache: "no-store" });
+      clearTimeout(timer);
+      return {
+        region: target.region,
+        role: target.region === PRIMARY_REGION ? "primary" : "secondary",
+        ok: res.ok,
+        latency_ms: Date.now() - started,
+        checked_at: checkedAt,
+        endpoint: target.endpoint,
+      } as RegionalHealthSample;
+    } catch {
+      return {
+        region: target.region,
+        role: target.region === PRIMARY_REGION ? "primary" : "secondary",
+        ok: false,
+        checked_at: checkedAt,
+        endpoint: target.endpoint,
+      } as RegionalHealthSample;
+    }
+  });
+
+  return Promise.all(probes);
 }
 
 async function dirSizeBytes(targetPath: string): Promise<number | undefined> {
@@ -286,6 +338,7 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
   let events_total_1h: number | undefined;
   let events_failed_1h: number | undefined;
   let events_avg_lag_ms: number | undefined;
+  const regionalHealth = await probeRegionalHealth();
   if (EVENTS_STATS_URL && OPS_TOKEN) {
     try {
       const stats = await fetchJson(EVENTS_STATS_URL, OPS_TOKEN);
@@ -333,6 +386,8 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
     iam_mfa_enforced: IAM_MFA_ENFORCED,
     iam_scim_enabled: IAM_SCIM_ENABLED,
     iam_last_sync_at: new Date().toISOString(),
+    primary_region: PRIMARY_REGION || undefined,
+    regional_health: regionalHealth.length > 0 ? regionalHealth : undefined,
     slo_p95_ms,
     slo_error_rate,
     slo_webhook_retry_rate,

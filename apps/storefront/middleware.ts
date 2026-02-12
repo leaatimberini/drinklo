@@ -12,7 +12,18 @@ function mapTarget(pathname: string) {
 
 export async function middleware(req: NextRequest) {
   const target = mapTarget(req.nextUrl.pathname);
-  if (!target) return NextResponse.next();
+  const shouldEdgeCache =
+    req.nextUrl.pathname === "/" ||
+    req.nextUrl.pathname.startsWith("/categories") ||
+    req.nextUrl.pathname.startsWith("/products");
+
+  if (!target) {
+    const passthrough = NextResponse.next();
+    if (shouldEdgeCache) {
+      passthrough.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    }
+    return passthrough;
+  }
 
   const cookie = req.cookies.get("erp_ab")?.value ?? "";
   try {
@@ -25,6 +36,9 @@ export async function middleware(req: NextRequest) {
       if (setCookie) {
         const response = NextResponse.next();
         response.headers.set("set-cookie", setCookie);
+        if (shouldEdgeCache) {
+          response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+        }
         return response;
       }
     }
@@ -32,7 +46,11 @@ export async function middleware(req: NextRequest) {
     // ignore
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (shouldEdgeCache) {
+    response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+  }
+  return response;
 }
 
 export const config = {
