@@ -37,6 +37,10 @@ export type HeartbeatPayload = {
   storage_size_bytes?: number;
   jobs_processed_1h?: number;
   jobs_pending?: number;
+  iam_sso_enabled?: boolean;
+  iam_mfa_enforced?: boolean;
+  iam_scim_enabled?: boolean;
+  iam_last_sync_at?: string;
   alerts?: Array<{ level: string; message: string }>;
   job_failures?: Array<{ queue?: string; message: string }>;
 };

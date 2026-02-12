@@ -40,6 +40,10 @@ model Installation {
   eventsTotal1h  Int?
   eventsFailed1h Int?
   eventsAvgLagMs Int?
+  iamSsoEnabled Boolean?
+  iamMfaEnforced Boolean?
+  iamScimEnabled Boolean?
+  iamLastSyncAt DateTime?
   drPlan         String?
   rpoTargetMin   Int?
   rtoTargetMin   Int?

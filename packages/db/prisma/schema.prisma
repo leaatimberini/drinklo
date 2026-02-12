@@ -15,6 +15,7 @@ model Company {
   deletedAt DateTime?
 
   settings      CompanySettings?
+  iamConfig     CompanyIamConfig?
   users          User[]
   roles          Role[]
   permissions    Permission[]
@@ -34,6 +35,7 @@ model Company {
   userBranches   UserBranch[]
   secrets        Secret[]
   secretAudits   SecretAudit[]
+  scimLogs       ScimProvisionLog[]
   integrationHealthLogs IntegrationHealthLog[]
   supportCustomers      SupportCustomer[]
   supportTickets        SupportTicket[]
@@ -108,6 +110,66 @@ model CompanySettings {
   updatedAt  DateTime @updatedAt
 
   company Company @relation(fields: [companyId], references: [id])
+}
+
+model CompanyIamConfig {
+  id                 String   @id @default(uuid())
+  companyId          String   @unique
+  ssoEnabled         Boolean  @default(false)
+  ssoProtocol        String?  @default("NONE")
+  oidcIssuer         String?
+  oidcClientId       String?
+  oidcClientSecret   String?
+  oidcAuthUrl        String?
+  oidcTokenUrl       String?
+  oidcJwksUrl        String?
+  oidcRedirectUri    String?
+  oidcScopes         String[] @default(["openid","profile","email"])
+  samlEntityId       String?
+  samlSsoUrl         String?
+  samlCertificate    String?
+  samlAudience       String?
+  mfaEnabled         Boolean  @default(false)
+  mfaRequiredRoles   String[] @default(["admin","support"])
+  scimEnabled        Boolean  @default(false)
+  scimBearerToken    String?
+  testStatus         String?
+  testLastError      String?
+  testLastCheckedAt  DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+model UserMfaConfig {
+  id         String   @id @default(uuid())
+  userId      String   @unique
+  secret      String
+  enabled     Boolean  @default(false)
+  verifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ScimProvisionLog {
+  id         String   @id @default(uuid())
+  companyId  String
+  externalId String?
+  email      String?
+  action     String
+  status     String
+  message    String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([action])
+  @@index([status])
 }
 
 model Secret {
@@ -1240,6 +1302,7 @@ model User {
   updatedBy User? @relation("UserUpdatedBy", fields: [updatedById], references: [id])
   createdUsers User[] @relation("UserCreatedBy")
   updatedUsers User[] @relation("UserUpdatedBy")
+  mfaConfig UserMfaConfig?
 
   @@unique([companyId, email])
   @@index([companyId])

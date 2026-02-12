@@ -104,6 +104,7 @@ export default async function Home() {
               <th style={{ textAlign: "left" }}>Events 1h</th>
               <th style={{ textAlign: "left" }}>Events Fail</th>
               <th style={{ textAlign: "left" }}>Events Lag</th>
+              <th style={{ textAlign: "left" }}>IAM</th>
               <th style={{ textAlign: "left" }}>Last Seen</th>
             </tr>
           </thead>
@@ -126,6 +127,11 @@ export default async function Home() {
                 <td>{inst.eventsTotal1h ?? "-"}</td>
                 <td>{inst.eventsFailed1h ?? "-"}</td>
                 <td>{inst.eventsAvgLagMs != null ? `${inst.eventsAvgLagMs}ms` : "-"}</td>
+                <td>
+                  {inst.iamSsoEnabled ? "SSO " : ""}
+                  {inst.iamMfaEnforced ? "MFA " : ""}
+                  {inst.iamScimEnabled ? "SCIM" : ""}
+                </td>
                 <td>{inst.lastSeenAt ? new Date(inst.lastSeenAt).toLocaleString() : "-"}</td>
               </tr>
             ))}

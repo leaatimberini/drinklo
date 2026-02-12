@@ -53,6 +53,7 @@ import { AbTestingModule } from "./modules/ab-testing/ab-testing.module";
 import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
 import { SearchModule } from "./modules/search/search.module";
 import { RecommendationsModule } from "./modules/recommendations/recommendations.module";
+import { IamModule } from "./modules/iam/iam.module";
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { RecommendationsModule } from "./modules/recommendations/recommendations
     FulfillmentModule,
     SearchModule,
     RecommendationsModule,
+    IamModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

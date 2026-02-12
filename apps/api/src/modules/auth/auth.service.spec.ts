@@ -7,6 +7,12 @@ const prismaMock = {
   user: {
     findFirst: jest.fn(),
   },
+  companyIamConfig: {
+    findUnique: jest.fn(),
+  },
+  userMfaConfig: {
+    findUnique: jest.fn(),
+  },
 };
 
 const jwtMock = {
@@ -27,7 +33,10 @@ describe("AuthService", () => {
 
     service = moduleRef.get(AuthService);
     prismaMock.user.findFirst.mockReset();
+    prismaMock.companyIamConfig.findUnique.mockReset();
+    prismaMock.userMfaConfig.findUnique.mockReset();
     jwtMock.signAsync.mockReset();
+    prismaMock.companyIamConfig.findUnique.mockResolvedValue(null);
   });
 
   it("logs in with valid credentials", async () => {

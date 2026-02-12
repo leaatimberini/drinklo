@@ -125,6 +125,10 @@ export async function POST(req: NextRequest) {
       eventsTotal1h: body.events_total_1h ?? undefined,
       eventsFailed1h: body.events_failed_1h ?? undefined,
       eventsAvgLagMs: body.events_avg_lag_ms ?? undefined,
+      iamSsoEnabled: body.iam_sso_enabled ?? undefined,
+      iamMfaEnforced: body.iam_mfa_enforced ?? undefined,
+      iamScimEnabled: body.iam_scim_enabled ?? undefined,
+      iamLastSyncAt: body.iam_last_sync_at ? new Date(body.iam_last_sync_at) : undefined,
     },
     create: {
       instanceId,
@@ -158,6 +162,10 @@ export async function POST(req: NextRequest) {
       eventsTotal1h: body.events_total_1h ?? null,
       eventsFailed1h: body.events_failed_1h ?? null,
       eventsAvgLagMs: body.events_avg_lag_ms ?? null,
+      iamSsoEnabled: body.iam_sso_enabled ?? null,
+      iamMfaEnforced: body.iam_mfa_enforced ?? null,
+      iamScimEnabled: body.iam_scim_enabled ?? null,
+      iamLastSyncAt: body.iam_last_sync_at ? new Date(body.iam_last_sync_at) : null,
     },
   });
 

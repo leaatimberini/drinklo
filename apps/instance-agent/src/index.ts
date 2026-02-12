@@ -33,6 +33,9 @@ const BACKUP_META_PATH = process.env.BACKUP_META_PATH ?? "";
 const METRICS_URL = process.env.AGENT_METRICS_URL ?? "http://api:3001/metrics";
 const EVENTS_STATS_URL = process.env.AGENT_EVENTS_STATS_URL ?? "http://api:3001/admin/events/stats";
 const EVENTS_INGEST_URL = process.env.AGENT_EVENTS_URL ?? "http://api:3001/events/ingest";
+const IAM_SSO_ENABLED = String(process.env.IAM_SSO_ENABLED ?? "false").toLowerCase() === "true";
+const IAM_MFA_ENFORCED = String(process.env.IAM_MFA_ENFORCED ?? "false").toLowerCase() === "true";
+const IAM_SCIM_ENABLED = String(process.env.IAM_SCIM_ENABLED ?? "false").toLowerCase() === "true";
 const STORAGE_DATA_PATH = process.env.STORAGE_DATA_PATH ?? "";
 const SYSTEM_ROOT_PATH = process.env.AGENT_SYSTEM_ROOT_PATH ?? path.parse(process.cwd()).root;
 const AGENT_DB_SIZE_CMD = process.env.AGENT_DB_SIZE_CMD ?? "";
@@ -326,6 +329,10 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
     storage_size_bytes,
     jobs_processed_1h: Math.max(jobs_processed_1h, metric_jobs_processed_1h ?? 0),
     jobs_pending: Math.max(jobs_pending, metric_jobs_pending ?? 0),
+    iam_sso_enabled: IAM_SSO_ENABLED,
+    iam_mfa_enforced: IAM_MFA_ENFORCED,
+    iam_scim_enabled: IAM_SCIM_ENABLED,
+    iam_last_sync_at: new Date().toISOString(),
     slo_p95_ms,
     slo_error_rate,
     slo_webhook_retry_rate,

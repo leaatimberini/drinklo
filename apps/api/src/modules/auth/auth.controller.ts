@@ -10,6 +10,6 @@ export class AuthController {
 
   @Post("login")
   login(@Body() body: LoginDto) {
-    return this.auth.login(body.email, body.password);
+    return this.auth.login(body.email, body.password, body.mfaCode);
   }
 }
