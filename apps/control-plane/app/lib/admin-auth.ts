@@ -2,9 +2,13 @@ import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { getTokenForRole, isRoleAllowed, type Role } from "./auth";
 
-export function isAdminRequest(req: NextRequest) {
+export function isAdminHeaderAuthorized(req: NextRequest) {
   const headerToken = req.headers.get("x-cp-admin-token");
-  if (headerToken && headerToken === process.env.CONTROL_PLANE_ADMIN_TOKEN) {
+  return Boolean(headerToken && headerToken === process.env.CONTROL_PLANE_ADMIN_TOKEN);
+}
+
+export function isAdminRequest(req: NextRequest) {
+  if (isAdminHeaderAuthorized(req)) {
     return true;
   }
 
