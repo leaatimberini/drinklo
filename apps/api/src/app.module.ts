@@ -54,6 +54,8 @@ import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
 import { SearchModule } from "./modules/search/search.module";
 import { RecommendationsModule } from "./modules/recommendations/recommendations.module";
 import { IamModule } from "./modules/iam/iam.module";
+import { ImmutableAuditModule } from "./modules/immutable-audit/immutable-audit.module";
+import { ImmutableAuditInterceptor } from "./modules/immutable-audit/immutable-audit.interceptor";
 
 @Module({
   imports: [
@@ -106,6 +108,7 @@ import { IamModule } from "./modules/iam/iam.module";
     SearchModule,
     RecommendationsModule,
     IamModule,
+    ImmutableAuditModule,
     AuthModule,
     CompaniesModule,
     UsersModule,
@@ -121,6 +124,10 @@ import { IamModule } from "./modules/iam/iam.module";
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ImmutableAuditInterceptor,
     },
   ],
 })

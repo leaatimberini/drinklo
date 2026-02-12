@@ -11,6 +11,8 @@ export type JwtPayload = {
   companyId: string;
   role: RoleName;
   permissions: string[];
+  email?: string;
+  name?: string;
 };
 
 @Injectable()
@@ -85,6 +87,8 @@ export class AuthService {
       companyId: user.companyId,
       role: roleName,
       permissions,
+      email: user.email,
+      name: user.name,
     };
 
     return {

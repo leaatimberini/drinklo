@@ -42,6 +42,7 @@ model Company {
   supportIncidents      SupportIncident[]
   plugins               CompanyPlugin[]
   eventLogs             EventLog[]
+  immutableAuditLogs    ImmutableAuditLog[]
   segments              Segment[]
   campaigns             Campaign[]
   flows                 Flow[]
@@ -359,6 +360,33 @@ model EventLog {
   @@index([source])
   @@index([receivedAt])
   @@index([status])
+}
+
+model ImmutableAuditLog {
+  id               String   @id @default(uuid())
+  companyId        String
+  category         String
+  action           String
+  method           String
+  route            String
+  statusCode       Int
+  actorUserId      String?
+  actorRole        String?
+  aggregateType    String?
+  aggregateId      String?
+  aggregateVersion Int?
+  payload          Json?
+  payloadHash      String
+  previousHash     String?
+  chainHash        String
+  createdAt        DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([companyId, category])
+  @@index([companyId, action])
+  @@index([companyId, aggregateType, aggregateId])
 }
 
 enum TriggerType {

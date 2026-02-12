@@ -7,6 +7,7 @@ export class StorageService {
   private readonly adapter: StorageAdapter;
   private readonly signedUrlTtlSeconds: number;
   private readonly publicFallbackTtlSeconds: number;
+  private readonly wormMode: boolean;
 
   constructor() {
     const bucket = process.env.STORAGE_BUCKET ?? "erp";
@@ -19,6 +20,7 @@ export class StorageService {
 
     this.signedUrlTtlSeconds = Number(process.env.STORAGE_SIGNED_URL_TTL_SECONDS ?? 900);
     this.publicFallbackTtlSeconds = Number(process.env.STORAGE_PUBLIC_FALLBACK_TTL_SECONDS ?? 604800);
+    this.wormMode = String(process.env.STORAGE_WORM_MODE ?? "false").toLowerCase() === "true";
 
     this.adapter = new S3StorageAdapter({
       bucket,
@@ -40,6 +42,9 @@ export class StorageService {
   }
 
   async delete(key: string) {
+    if (this.wormMode) {
+      throw new Error("WORM retention mode enabled: delete is blocked");
+    }
     return this.adapter.delete(key);
   }
 
