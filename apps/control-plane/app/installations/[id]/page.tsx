@@ -36,6 +36,11 @@ export default async function InstallationDetail({ params }: { params: { id: str
       take: 40,
     }),
   ]);
+  const chaosRuns = await prisma.chaosRun.findMany({
+    where: { installationId: installation.id },
+    orderBy: { createdAt: "desc" },
+    take: 30,
+  });
 
   return (
     <main>
@@ -96,6 +101,20 @@ export default async function InstallationDetail({ params }: { params: { id: str
           {vitals.map((sample) => (
             <li key={sample.id}>
               {sample.name}: {Math.round(sample.value)}ms {sample.path ? `(${sample.path})` : ""} ({sample.capturedAt.toISOString()})
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>Chaos runs</h3>
+        <ul>
+          {chaosRuns.map((run) => (
+            <li key={run.id}>
+              {run.scenario}: {run.status}
+              {run.sloP95Ms != null ? ` p95=${Math.round(run.sloP95Ms)}ms` : ""}
+              {run.sloErrorRate != null ? ` err=${(run.sloErrorRate * 100).toFixed(2)}%` : ""}
+              {` (${run.createdAt.toISOString()})`}
             </li>
           ))}
         </ul>

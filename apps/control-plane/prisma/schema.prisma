@@ -69,6 +69,7 @@ model Installation {
   finopsCosts   FinOpsCostRecord[]
   edgeInvalidations EdgeInvalidation[]
   webVitals   WebVitalSample[]
+  chaosRuns   ChaosRun[]
 
   @@index([clientName])
   @@index([domain])
@@ -114,6 +115,27 @@ model WebVitalSample {
   @@index([installationId, capturedAt])
   @@index([instanceId, capturedAt])
   @@index([name, capturedAt])
+}
+
+model ChaosRun {
+  id             String   @id @default(uuid())
+  installationId String?
+  instanceId     String
+  environment    String
+  scenario       String
+  status         String
+  sloP95Ms       Float?
+  sloErrorRate   Float?
+  sloWebhookRetryRate Float?
+  durationMs     Int?
+  details        Json?
+  createdAt      DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([environment, scenario, createdAt])
 }
 
 enum BillingAccountStatus {

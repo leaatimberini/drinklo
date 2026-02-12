@@ -24,6 +24,7 @@
     "failover:promote": "node scripts/promote-replica.mjs",
     "failover:simulate": "node scripts/simulate-failover.mjs",
     "deploy:bluegreen": "node scripts/blue-green-canary.mjs",
+    "chaos:staging": "node scripts/chaos-resilience.mjs",
     "backup:run": "node scripts/backup.mjs",
     "restore:run": "node scripts/restore.mjs",
     "provision:instance": "node scripts/provision-instance.mjs",

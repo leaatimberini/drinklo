@@ -25,6 +25,10 @@ export default async function Home() {
       take: 100,
     }),
   ]);
+  const chaosRuns = await prisma.chaosRun.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 30,
+  });
 
   const vitalsByName = recentVitals.reduce(
     (acc, item) => {
@@ -127,6 +131,18 @@ export default async function Home() {
             ? `${Math.round(vitalsByName.TTFB.sum / vitalsByName.TTFB.count)} ms`
             : "-"}
         </p>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h2>Chaos & Resilience</h2>
+        <p>Recent runs: {chaosRuns.length}</p>
+        <ul>
+          {chaosRuns.slice(0, 8).map((run) => (
+            <li key={run.id}>
+              {run.instanceId} - {run.scenario} - {run.status} ({new Date(run.createdAt).toLocaleString()})
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="card">
