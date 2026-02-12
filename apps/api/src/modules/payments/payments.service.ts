@@ -4,6 +4,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { MercadoPagoAdapter } from "./adapters/mercadopago.adapter";
 import { StockReservationService } from "../stock-reservations/stock-reservation.service";
 import { SecretsService } from "../secrets/secrets.service";
+import { DeveloperApiService } from "../developer-api/developer-api.service";
 
 @Injectable()
 export class PaymentsService {
@@ -11,6 +12,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly reservations: StockReservationService,
     private readonly secrets: SecretsService,
+    private readonly developerApi: DeveloperApiService,
   ) {}
 
   private async adapter(companyId: string) {
@@ -103,6 +105,14 @@ export class PaymentsService {
   }
 
   async updatePaymentStatus(orderId: string, status: PaymentStatus, raw: any, paymentId?: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { companyId: true },
+    });
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
     const payment = await this.prisma.payment.findFirst({
       where: { orderId, provider: PaymentProvider.MERCADOPAGO },
     });
@@ -140,6 +150,13 @@ export class PaymentsService {
 
     if (status === PaymentStatus.APPROVED) {
       await this.reservations.confirm(orderId);
+      await this.developerApi
+        .dispatchWebhookEvent(order.companyId, "PaymentApproved", {
+          orderId,
+          paymentId: paymentId ?? payment?.paymentId ?? null,
+          status,
+        })
+        .catch(() => undefined);
     }
     if (status === PaymentStatus.REJECTED || status === PaymentStatus.CANCELED) {
       await this.reservations.release(orderId, "cancel");

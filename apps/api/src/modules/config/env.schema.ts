@@ -7,6 +7,7 @@ export const EnvSchema = z.object({
   DATABASE_READ_REPLICA_URLS: z.string().optional().default(""),
   REDIS_URL: z.string().min(1),
   JWT_SECRET: z.string().min(1),
+  DEVELOPER_API_KEY_PEPPER: z.string().optional(),
   CORS_ORIGINS: z.string().optional().default(""),
 
   PAYMENT_SANDBOX: z.coerce.boolean().default(true),

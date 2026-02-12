@@ -7,9 +7,10 @@ import { StockReservationModule } from "../stock-reservations/stock-reservation.
 import { SecretsModule } from "../secrets/secrets.module";
 import { MetricsModule } from "../metrics/metrics.module";
 import { FraudModule } from "../fraud/fraud.module";
+import { DeveloperApiModule } from "../developer-api/developer-api.module";
 
 @Module({
-  imports: [StockReservationModule, SecretsModule, MetricsModule, FraudModule],
+  imports: [StockReservationModule, SecretsModule, MetricsModule, FraudModule, DeveloperApiModule],
   controllers: [MercadoPagoController, MercadoPagoWebhookController],
   providers: [PaymentsService, PrismaService],
   exports: [PaymentsService],

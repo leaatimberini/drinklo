@@ -103,6 +103,14 @@ async function bootstrap() {
     .setDescription("ERP backend")
     .setVersion(`v${versionPolicy.defaultVersion}`)
     .addBearerAuth()
+    .addApiKey(
+      {
+        type: "apiKey",
+        name: "x-api-key",
+        in: "header",
+      },
+      "developerApiKey",
+    )
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("/docs", app, document);

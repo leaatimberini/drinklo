@@ -62,6 +62,7 @@ import { FraudModule } from "./modules/fraud/fraud.module";
 import { DataGovernanceModule } from "./modules/data-governance/data-governance.module";
 import { EdgeCacheModule } from "./modules/edge-cache/edge-cache.module";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
+import { DeveloperApiModule } from "./modules/developer-api/developer-api.module";
 
 @Module({
   imports: [
@@ -121,6 +122,7 @@ import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
     DataGovernanceModule,
     EdgeCacheModule,
     AiCopilotModule,
+    DeveloperApiModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

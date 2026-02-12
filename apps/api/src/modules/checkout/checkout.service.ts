@@ -8,6 +8,7 @@ import { PluginsService } from "../plugins/plugins.service";
 import { EventsService } from "../events/events.service";
 import { PromosService } from "../promos/promos.service";
 import { FraudService } from "../fraud/fraud.service";
+import { DeveloperApiService } from "../developer-api/developer-api.service";
 
 @Injectable()
 export class CheckoutService {
@@ -19,6 +20,7 @@ export class CheckoutService {
     private readonly events: EventsService,
     private readonly promos: PromosService,
     private readonly fraud: FraudService,
+    private readonly developerApi: DeveloperApiService,
   ) {}
 
   async getCompany() {
@@ -236,6 +238,14 @@ export class CheckoutService {
         source: "checkout",
         ip: riskContext?.ip,
         geoCountry: riskContext?.geoCountry,
+      })
+      .catch(() => undefined);
+
+    await this.developerApi
+      .dispatchWebhookEvent(company.id, "OrderCreated", {
+        orderId: order.id,
+        shippingMode: order.shippingMode,
+        status: order.status,
       })
       .catch(() => undefined);
 

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
+import { DeveloperApiService } from "../developer-api/developer-api.service";
 import type {
   CreateStockItemDto,
   CreateStockLocationDto,
@@ -10,7 +11,39 @@ import type {
 
 @Injectable()
 export class StockService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly developerApi: DeveloperApiService,
+  ) {}
+
+  private async dispatchStockLowIfNeeded(input: { companyId: string; stockItemId: string; quantity: number }) {
+    const threshold = Number(process.env.DEVELOPER_API_STOCK_LOW_THRESHOLD ?? 5);
+    if (!Number.isFinite(threshold) || input.quantity > threshold) {
+      return;
+    }
+    const stock = await this.prisma.stockItem.findUnique({
+      where: { id: input.stockItemId },
+      include: { variant: { select: { sku: true, barcode: true, productId: true } }, location: true },
+    });
+    if (!stock) {
+      return;
+    }
+    await this.developerApi
+      .dispatchWebhookEvent(input.companyId, "StockLow", {
+        stockItemId: stock.id,
+        productId: stock.variant.productId,
+        variantId: stock.variantId,
+        sku: stock.variant.sku,
+        barcode: stock.variant.barcode,
+        locationId: stock.locationId,
+        locationName: stock.location.name,
+        quantity: stock.quantity,
+        reservedQuantity: stock.reservedQuantity,
+        available: stock.quantity - stock.reservedQuantity,
+        threshold,
+      })
+      .catch(() => undefined);
+  }
 
   private async getDefaultPriceListId(companyId: string) {
     const priceList =
@@ -157,7 +190,7 @@ export class StockService {
 
     const branchId = location.branchId ?? null;
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.stockItem.findFirst({
         where: { companyId, variantId: dto.variantId, locationId: dto.locationId, deletedAt: null },
       });
@@ -196,6 +229,8 @@ export class StockService {
 
       return updated;
     });
+    await this.dispatchStockLowIfNeeded({ companyId, stockItemId: updated.id, quantity: updated.quantity });
+    return updated;
   }
 
   async updateItem(
@@ -229,6 +264,7 @@ export class StockService {
       });
     }
 
+    await this.dispatchStockLowIfNeeded({ companyId, stockItemId: item.id, quantity: item.quantity });
     return item;
   }
 
@@ -259,6 +295,7 @@ export class StockService {
       },
     });
 
+    await this.dispatchStockLowIfNeeded({ companyId, stockItemId: item.id, quantity: item.quantity });
     return item;
   }
 }

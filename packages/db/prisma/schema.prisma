@@ -81,6 +81,10 @@ model Company {
   botCommandLogs        BotCommandLog[]
   aiCopilotLogs         AiCopilotLog[]
   aiCopilotProposals    AiCopilotProposal[]
+  developerApiKeys      DeveloperApiKey[]
+  developerApiUsages    DeveloperApiUsage[]
+  developerWebhooks     DeveloperWebhookEndpoint[]
+  developerWebhookDeliveries DeveloperWebhookDelivery[]
 }
 
 model CompanySettings {
@@ -260,6 +264,85 @@ model IntegrationHealthLog {
   @@index([provider])
   @@index([status])
   @@index([checkedAt])
+}
+
+model DeveloperApiKey {
+  id              String   @id @default(uuid())
+  companyId       String
+  name            String
+  keyPrefix       String
+  keyHash         String
+  scopes          String[]
+  rateLimitPerMin Int      @default(120)
+  lastUsedAt      DateTime?
+  revokedAt       DateTime?
+  createdById     String?
+  createdAt       DateTime @default(now())
+
+  company    Company  @relation(fields: [companyId], references: [id])
+  createdBy  User?    @relation("DeveloperApiKeyCreatedBy", fields: [createdById], references: [id])
+  usages     DeveloperApiUsage[]
+
+  @@unique([companyId, keyPrefix])
+  @@index([companyId, createdAt])
+  @@index([revokedAt])
+}
+
+model DeveloperApiUsage {
+  id          String   @id @default(uuid())
+  companyId   String
+  keyId       String?
+  route       String
+  method      String
+  statusCode  Int
+  ipMasked    String?
+  userAgent   String?
+  scopeDenied Boolean  @default(false)
+  rateLimited Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  company Company          @relation(fields: [companyId], references: [id])
+  key     DeveloperApiKey? @relation(fields: [keyId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([keyId, createdAt])
+  @@index([rateLimited, createdAt])
+}
+
+model DeveloperWebhookEndpoint {
+  id         String   @id @default(uuid())
+  companyId  String
+  name       String
+  url        String
+  events     String[]
+  secret     String
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  company    Company                   @relation(fields: [companyId], references: [id])
+  deliveries DeveloperWebhookDelivery[]
+
+  @@index([companyId, active])
+}
+
+model DeveloperWebhookDelivery {
+  id          String   @id @default(uuid())
+  companyId   String
+  endpointId  String
+  eventType   String
+  payload     Json
+  statusCode  Int?
+  error       String?
+  deliveredAt DateTime?
+  createdAt   DateTime @default(now())
+
+  company  Company                  @relation(fields: [companyId], references: [id])
+  endpoint DeveloperWebhookEndpoint @relation(fields: [endpointId], references: [id])
+
+  @@index([companyId, eventType, createdAt])
+  @@index([endpointId, createdAt])
 }
 
 model SupportCustomer {
@@ -1574,6 +1657,7 @@ model User {
   aiCopilotLogs  AiCopilotLog[] @relation("AiCopilotLogActor")
   createdAiCopilotProposals AiCopilotProposal[] @relation("AiCopilotProposalCreatedBy")
   approvedAiCopilotProposals AiCopilotProposal[] @relation("AiCopilotProposalApprovedBy")
+  createdDeveloperApiKeys DeveloperApiKey[] @relation("DeveloperApiKeyCreatedBy")
 
   @@unique([companyId, email])
   @@index([companyId])

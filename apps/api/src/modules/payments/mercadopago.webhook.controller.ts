@@ -169,9 +169,3 @@ export class MercadoPagoWebhookController {
     }
   }
 }
-    if (company) {
-      await this.prisma.webhookLog.updateMany({
-        where: { provider: "mercadopago", eventId: String(eventId), companyId: null },
-        data: { companyId: company.id },
-      });
-    }
