@@ -79,6 +79,8 @@ model Company {
   governanceRuns        GovernanceRun[]
   webhookLogs           WebhookLog[]
   botCommandLogs        BotCommandLog[]
+  aiCopilotLogs         AiCopilotLog[]
+  aiCopilotProposals    AiCopilotProposal[]
 }
 
 model CompanySettings {
@@ -406,6 +408,51 @@ model ImmutableAuditLog {
   @@index([companyId, category])
   @@index([companyId, action])
   @@index([companyId, aggregateType, aggregateId])
+}
+
+model AiCopilotLog {
+  id             String   @id @default(uuid())
+  companyId      String
+  userId         String?
+  mode           String   @default("admin")
+  promptRedacted String
+  response       Json?
+  status         String   @default("ok")
+  dlp            Json?
+  createdAt      DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  user    User?   @relation("AiCopilotLogActor", fields: [userId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([userId])
+  @@index([mode])
+}
+
+model AiCopilotProposal {
+  id                 String                  @id @default(uuid())
+  companyId          String
+  createdByUserId    String?
+  approvedByUserId   String?
+  status             AiCopilotProposalStatus @default(PENDING)
+  actionType         AiCopilotActionType
+  requiredPermission String
+  promptRedacted     String
+  preview            Json
+  executionResult    Json?
+  approvedAt         DateTime?
+  executedAt         DateTime?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  company    Company @relation(fields: [companyId], references: [id])
+  createdBy  User?   @relation("AiCopilotProposalCreatedBy", fields: [createdByUserId], references: [id])
+  approvedBy User?   @relation("AiCopilotProposalApprovedBy", fields: [approvedByUserId], references: [id])
+
+  @@index([companyId, status, createdAt])
+  @@index([createdByUserId])
+  @@index([approvedByUserId])
+  @@index([actionType])
 }
 
 enum TriggerType {
@@ -882,6 +929,20 @@ enum ExperimentStatus {
 enum ExperimentEventType {
   ADD_TO_CART
   CONVERSION
+}
+
+enum AiCopilotProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+}
+
+enum AiCopilotActionType {
+  CREATE_COUPON
+  CREATE_PURCHASE_ORDER
+  ADJUST_STOCK
 }
 
 model Coupon {
@@ -1510,6 +1571,9 @@ model User {
   createdLegalHolds LegalHold[] @relation("LegalHoldCreatedBy")
   releasedLegalHolds LegalHold[] @relation("LegalHoldReleasedBy")
   governanceRuns GovernanceRun[] @relation("GovernanceRunTriggeredBy")
+  aiCopilotLogs  AiCopilotLog[] @relation("AiCopilotLogActor")
+  createdAiCopilotProposals AiCopilotProposal[] @relation("AiCopilotProposalCreatedBy")
+  approvedAiCopilotProposals AiCopilotProposal[] @relation("AiCopilotProposalApprovedBy")
 
   @@unique([companyId, email])
   @@index([companyId])

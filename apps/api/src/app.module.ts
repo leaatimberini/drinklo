@@ -61,6 +61,7 @@ import { LotsModule } from "./modules/lots/lots.module";
 import { FraudModule } from "./modules/fraud/fraud.module";
 import { DataGovernanceModule } from "./modules/data-governance/data-governance.module";
 import { EdgeCacheModule } from "./modules/edge-cache/edge-cache.module";
+import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 
 @Module({
   imports: [
@@ -119,6 +120,7 @@ import { EdgeCacheModule } from "./modules/edge-cache/edge-cache.module";
     FraudModule,
     DataGovernanceModule,
     EdgeCacheModule,
+    AiCopilotModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

@@ -16,4 +16,8 @@ describe("bot handlers", () => {
   it("/pedido_estado parses id", () => {
     expect(parseArgs("/pedido_estado order1")).toBe("order1");
   });
+
+  it("/copiloto parses prompt", () => {
+    expect(parseArgs("/copiloto crear cupon para clientes")).toBe("crear cupon para clientes");
+  });
 });

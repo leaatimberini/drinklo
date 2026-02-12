@@ -359,6 +359,57 @@ bot.command("pedido_estado", async (ctx) => {
   await trackCommand("/pedido_estado", ctx, "ok", { orderId }, admin.adminId);
 });
 
+bot.command("copiloto", async (ctx) => {
+  const chatId = String(ctx.chat?.id ?? "");
+  if (!checkRateLimit(chatId)) {
+    await trackCommand("/copiloto", ctx, "rate_limited");
+    return ctx.reply("Rate limit");
+  }
+  if (!isAllowed(ctx)) {
+    await trackCommand("/copiloto", ctx, "denied");
+    return ctx.reply("No autorizado");
+  }
+
+  const admin = await getAdminToken();
+  if (!admin) {
+    await trackCommand("/copiloto", ctx, "invalid_admin");
+    return ctx.reply("Admin credentials invalid");
+  }
+
+  const text = ctx.message.text ?? "";
+  const prompt = text.split(" ").slice(1).join(" ").trim();
+  if (!prompt) {
+    await trackCommand("/copiloto", ctx, "invalid_args");
+    return ctx.reply("Uso: /copiloto <consulta o accion>");
+  }
+
+  const res = await fetch(`${apiUrl}/admin/copilot/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${admin.token}` },
+    body: JSON.stringify({ prompt, mode: "telegram" }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    await trackCommand("/copiloto", ctx, "error", payload, admin.adminId);
+    return ctx.reply(payload.message ?? "Error en copiloto");
+  }
+
+  const data = await res.json();
+  const buttons = (data.proposals ?? [])
+    .slice(0, 4)
+    .map((proposal: any) =>
+      [Markup.button.callback(`Aprobar ${proposal.actionType}`, `copilot:approve:${proposal.id}`)]);
+
+  if (buttons.length > 0) {
+    await ctx.reply(String(data.message ?? "Respuesta copiloto"), Markup.inlineKeyboard(buttons));
+  } else {
+    await ctx.reply(String(data.message ?? "Respuesta copiloto"));
+  }
+
+  await audit("/copiloto", chatId, "ok", { proposals: (data.proposals ?? []).length }, admin.adminId, admin.token);
+  await trackCommand("/copiloto", ctx, "ok", { proposals: (data.proposals ?? []).length }, admin.adminId);
+});
+
 bot.on("callback_query", async (ctx) => {
   const chatId = String(ctx.chat?.id ?? "");
   if (!checkRateLimit(chatId)) {
@@ -392,6 +443,29 @@ bot.on("callback_query", async (ctx) => {
       await ctx.reply("Error creando cliente");
       await audit("/cliente_nuevo", chatId, "error", { name }, admin.adminId, admin.token);
       await trackCommand("/cliente_nuevo", ctx, "error", { name }, admin.adminId);
+    }
+  }
+  if (data.startsWith("copilot:approve:")) {
+    const admin = await getAdminToken();
+    if (!admin) {
+      await trackCommand("/copiloto", ctx, "invalid_admin");
+      return ctx.reply("Admin credentials invalid");
+    }
+    const proposalId = data.replace("copilot:approve:", "");
+    const res = await fetch(`${apiUrl}/admin/copilot/proposals/${proposalId}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${admin.token}` },
+      body: JSON.stringify({ note: "approved_from_telegram" }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (res.ok) {
+      await ctx.reply(`Copiloto ejecutado: ${payload?.execution?.resource ?? "ok"}`);
+      await audit("/copiloto", chatId, "ok", { proposalId }, admin.adminId, admin.token);
+      await trackCommand("/copiloto", ctx, "ok", { proposalId }, admin.adminId);
+    } else {
+      await ctx.reply(payload.message ?? "No se pudo aprobar la propuesta");
+      await audit("/copiloto", chatId, "error", { proposalId, payload }, admin.adminId, admin.token);
+      await trackCommand("/copiloto", ctx, "error", { proposalId }, admin.adminId);
     }
   }
   await ctx.answerCbQuery();
