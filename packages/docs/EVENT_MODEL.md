@@ -23,6 +23,7 @@ All events must follow this envelope (see `packages/shared/src/event-model.ts`):
 - `CartUpdated`: cart change (storefront)
 - `EmailSent`: email sent (API)
 - `PromoApplied`: promo applied (storefront/admin)
+- `FeatureUsageEvent`: product feature usage tracking (admin/bot/api)
 - `BotCommand`: bot command executed (bot)
 - `AgentHeartbeat`: instance agent heartbeat (agent)
 - `DashboardViewed`: admin dashboard viewed (admin)

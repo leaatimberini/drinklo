@@ -29,6 +29,7 @@ export type HeartbeatPayload = {
   events_total_1h?: number;
   events_failed_1h?: number;
   events_avg_lag_ms?: number;
+  feature_usage?: any;
   last_backup_at?: string | null;
   backup_id?: string;
   backup_size_bytes?: number;

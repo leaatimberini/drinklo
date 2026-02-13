@@ -173,6 +173,41 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  const featureUsage = body.feature_usage;
+  if (featureUsage && featureUsage.ok && Array.isArray(featureUsage.items)) {
+    const windowFrom = featureUsage.windowFrom ? new Date(featureUsage.windowFrom) : null;
+    const windowTo = featureUsage.windowTo ? new Date(featureUsage.windowTo) : null;
+    const windowMinutes = Number(featureUsage.windowMinutes ?? 0);
+    const safeWindowMinutes = Number.isFinite(windowMinutes) ? Math.min(Math.max(1, windowMinutes), 24 * 60) : 60;
+
+    if (windowFrom && windowTo && !Number.isNaN(windowFrom.getTime()) && !Number.isNaN(windowTo.getTime())) {
+      const items = featureUsage.items.slice(0, 200).map((item: any) => {
+        const feature = String(item.feature ?? "unknown").slice(0, 80);
+        const action = String(item.action ?? "unknown").slice(0, 80);
+        const count = Math.min(Math.max(0, Number(item.count ?? 0)), 1_000_000_000);
+        return {
+          installationId: installation.id,
+          instanceId,
+          version: body.version ?? null,
+          feature,
+          action,
+          count: Number.isFinite(count) ? Math.trunc(count) : 0,
+          windowFrom,
+          windowTo,
+          windowMinutes: safeWindowMinutes,
+          capturedAt: now,
+        };
+      });
+
+      if (items.length > 0) {
+        await prisma.featureUsageSample.createMany({
+          data: items,
+          skipDuplicates: true,
+        });
+      }
+    }
+  }
+
   await prisma.finOpsSnapshot.create({
     data: {
       installationId: installation.id,

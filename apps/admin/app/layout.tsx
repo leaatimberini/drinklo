@@ -2,6 +2,7 @@ import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
 import { SwRegister } from "./sw-register";
 import type { ReactNode } from "react";
+import { TelemetryTracker } from "./telemetry-tracker";
 
 export const metadata = {
   title: "ERP Admin",
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <ThemeProvider target="admin" />
+        <TelemetryTracker />
         <SwRegister />
         <div id="main-content">{children}</div>
       </body>

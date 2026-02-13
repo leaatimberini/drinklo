@@ -17,6 +17,7 @@
     "CartUpdated",
     "EmailSent",
     "PromoApplied",
+    "FeatureUsageEvent",
     "BotCommand",
     "AgentHeartbeat",
     "DashboardViewed"

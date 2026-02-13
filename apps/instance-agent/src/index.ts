@@ -37,6 +37,8 @@ const BACKUP_META_PATH = process.env.BACKUP_META_PATH ?? "";
 const METRICS_URL = process.env.AGENT_METRICS_URL ?? "http://api:3001/metrics";
 const EVENTS_STATS_URL = process.env.AGENT_EVENTS_STATS_URL ?? "http://api:3001/admin/events/stats";
 const EVENTS_INGEST_URL = process.env.AGENT_EVENTS_URL ?? "http://api:3001/events/ingest";
+const FEATURE_USAGE_URL =
+  process.env.AGENT_FEATURE_USAGE_URL ?? "http://api:3001/admin/events/feature-usage";
 const IAM_SSO_ENABLED = String(process.env.IAM_SSO_ENABLED ?? "false").toLowerCase() === "true";
 const IAM_MFA_ENFORCED = String(process.env.IAM_MFA_ENFORCED ?? "false").toLowerCase() === "true";
 const IAM_SCIM_ENABLED = String(process.env.IAM_SCIM_ENABLED ?? "false").toLowerCase() === "true";
@@ -51,6 +53,7 @@ const REGIONAL_HEALTH_ENDPOINTS = process.env.REGIONAL_HEALTH_ENDPOINTS ?? "";
 const exec = promisify(execCb);
 
 const startTime = Date.now();
+let featureUsageCursor: Date | null = null;
 
 function parseHostPort(url: string, defaultPort: number) {
   try {
@@ -338,6 +341,7 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
   let events_total_1h: number | undefined;
   let events_failed_1h: number | undefined;
   let events_avg_lag_ms: number | undefined;
+  let feature_usage: any | undefined;
   const regionalHealth = await probeRegionalHealth();
   if (EVENTS_STATS_URL && OPS_TOKEN) {
     try {
@@ -345,6 +349,20 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
       events_total_1h = stats.total1h;
       events_failed_1h = stats.failed1h;
       events_avg_lag_ms = stats.avgLagMs;
+    } catch {
+      // ignore
+    }
+  }
+
+  if (FEATURE_USAGE_URL && OPS_TOKEN) {
+    const now = new Date();
+    const from = featureUsageCursor ?? new Date(now.getTime() - 60 * 60 * 1000);
+    try {
+      const params = new URLSearchParams();
+      params.set("from", from.toISOString());
+      params.set("to", now.toISOString());
+      feature_usage = await fetchJson(`${FEATURE_USAGE_URL}?${params.toString()}`, OPS_TOKEN);
+      featureUsageCursor = now;
     } catch {
       // ignore
     }
@@ -395,6 +413,7 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
     events_total_1h,
     events_failed_1h,
     events_avg_lag_ms,
+    feature_usage,
   });
 }
 

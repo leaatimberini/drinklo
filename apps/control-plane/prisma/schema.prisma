@@ -73,6 +73,7 @@ model Installation {
   complianceEvidence ComplianceEvidence[]
   dastFindings DastFinding[]
   accessibilityReports AccessibilityReport[]
+  featureUsageSamples FeatureUsageSample[]
 
   @@index([clientName])
   @@index([domain])
@@ -209,6 +210,27 @@ model AccessibilityReport {
   @@index([installationId, measuredAt])
   @@index([instanceId, measuredAt])
   @@index([version, measuredAt])
+}
+
+model FeatureUsageSample {
+  id             String   @id @default(uuid())
+  installationId String?
+  instanceId     String
+  version        String?
+  feature        String
+  action         String
+  count          Int
+  windowFrom     DateTime
+  windowTo       DateTime
+  windowMinutes  Int
+  capturedAt     DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@unique([instanceId, windowFrom, windowTo, feature, action])
+  @@index([installationId, capturedAt])
+  @@index([instanceId, capturedAt])
+  @@index([feature, capturedAt])
 }
 
 model ChaosRun {

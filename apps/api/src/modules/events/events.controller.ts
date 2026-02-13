@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { Roles } from "../common/rbac.decorators";
@@ -32,6 +32,25 @@ export class EventsController {
   async stats(@Req() req: any) {
     const companyId = req.user?.companyId;
     return this.events.getStats(companyId);
+  }
+
+  @Get("admin/events/feature-usage")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Roles("admin", "support")
+  async featureUsage(
+    @Req() req: any,
+    @Query("from") from?: string,
+    @Query("to") to?: string,
+    @Query("windowMinutes") windowMinutes?: string,
+  ) {
+    const companyId = req.user?.companyId;
+    return this.events.getFeatureUsage({
+      companyId,
+      from: from ?? undefined,
+      to: to ?? undefined,
+      windowMinutes: windowMinutes != null ? Number(windowMinutes) : undefined,
+    });
   }
 
   @Get("events/schema")

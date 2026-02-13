@@ -7,6 +7,7 @@ export const EventNames = [
   "CartUpdated",
   "EmailSent",
   "PromoApplied",
+  "FeatureUsageEvent",
   "BotCommand",
   "AgentHeartbeat",
   "DashboardViewed",

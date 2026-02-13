@@ -72,6 +72,8 @@ export default async function Home() {
         <Link href="/security-dast">DAST Findings</Link>
         {" | "}
         <Link href="/accessibility">Accessibility</Link>
+        {" | "}
+        <Link href="/product-telemetry">Product Telemetry</Link>
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>

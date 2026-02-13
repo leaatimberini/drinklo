@@ -66,6 +66,22 @@ export class BillingService {
           response: deterministic.raw as any,
         },
       });
+      await this.prisma.eventLog.create({
+        data: {
+          companyId: company.id,
+          name: "FeatureUsageEvent",
+          source: "api",
+          schemaVersion: 1,
+          occurredAt: new Date(),
+          payload: {
+            feature: "arca",
+            action: "invoice_created",
+            mode: "sandbox",
+            result: deterministic.result,
+          },
+          status: "stored",
+        },
+      });
       return invoice;
     }
 
@@ -126,6 +142,23 @@ export class BillingService {
         currency: dto.currency ?? "ARS",
         status: caeResponse.result,
         raw: caeResponse.raw,
+      },
+    });
+
+    await this.prisma.eventLog.create({
+      data: {
+        companyId: company.id,
+        name: "FeatureUsageEvent",
+        source: "api",
+        schemaVersion: 1,
+        occurredAt: new Date(),
+        payload: {
+          feature: "arca",
+          action: "invoice_created",
+          mode: env === "HOMO" ? "homo" : "prod",
+          result: caeResponse.result,
+        },
+        status: "stored",
       },
     });
 

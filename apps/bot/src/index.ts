@@ -42,6 +42,18 @@ async function trackCommand(command: string, ctx: any, status: string, payload?:
     },
     { subjectId: adminId ?? null, token: eventToken },
   );
+
+  await emitEvent(
+    apiUrl,
+    "FeatureUsageEvent",
+    {
+      feature: "bot",
+      action: "command",
+      command,
+      status,
+    },
+    { subjectId: adminId ?? null, token: eventToken },
+  );
 }
 
 async function getAdminToken() {

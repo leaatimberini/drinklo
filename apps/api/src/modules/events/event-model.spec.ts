@@ -37,4 +37,16 @@ describe("event model contract", () => {
     });
     expect(result.ok).toBe(true);
   });
+
+  it("accepts FeatureUsageEvent", () => {
+    const result = validateEvent({
+      id: "evt-4",
+      name: "FeatureUsageEvent",
+      schemaVersion: 1,
+      occurredAt: new Date().toISOString(),
+      source: "admin",
+      payload: { feature: "pos", action: "view", pathname: "/pos" },
+    });
+    expect(result.ok).toBe(true);
+  });
 });

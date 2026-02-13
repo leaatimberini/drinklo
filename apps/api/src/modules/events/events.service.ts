@@ -4,6 +4,13 @@ import { validateEvent, type EventEnvelope } from "@erp/shared/event-model";
 
 type QueueItem = EventEnvelope;
 
+type FeatureUsageQuery = {
+  companyId?: string;
+  from?: string;
+  to?: string;
+  windowMinutes?: number;
+};
+
 @Injectable()
 export class EventsService {
   private queue: QueueItem[] = [];
@@ -89,7 +96,9 @@ export class EventsService {
 
   async getStats(companyId?: string) {
     const since = new Date(Date.now() - 60 * 60 * 1000);
-    const where = companyId ? { companyId, receivedAt: { gte: since } } : { receivedAt: { gte: since } };
+    const where = companyId
+      ? { OR: [{ companyId }, { companyId: null }], receivedAt: { gte: since } }
+      : { receivedAt: { gte: since } };
     const total = await this.prisma.eventLog.count({ where });
     const failed = await this.prisma.eventLog.count({ where: { ...where, status: { in: ["failed", "invalid"] } } });
     const events = await this.prisma.eventLog.findMany({
@@ -101,5 +110,53 @@ export class EventsService {
     const lags = events.map((e) => e.receivedAt.getTime() - e.occurredAt.getTime());
     const avgLagMs = lags.length ? Math.round(lags.reduce((a, b) => a + b, 0) / lags.length) : 0;
     return { total1h: total, failed1h: failed, avgLagMs };
+  }
+
+  async getFeatureUsage(query: FeatureUsageQuery) {
+    const now = new Date();
+    const windowMinutesRaw = query.windowMinutes ?? 60;
+    const windowMinutes = Number.isFinite(windowMinutesRaw) ? Math.min(Math.max(1, windowMinutesRaw), 24 * 60) : 60;
+
+    const from = query.from ? new Date(query.from) : new Date(now.getTime() - windowMinutes * 60 * 1000);
+    const to = query.to ? new Date(query.to) : now;
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from.getTime() >= to.getTime()) {
+      return { ok: false, message: "invalid time range" };
+    }
+
+    const companyId = query.companyId ?? null;
+
+    const rows = await this.prisma.$queryRaw<Array<{ feature: string | null; action: string | null; count: bigint }>>`
+      SELECT
+        (payload->>'feature') as feature,
+        (payload->>'action') as action,
+        COUNT(*)::bigint as count
+      FROM "EventLog"
+      WHERE
+        "name" = 'FeatureUsageEvent'
+        AND "receivedAt" >= ${from}
+        AND "receivedAt" < ${to}
+        AND (payload->>'feature') IS NOT NULL
+        AND (
+          ${companyId}::text IS NULL
+          OR "companyId" = ${companyId}
+          OR "companyId" IS NULL
+        )
+      GROUP BY 1, 2
+      ORDER BY count DESC;
+    `;
+
+    const items = rows.map((row) => ({
+      feature: row.feature ?? "unknown",
+      action: row.action ?? "unknown",
+      count: Number(row.count),
+    }));
+
+    return {
+      ok: true,
+      windowFrom: from.toISOString(),
+      windowTo: to.toISOString(),
+      windowMinutes,
+      items,
+    };
   }
 }
