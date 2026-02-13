@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-12T16:39:05.456Z",
+  "generatedAt": "2026-02-13T18:30:51.434Z",
   "version": "v1",
   "title": "ERP API v1",
-  "endpointCount": 229,
+  "endpointCount": 233,
   "endpoints": [
     {
       "method": "GET",
@@ -657,6 +657,30 @@
       "route": "/admin/reconciliation/report",
       "operationId": "get_admin_reconciliation_report",
       "source": "apps/api/src/modules/reconciliation/reconciliation.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/sandbox/mode",
+      "operationId": "post_admin_sandbox_mode",
+      "source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/sandbox/reset",
+      "operationId": "post_admin_sandbox_reset",
+      "source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+    },
+    {
+      "method": "POST",
+      "route": "/admin/sandbox/simulate-payment/:orderId",
+      "operationId": "post_admin_sandbox_simulate_payment_orderId",
+      "source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+    },
+    {
+      "method": "GET",
+      "route": "/admin/sandbox/status",
+      "operationId": "get_admin_sandbox_status",
+      "source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
     },
     {
       "method": "GET",

@@ -14,7 +14,7 @@
     "generate:types": "node scripts/generate-types.mjs",
     "build": "pnpm generate:types && tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

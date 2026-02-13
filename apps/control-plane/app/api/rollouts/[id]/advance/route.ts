@@ -3,13 +3,15 @@ import { prisma } from "../../../../lib/prisma";
 import { isAdminRequest } from "../../../../lib/admin-auth";
 import { createBatch } from "../../../../lib/updates";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, ctx: any) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
+  const id = ctx?.params?.id as string;
+
   const rollout = await prisma.rollout.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { batches: true },
   });
   if (!rollout) {

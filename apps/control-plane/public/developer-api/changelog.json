@@ -1,6 +1,16 @@
 {
-  "generatedAt": "2026-02-12T16:39:05.507Z",
+  "generatedAt": "2026-02-13T18:30:51.493Z",
   "entries": [
+    {
+      "sha": "ba2f057",
+      "date": "2026-02-13",
+      "subject": "feat: product telemetry events and control-plane adoption dashboard"
+    },
+    {
+      "sha": "7953330",
+      "date": "2026-02-12",
+      "subject": "feat(sandbox): add per-company sandbox mode, reset tools and harness"
+    },
     {
       "sha": "673d1e2",
       "date": "2026-02-12",

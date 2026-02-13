@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(pkg.zip, {
     headers: {
       "content-type": "application/zip",
-      "content-disposition": `attachment; filename=\"${pkg.filename}\"`,
+      "content-disposition": `attachment; filename="${pkg.filename}"`,
       "x-audit-signature": pkg.signature,
     },
   });

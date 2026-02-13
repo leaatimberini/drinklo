@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { getTokenForRole, type Role } from "../lib/auth";
 
 export async function setCookie(role: string, token: string) {
-  const cookieJar = cookies();
+  const cookieJar = await cookies();
   const expected = getTokenForRole(role as Role);
   if (!expected || expected !== token) {
     throw new Error("Invalid token");

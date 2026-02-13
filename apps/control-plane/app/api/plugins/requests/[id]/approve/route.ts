@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { isAdminRequest } from "../../../../../lib/admin-auth";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, ctx: any) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const request = await prisma.pluginRequest.findUnique({ where: { id: params.id } });
+  const id = ctx?.params?.id as string;
+  const request = await prisma.pluginRequest.findUnique({ where: { id } });
   if (!request) {
     return NextResponse.json({ error: "request not found" }, { status: 404 });
   }

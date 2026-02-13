@@ -56,7 +56,7 @@ export async function ingestDastFindings(input: {
       runId: input.runId ?? null,
       kind: "dast-zap",
       status: input.status ?? "completed",
-      summary: input.summary ?? null,
+      summary: input.summary ?? undefined,
     },
   });
 
@@ -92,7 +92,7 @@ export async function ingestDastFindings(input: {
           title,
           evidence: finding.evidence ?? null,
           recommendation: finding.recommendation ?? null,
-          metadata: finding.metadata ?? null,
+          metadata: finding.metadata ?? undefined,
           status: existing.status === "fixed" ? "open" : existing.status,
           lastSeenAt: now,
           slaDueAt: existing.slaDueAt ?? computeSlaDueAt(severity, now),
@@ -116,7 +116,7 @@ export async function ingestDastFindings(input: {
           firstSeenAt: now,
           lastSeenAt: now,
           slaDueAt: computeSlaDueAt(severity, now),
-          metadata: finding.metadata ?? null,
+          metadata: finding.metadata ?? undefined,
         },
       });
       created += 1;

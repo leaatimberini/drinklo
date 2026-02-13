@@ -1,8 +1,11 @@
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 
-export default async function InstallationDetail({ params }: { params: { id: string } }) {
-  const installation = await prisma.installation.findUnique({ where: { id: params.id } });
+export const dynamic = "force-dynamic";
+
+export default async function InstallationDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const installation = await prisma.installation.findUnique({ where: { id } });
   if (!installation) {
     return (
       <main>

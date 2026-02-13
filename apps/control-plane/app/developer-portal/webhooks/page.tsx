@@ -16,11 +16,11 @@ export default function DeveloperPortalWebhooksPage() {
         <li>`x-devwebhook-id`</li>
         <li>`x-devwebhook-event`</li>
         <li>`x-devwebhook-timestamp`</li>
-        <li>`x-devwebhook-signature` (`t=<unix>,v1=<hmac>`)</li>
+        <li>`x-devwebhook-signature` (`t=&lt;unix&gt;,v1=&lt;hmac&gt;`)</li>
       </ul>
 
       <h3>Signature</h3>
-      <p>Signed payload: `<timestamp>.<raw-json-body>` using HMAC SHA-256.</p>
+      <p>Signed payload: `&lt;timestamp&gt;.&lt;raw-json-body&gt;` using HMAC SHA-256.</p>
 
       <h3>Node Verification Example</h3>
       <pre>{`import crypto from "node:crypto";

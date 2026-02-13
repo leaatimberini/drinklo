@@ -1,4 +1,4 @@
-import { validateEvent } from "@erp/shared/event-model";
+import { validateEvent } from "@erp/shared";
 
 describe("event model contract", () => {
   it("accepts a valid event envelope", () => {

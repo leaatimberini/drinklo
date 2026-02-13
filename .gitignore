@@ -5,3 +5,5 @@ dist
 .next
 coverage
 backups
+.turbo
+apps/control-plane/app/lib/generated

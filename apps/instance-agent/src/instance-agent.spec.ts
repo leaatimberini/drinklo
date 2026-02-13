@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { signPayload, verifySignature } from "./signing";
 import { validateHeartbeat } from "./payload";
 

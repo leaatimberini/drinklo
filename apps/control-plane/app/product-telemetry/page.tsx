@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "../lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 function formatBaYmd(date: Date) {
   return date.toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
 }
@@ -82,10 +84,15 @@ function playbooksForSignals(signals: string[]) {
   return recs.length ? recs : ["No playbook suggestions."];
 }
 
-export default async function ProductTelemetryPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
-  const instanceIdFilter = typeof searchParams?.instanceId === "string" ? searchParams?.instanceId.trim() : "";
-  const fromParam = typeof searchParams?.from === "string" ? searchParams?.from : null;
-  const toParam = typeof searchParams?.to === "string" ? searchParams?.to : null;
+export default async function ProductTelemetryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const instanceIdFilter = typeof sp.instanceId === "string" ? sp.instanceId.trim() : "";
+  const fromParam = typeof sp.from === "string" ? sp.from : null;
+  const toParam = typeof sp.to === "string" ? sp.to : null;
 
   const parsed = parseBaRange(fromParam, toParam);
   const validated = clampRange(parsed.fromUtc, parsed.toUtc);
@@ -250,4 +257,3 @@ export default async function ProductTelemetryPage({ searchParams }: { searchPar
     </main>
   );
 }
-

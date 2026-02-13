@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { validateEvent, type EventEnvelope } from "@erp/shared/event-model";
+import { validateEvent, type EventEnvelope } from "@erp/shared";
 
 type QueueItem = EventEnvelope;
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "../../../../lib/admin-auth";
 import { updateDastFindingStatus } from "../../../../lib/dast-findings";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, ctx: any) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
@@ -13,6 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "invalid status" }, { status: 400 });
   }
 
-  const updated = await updateDastFindingStatus(params.id, status as any, body.note ?? null);
+  const id = ctx?.params?.id as string;
+  const updated = await updateDastFindingStatus(id, status as any, body.note ?? null);
   return NextResponse.json({ id: updated.id, status: updated.status, triagedAt: updated.triagedAt, fixedAt: updated.fixedAt });
 }

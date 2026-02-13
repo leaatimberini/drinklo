@@ -2,7 +2,7 @@ export default function DeveloperPortalAuthPage() {
   return (
     <div className="card">
       <h2>Auth and Scopes</h2>
-      <p>Use `x-api-key` header with value `<prefix>.<secret>`.</p>
+      <p>Use `x-api-key` header with value {"<prefix>.<secret>"}.</p>
 
       <h3>Flow</h3>
       <ol>

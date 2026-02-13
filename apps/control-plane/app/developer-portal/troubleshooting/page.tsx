@@ -6,7 +6,7 @@ export default function DeveloperPortalTroubleshootingPage() {
       <h3>401 Unauthorized</h3>
       <ul>
         <li>Missing `x-api-key` header.</li>
-        <li>Malformed key format. Expected `<prefix>.<secret>`.</li>
+        <li>Malformed key format. Expected {"<prefix>.<secret>"}.</li>
         <li>Revoked key.</li>
       </ul>
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma";
+import { prisma } from "../../../../../lib/prisma";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -7,11 +7,12 @@ function requireToken(req: NextRequest) {
   return token && expected && token === expected;
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, ctx: any) {
   if (!requireToken(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  const invoice = await prisma.billingInvoice.findUnique({ where: { id: params.id } });
+  const id = ctx?.params?.id as string;
+  const invoice = await prisma.billingInvoice.findUnique({ where: { id } });
   if (!invoice) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   const updated = await prisma.billingInvoice.update({

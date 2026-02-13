@@ -1,5 +1,7 @@
 import { prisma } from "../lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccessibilityPage() {
   const reports = await prisma.accessibilityReport.findMany({
     orderBy: { measuredAt: "desc" },

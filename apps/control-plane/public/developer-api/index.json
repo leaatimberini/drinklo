@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-02-12T16:39:05.461Z",
+  "generatedAt": "2026-02-13T18:30:51.439Z",
   "versions": [
     {
       "version": "v1",
-      "endpointCount": 229,
+      "endpointCount": 233,
       "title": "ERP API v1"
     },
     {
       "version": "v2",
-      "endpointCount": 229,
+      "endpointCount": 233,
       "title": "ERP API v2"
     }
   ]
