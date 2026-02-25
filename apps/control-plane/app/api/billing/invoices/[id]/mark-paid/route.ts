@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
+import { recordBillingPaymentLifecycleEvents } from "../../../../../lib/trial-funnel-analytics";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -29,5 +30,13 @@ export async function POST(req: NextRequest, ctx: any) {
       currency: updated.currency,
     },
   });
+  await recordBillingPaymentLifecycleEvents(prisma as any, {
+    billingAccountId: updated.accountId,
+    invoiceId: updated.id,
+    provider: updated.provider,
+    paidAt: updated.paidAt ?? new Date(),
+    source: "manual-mark-paid",
+    raw: { status: "PAID" },
+  }).catch(() => undefined);
   return NextResponse.json(updated);
 }

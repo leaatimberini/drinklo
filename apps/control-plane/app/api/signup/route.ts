@@ -9,6 +9,7 @@ import {
   normalizeTrialCode,
   parseList,
 } from "../../lib/trial-campaigns";
+import { recordTrialLifecycleEvent } from "../../lib/trial-funnel-analytics";
 
 function buildInstanceId(input: { companyName?: string | null; domain?: string | null }) {
   const base =
@@ -154,6 +155,7 @@ export async function POST(req: NextRequest) {
       utmMedium: body.utmMedium ? String(body.utmMedium) : null,
       utmTerm: body.utmTerm ? String(body.utmTerm) : null,
       utmContent: body.utmContent ? String(body.utmContent) : null,
+      businessType: body.businessType ? String(body.businessType) : null,
       ipHash,
       fingerprintHash,
     },
@@ -272,6 +274,25 @@ export async function POST(req: NextRequest) {
       companyId: body.companyId ? String(body.companyId) : null,
     },
   });
+
+  if (billingAccount && decision.status === "REDEEMED") {
+    await recordTrialLifecycleEvent(prisma as any, {
+      eventType: "TrialStarted",
+      eventAt: now,
+      dedupeKey: `trial-started:${billingAccount.id}`,
+      campaignId: campaign.id,
+      redemptionId: redemption.id,
+      billingAccountId: billingAccount.id,
+      installationId: installation.id,
+      instanceId: billingAccount.instanceId,
+      businessType: body.businessType ? String(body.businessType) : null,
+      source: "public-signup",
+      properties: {
+        tier: campaign.tier,
+        durationDays: campaign.durationDays,
+      },
+    }).catch(() => undefined);
+  }
 
   return NextResponse.json({
     ok: true,

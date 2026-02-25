@@ -27,6 +27,7 @@ export default function SignupPage() {
     utmSource: "",
     utmCampaign: "",
     referral: "",
+    businessType: "kiosco",
     cuit: "",
     phone: "",
   });
@@ -126,6 +127,16 @@ export default function SignupPage() {
           <input value={form.referral} onChange={(e) => setForm({ ...form, referral: e.target.value })} />
         </label>
         <label>
+          Tipo de negocio (ICP)
+          <select value={form.businessType} onChange={(e) => setForm({ ...form, businessType: e.target.value })}>
+            <option value="kiosco">kiosco</option>
+            <option value="distribuidora">distribuidora</option>
+            <option value="almacen">almacen</option>
+            <option value="supermercado">supermercado</option>
+            <option value="otros">otros</option>
+          </select>
+        </label>
+        <label>
           CUIT (opcional)
           <input value={form.cuit} onChange={(e) => setForm({ ...form, cuit: e.target.value })} />
         </label>
@@ -145,4 +156,3 @@ export default function SignupPage() {
     </main>
   );
 }
-

@@ -425,6 +425,16 @@ enum TrialRedemptionStatus {
   EXPIRED
 }
 
+enum TrialLifecycleEventType {
+  TrialStarted
+  TrialExtended
+  TrialExpired
+  PaymentMethodAdded
+  ConvertedToPaid
+  BecamePastDue
+  BecameRestricted
+}
+
 enum InvoiceStatus {
   OPEN
   PAID
@@ -1286,6 +1296,7 @@ model LeadAttribution {
   utmMedium        String?
   utmTerm          String?
   utmContent       String?
+  businessType     String?
   ipHash           String?
   fingerprintHash  String?
   createdAt        DateTime @default(now())
@@ -1294,4 +1305,26 @@ model LeadAttribution {
   @@index([redemptionId])
   @@index([instanceId])
   @@index([utmSource, utmCampaign, createdAt])
+}
+
+model TrialLifecycleEvent {
+  id              String                 @id @default(uuid())
+  eventType       TrialLifecycleEventType
+  campaignId      String?
+  redemptionId    String?
+  billingAccountId String?
+  installationId  String?
+  instanceId      String?
+  businessType    String?
+  eventAt         DateTime
+  dedupeKey       String?                @unique
+  source          String?
+  properties      Json?
+  createdAt       DateTime               @default(now())
+
+  @@index([campaignId, eventAt])
+  @@index([eventType, eventAt])
+  @@index([instanceId, eventAt])
+  @@index([billingAccountId, eventAt])
+  @@index([businessType, eventAt])
 }

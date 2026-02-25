@@ -10,6 +10,7 @@ import {
   parseAttributionCookie,
   resolveAttributionForAccountCreation,
 } from "../../lib/partner-program";
+import { recordTrialLifecycleEvent } from "../../lib/trial-funnel-analytics";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -102,6 +103,19 @@ export async function POST(req: NextRequest) {
       installationDomain: installation.domain,
       attribution: body.attribution ?? null,
     });
+    if (account.trialEndsAt) {
+      await recordTrialLifecycleEvent(prisma as any, {
+        eventType: "TrialStarted",
+        eventAt: new Date(),
+        dedupeKey: `trial-started:${account.id}`,
+        billingAccountId: account.id,
+        installationId: installation.id,
+        instanceId: account.instanceId,
+        businessType: body.businessType ? String(body.businessType) : null,
+        source: "billing-account-create",
+        properties: { planId: plan.id, planName: plan.name, trialEndsAt: account.trialEndsAt },
+      }).catch(() => undefined);
+    }
     return NextResponse.json(account);
   }
 
@@ -153,6 +167,19 @@ export async function POST(req: NextRequest) {
         estimatedAmount: pricing.totalArs,
       },
     });
+
+    if (enforcement.hardLimitPremium && updated.hardLimitedAt) {
+      await recordTrialLifecycleEvent(prisma as any, {
+        eventType: "BecameRestricted",
+        eventAt: updated.hardLimitedAt,
+        dedupeKey: `restricted:${updated.id}:${updated.hardLimitedAt.toISOString()}`,
+        billingAccountId: updated.id,
+        installationId: updated.installationId,
+        instanceId: updated.instanceId,
+        source: "billing-usage-enforcement",
+        properties: { enforcement },
+      }).catch(() => undefined);
+    }
 
     return NextResponse.json({ account: updated, pricing, enforcement });
   }

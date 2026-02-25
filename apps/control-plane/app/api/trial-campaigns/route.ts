@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import { isAdminRequest } from "../../lib/admin-auth";
 import { hashEvidencePayload } from "../../lib/compliance-evidence";
+import { recordTrialLifecycleEvent } from "../../lib/trial-funnel-analytics";
 import {
   computeEarlyChurn,
   normalizeHostLike,
@@ -200,6 +201,29 @@ export async function POST(req: NextRequest) {
         tags: ["marketing", "trial", "billing"],
       },
     });
+    const redemption = await prisma.trialRedemption.findFirst({
+      where: { billingAccountId: account.id },
+      orderBy: { redeemedAt: "desc" },
+    });
+    const lead = redemption
+      ? await prisma.leadAttribution.findFirst({
+          where: { redemptionId: redemption.id },
+          orderBy: { createdAt: "desc" },
+        })
+      : null;
+    await recordTrialLifecycleEvent(prisma as any, {
+      eventType: "TrialExtended",
+      eventAt: new Date(),
+      dedupeKey: `trial-extended:${account.id}:${nextTrialEndsAt.toISOString()}`,
+      campaignId: redemption?.campaignId ?? null,
+      redemptionId: redemption?.id ?? null,
+      billingAccountId: account.id,
+      installationId: account.installationId ?? null,
+      instanceId: account.instanceId,
+      businessType: lead?.businessType ?? null,
+      source: "trial-campaigns-admin",
+      properties: { previousTrialEndsAt: account.trialEndsAt, nextTrialEndsAt, days },
+    }).catch(() => undefined);
     return NextResponse.json({ account: updated, trialEndsAt: nextTrialEndsAt });
   }
 

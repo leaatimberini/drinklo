@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { recordBillingPaymentLifecycleEvents } from "../../../../lib/trial-funnel-analytics";
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get("x-webhook-token") ?? "";
@@ -34,6 +35,16 @@ export async function POST(req: NextRequest) {
         raw: body,
       },
     });
+    if (status === "approved") {
+      await recordBillingPaymentLifecycleEvents(prisma as any, {
+        billingAccountId: invoice.accountId,
+        invoiceId: invoice.id,
+        provider: "MERCADOPAGO",
+        paidAt: new Date(),
+        source: "mp-webhook",
+        raw: body,
+      }).catch(() => undefined);
+    }
   }
 
   return NextResponse.json({ ok: true });
