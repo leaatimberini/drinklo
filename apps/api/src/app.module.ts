@@ -68,6 +68,7 @@ import { TaxesModule } from "./modules/taxes/taxes.module";
 import { SodAccessReviewsModule } from "./modules/sod-access-reviews/sod-access-reviews.module";
 import { EdiscoveryModule } from "./modules/ediscovery/ediscovery.module";
 import { IntegrationBuilderModule } from "./modules/integration-builder/integration-builder.module";
+import { PlansModule } from "./modules/plans/plans.module";
 
 @Module({
   imports: [
@@ -133,6 +134,7 @@ import { IntegrationBuilderModule } from "./modules/integration-builder/integrat
     SodAccessReviewsModule,
     EdiscoveryModule,
     IntegrationBuilderModule,
+    PlansModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

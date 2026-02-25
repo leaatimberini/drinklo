@@ -3,6 +3,8 @@ import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { RolePermissions } from "../common/rbac.constants";
 import type { SetupInitializeDto } from "./dto/setup.dto";
+import { PLAN_CATALOG_DEFAULTS } from "../plans/plan-catalog.constants";
+import { buildTrialPeriod } from "../plans/plan-time.util";
 
 @Injectable()
 export class SetupService {
@@ -23,7 +25,25 @@ export class SetupService {
       new Set(Object.values(RolePermissions).flat()),
     );
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
+      for (const item of PLAN_CATALOG_DEFAULTS) {
+        await tx.planEntitlement.upsert({
+          where: { tier: item.tier },
+          update: {
+            ordersMonth: item.ordersMonth,
+            apiCallsMonth: item.apiCallsMonth,
+            storageGb: item.storageGb,
+            pluginsMax: item.pluginsMax,
+            branchesMax: item.branchesMax,
+            adminUsersMax: item.adminUsersMax,
+            sloTarget: item.sloTarget,
+            drFrequency: item.drFrequency,
+            supportLevel: item.supportLevel,
+          },
+          create: { ...item },
+        });
+      }
+
       const company = await tx.company.create({
         data: {
           name: dto.companyName,
@@ -40,6 +60,9 @@ export class SetupService {
           currency: "ARS",
           storefrontTheme: "A",
           adminTheme: "A",
+          depotAddress: "CABA",
+          depotLat: -34.6037,
+          depotLng: -58.3816,
         },
       });
 
@@ -51,7 +74,7 @@ export class SetupService {
         },
       });
 
-      const permissions = await tx.$transaction(
+      const permissions = await Promise.all(
         permissionCodes.map((code) =>
           tx.permission.create({
             data: {
@@ -63,7 +86,7 @@ export class SetupService {
         ),
       );
 
-      const roleRecords = await tx.$transaction(
+      const roleRecords = await Promise.all(
         Object.keys(RolePermissions).map((roleName) =>
           tx.role.create({
             data: {
@@ -93,7 +116,7 @@ export class SetupService {
       });
 
       if (rolePermissionCreates.length > 0) {
-        await tx.$transaction(rolePermissionCreates);
+        await Promise.all(rolePermissionCreates);
       }
 
       const adminRole = roleMap.get("admin") ?? roleRecords[0];
@@ -104,6 +127,18 @@ export class SetupService {
           email: dto.adminEmail,
           name: dto.adminName,
           passwordHash: await bcrypt.hash(dto.adminPassword, 10),
+        },
+      });
+
+      const trialPeriod = buildTrialPeriod(new Date(), 30);
+      await tx.subscription.create({
+        data: {
+          companyId: company.id,
+          status: "TRIAL_ACTIVE",
+          currentTier: "C1",
+          currentPeriodStart: trialPeriod.currentPeriodStart,
+          currentPeriodEnd: trialPeriod.currentPeriodEnd,
+          trialEndAt: trialPeriod.trialEndAt,
         },
       });
 

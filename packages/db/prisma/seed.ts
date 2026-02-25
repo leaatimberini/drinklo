@@ -1,9 +1,12 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { buildTrialWindow, seedDefaultPlanCatalog } from "./plan-catalog";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  await seedDefaultPlanCatalog(prisma);
+
   const company = await prisma.company.create({
     data: { name: "Acme ERP" },
   });
@@ -93,6 +96,18 @@ async function main() {
       email: "admin@acme.local",
       name: "Admin User",
       passwordHash: await bcrypt.hash("admin123", 10),
+    },
+  });
+
+  const trialWindow = buildTrialWindow(new Date(), 30);
+  await prisma.subscription.create({
+    data: {
+      companyId: company.id,
+      status: "TRIAL_ACTIVE",
+      currentTier: "C1",
+      currentPeriodStart: trialWindow.start,
+      currentPeriodEnd: trialWindow.end,
+      trialEndAt: trialWindow.end,
     },
   });
 

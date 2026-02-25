@@ -100,6 +100,8 @@ model Company {
   taxProfiles            TaxProfile[]
   taxRules               TaxRule[]
   orderTaxBreakdowns     OrderTaxBreakdown[]
+  subscription           Subscription?
+  usageCounters          UsageCounter[]
   orders                 Order[]
   sales                  Sale[]
   quotes                 Quote[]
@@ -967,6 +969,81 @@ model LicenseKey {
   company Company @relation(fields: [companyId], references: [id])
 
   @@index([expiresAt])
+}
+
+enum PlanTier {
+  C1
+  C2
+  C3
+}
+
+enum SubscriptionStatus {
+  TRIAL_ACTIVE
+  ACTIVE_PAID
+  PAST_DUE
+  GRACE
+  RESTRICTED
+  CANCELLED
+}
+
+model PlanEntitlement {
+  id              String   @id @default(uuid())
+  tier            PlanTier @unique
+  ordersMonth     Int
+  apiCallsMonth   Int
+  storageGb       Int
+  pluginsMax      Int
+  branchesMax     Int
+  adminUsersMax   Int
+  sloTarget       String
+  drFrequency     String
+  supportLevel    String
+  config          Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Subscription {
+  id                 String             @id @default(uuid())
+  companyId          String             @unique
+  status             SubscriptionStatus
+  currentTier        PlanTier
+  nextTier           PlanTier?
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  trialEndAt         DateTime?
+  graceEndAt         DateTime?
+  lastPaymentAt      DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([status])
+  @@index([currentTier])
+  @@index([currentPeriodEnd])
+}
+
+model UsageCounter {
+  id              String   @id @default(uuid())
+  companyId       String
+  periodKey       String
+  periodStart     DateTime
+  periodEnd       DateTime
+  ordersCount     Int      @default(0)
+  apiCallsCount   Int      @default(0)
+  storageGbUsed   Decimal  @default(0) @db.Decimal(12, 3)
+  pluginsCount    Int      @default(0)
+  branchesCount   Int      @default(0)
+  adminUsersCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, periodKey])
+  @@index([companyId, periodStart])
 }
 
 enum EmailTemplateStatus {

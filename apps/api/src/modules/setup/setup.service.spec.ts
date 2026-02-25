@@ -1,5 +1,6 @@
 import { ConflictException } from "@nestjs/common";
 import { SetupService } from "./setup.service";
+import { addDaysPreservingBuenosAiresWallClock } from "../plans/plan-time.util";
 
 const prismaMock = {
   company: {
@@ -8,6 +9,9 @@ const prismaMock = {
   },
   companySettings: {
     create: jest.fn(),
+  },
+  planEntitlement: {
+    upsert: jest.fn(),
   },
   permission: {
     create: jest.fn(),
@@ -19,6 +23,12 @@ const prismaMock = {
     create: jest.fn(),
   },
   user: {
+    create: jest.fn(),
+  },
+  branch: {
+    create: jest.fn(),
+  },
+  subscription: {
     create: jest.fn(),
   },
   $transaction: jest.fn(),
@@ -51,12 +61,15 @@ describe("SetupService", () => {
     prismaMock.company.count.mockResolvedValue(0);
     prismaMock.$transaction.mockImplementation(async (cb: any) => {
       const tx = {
+        planEntitlement: { upsert: jest.fn().mockResolvedValue(null) },
         company: { create: jest.fn().mockResolvedValue({ id: "c1" }) },
         companySettings: { create: jest.fn() },
+        branch: { create: jest.fn().mockResolvedValue({ id: "b1" }) },
         permission: { create: jest.fn().mockResolvedValue({ id: "p1", code: "products:read" }) },
         role: { create: jest.fn().mockResolvedValue({ id: "r1", name: "Admin" }) },
         rolePermission: { create: jest.fn() },
         user: { create: jest.fn().mockResolvedValue({ id: "u1" }) },
+        subscription: { create: jest.fn().mockResolvedValue({ id: "s1" }) },
         $transaction: jest.fn(async (ops: any[]) => Promise.all(ops.map((op) => op))),
       };
       return cb(tx);
@@ -66,5 +79,12 @@ describe("SetupService", () => {
 
     expect(result.companyId).toBe("c1");
     expect(result.adminId).toBe("u1");
+  });
+
+  it("computes trial end preserving Buenos Aires wall clock (+30d)", () => {
+    const base = new Date("2026-02-25T13:45:00.000Z"); // 10:45 BA
+    const trialEnd = addDaysPreservingBuenosAiresWallClock(base, 30);
+
+    expect(trialEnd.toISOString()).toBe("2026-03-27T13:45:00.000Z");
   });
 });
