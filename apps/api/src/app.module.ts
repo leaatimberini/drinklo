@@ -66,6 +66,7 @@ import { DeveloperApiModule } from "./modules/developer-api/developer-api.module
 import { SandboxModule } from "./modules/sandbox/sandbox.module";
 import { TaxesModule } from "./modules/taxes/taxes.module";
 import { SodAccessReviewsModule } from "./modules/sod-access-reviews/sod-access-reviews.module";
+import { EdiscoveryModule } from "./modules/ediscovery/ediscovery.module";
 
 @Module({
   imports: [
@@ -129,6 +130,7 @@ import { SodAccessReviewsModule } from "./modules/sod-access-reviews/sod-access-
     SandboxModule,
     TaxesModule,
     SodAccessReviewsModule,
+    EdiscoveryModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

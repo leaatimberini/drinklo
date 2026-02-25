@@ -13,7 +13,8 @@ import {
   normalizeGovernancePlan,
   type GovernancePlanTier,
 } from "./retention-policy-resolver";
-import { matchesHoldByCustomerId, matchesHoldByEmail } from "./legal-hold-matcher";
+import { matchesHoldByCustomerId, matchesHoldByEmail, matchesHoldByUserId } from "./legal-hold-matcher";
+import { sha256, stableStringify } from "../immutable-audit/immutable-audit.service";
 
 type EntitySummary = {
   scanned: number;
@@ -170,27 +171,68 @@ export class DataGovernanceService {
   }
 
   async createLegalHold(companyId: string, payload: CreateLegalHoldDto, userId: string) {
-    const customer = await this.prisma.customer.findFirst({
-      where: { id: payload.customerId, companyId },
-      select: { id: true, email: true },
-    });
-    if (!customer) {
-      throw new NotFoundException("Customer not found");
+    if (!payload.customerId && !payload.userId) {
+      throw new NotFoundException("customerId or userId is required");
     }
+
+    let customer: { id: string; email: string | null; name?: string } | null = null;
+    let subjectUser: { id: string; email: string; name: string } | null = null;
+    if (payload.customerId) {
+      customer = await this.prisma.customer.findFirst({
+        where: { id: payload.customerId, companyId },
+        select: { id: true, email: true, name: true },
+      });
+      if (!customer) {
+        throw new NotFoundException("Customer not found");
+      }
+    }
+    if (payload.userId) {
+      subjectUser = await this.prisma.user.findFirst({
+        where: { id: payload.userId, companyId, deletedAt: null },
+        select: { id: true, email: true, name: true },
+      });
+      if (!subjectUser) {
+        throw new NotFoundException("User not found");
+      }
+    }
+
+    const entities =
+      payload.entities && payload.entities.length > 0
+        ? Array.from(new Set(payload.entities))
+        : [...GOVERNANCE_ENTITIES];
+    const evidence =
+      payload.evidence && typeof payload.evidence === "object"
+        ? {
+            ...payload.evidence,
+            createdBy: userId,
+            createdAt: new Date().toISOString(),
+          }
+        : {
+            note: "hold created without custom evidence payload",
+            createdBy: userId,
+            createdAt: new Date().toISOString(),
+          };
+    const evidenceHash = sha256(stableStringify(evidence));
 
     return this.prisma.legalHold.create({
       data: {
         companyId,
-        customerId: payload.customerId,
-        customerEmailSnapshot: customer.email?.toLowerCase() ?? null,
+        customerId: payload.customerId ?? null,
+        customerEmailSnapshot: customer?.email?.toLowerCase() ?? null,
+        userId: payload.userId ?? null,
+        userEmailSnapshot: subjectUser?.email?.toLowerCase() ?? null,
+        entityScopes: entities,
         periodFrom: this.parseDate(payload.periodFrom),
         periodTo: this.parseDate(payload.periodTo),
         reason: payload.reason,
+        evidence: evidence as any,
+        evidenceHash,
         status: LegalHoldStatus.ACTIVE,
         createdById: userId,
       },
       include: {
         customer: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true, email: true } },
       },
     });
@@ -201,6 +243,7 @@ export class DataGovernanceService {
       where: { companyId },
       include: {
         customer: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, roleId: true } },
         createdBy: { select: { id: true, name: true, email: true } },
         releasedBy: { select: { id: true, name: true, email: true } },
       },
@@ -232,6 +275,9 @@ export class DataGovernanceService {
         id: true,
         customerId: true,
         customerEmailSnapshot: true,
+        userId: true,
+        userEmailSnapshot: true,
+        entityScopes: true,
         periodFrom: true,
         periodTo: true,
       },
@@ -274,7 +320,9 @@ export class DataGovernanceService {
 
     for (const item of items) {
       summary.scanned += 1;
-      const heldByEmail = item.customerEmail ? matchesHoldByEmail(holds, item.customerEmail, item.createdAt) : false;
+      const heldByEmail = item.customerEmail
+        ? matchesHoldByEmail(holds, item.customerEmail, item.createdAt, GovernanceEntity.ORDERS)
+        : false;
       if (heldByEmail) {
         summary.skippedByHold += 1;
         continue;
@@ -322,9 +370,11 @@ export class DataGovernanceService {
       const identity = this.extractIdentity(event.payload);
       let held = false;
       if (identity.customerId) {
-        held = matchesHoldByCustomerId(holds, identity.customerId, event.receivedAt);
+        held = matchesHoldByCustomerId(holds, identity.customerId, event.receivedAt, GovernanceEntity.EVENTS);
       } else if (identity.customerEmail) {
-        held = matchesHoldByEmail(holds, identity.customerEmail, event.receivedAt);
+        held = matchesHoldByEmail(holds, identity.customerEmail, event.receivedAt, GovernanceEntity.EVENTS);
+      } else if (identity.userId) {
+        held = matchesHoldByUserId(holds, identity.userId, event.receivedAt, GovernanceEntity.EVENTS);
       } else {
         summary.unresolvedIdentity += 1;
       }
@@ -355,7 +405,9 @@ export class DataGovernanceService {
       if (!send.recipient) {
         summary.unresolvedIdentity += 1;
       }
-      const held = send.recipient ? matchesHoldByEmail(holds, send.recipient, send.sentAt) : false;
+      const held = send.recipient
+        ? matchesHoldByEmail(holds, send.recipient, send.sentAt, GovernanceEntity.MARKETING)
+        : false;
       if (held) {
         summary.skippedByHold += 1;
         continue;
@@ -382,7 +434,7 @@ export class DataGovernanceService {
       if (!email) {
         summary.unresolvedIdentity += 1;
       }
-      const held = email ? matchesHoldByEmail(holds, email, row.createdAt) : false;
+      const held = email ? matchesHoldByEmail(holds, email, row.createdAt, GovernanceEntity.MARKETING) : false;
       if (held) {
         summary.skippedByHold += 1;
         continue;
@@ -411,9 +463,11 @@ export class DataGovernanceService {
       const identity = this.extractIdentity(row.payload);
       let held = false;
       if (identity.customerId) {
-        held = matchesHoldByCustomerId(holds, identity.customerId, row.receivedAt);
+        held = matchesHoldByCustomerId(holds, identity.customerId, row.receivedAt, GovernanceEntity.LOGS);
       } else if (identity.customerEmail) {
-        held = matchesHoldByEmail(holds, identity.customerEmail, row.receivedAt);
+        held = matchesHoldByEmail(holds, identity.customerEmail, row.receivedAt, GovernanceEntity.LOGS);
+      } else if (identity.userId) {
+        held = matchesHoldByUserId(holds, identity.userId, row.receivedAt, GovernanceEntity.LOGS);
       } else {
         summary.unresolvedIdentity += 1;
       }
@@ -437,7 +491,9 @@ export class DataGovernanceService {
     });
     for (const row of privacy) {
       summary.scanned += 1;
-      const held = row.customerId ? matchesHoldByCustomerId(holds, row.customerId, row.createdAt) : false;
+      const held = row.customerId
+        ? matchesHoldByCustomerId(holds, row.customerId, row.createdAt, GovernanceEntity.LOGS)
+        : false;
       if (held) {
         summary.skippedByHold += 1;
         continue;

@@ -113,4 +113,29 @@ describe("DataGovernanceService", () => {
     expect(prisma.emailEventLog.delete).not.toHaveBeenCalled();
     expect(prisma.privacyRequest.delete).not.toHaveBeenCalled();
   });
+
+  it("respects entity-scoped user legal hold for events", async () => {
+    const prisma = basePrisma();
+    prisma.eventLog.findMany.mockResolvedValue([
+      { id: "e1", payload: { userId: "u-legal" }, receivedAt: new Date("2020-01-01T00:00:00.000Z") },
+    ]);
+    prisma.webhookLog.findMany.mockResolvedValue([
+      { id: "w1", payload: { userId: "u-legal" }, receivedAt: new Date("2020-01-01T00:00:00.000Z") },
+    ]);
+    prisma.legalHold.findMany.mockResolvedValue([
+      {
+        userId: "u-legal",
+        entityScopes: [GovernanceEntity.EVENTS],
+        periodFrom: new Date("2019-01-01T00:00:00.000Z"),
+        periodTo: new Date("2030-01-01T00:00:00.000Z"),
+      },
+    ]);
+
+    const service = new DataGovernanceService(prisma);
+    const result = await service.runPurge("co1", "u1", "manual");
+
+    expect(result.summary.EVENTS.skippedByHold).toBe(1);
+    expect(prisma.eventLog.delete).not.toHaveBeenCalled();
+    expect(prisma.webhookLog.delete).toHaveBeenCalledTimes(1);
+  });
 });

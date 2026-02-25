@@ -777,11 +777,16 @@ model DataRetentionPolicy {
 model LegalHold {
   id           String          @id @default(uuid())
   companyId    String
-  customerId   String
+  customerId   String?
   customerEmailSnapshot String?
+  userId       String?
+  userEmailSnapshot String?
+  entityScopes GovernanceEntity[] @default([ORDERS, LOGS, EVENTS, MARKETING])
   periodFrom   DateTime?
   periodTo     DateTime?
   reason       String
+  evidence     Json?
+  evidenceHash String?
   status       LegalHoldStatus @default(ACTIVE)
   createdById  String
   releasedById String?
@@ -790,12 +795,14 @@ model LegalHold {
   updatedAt    DateTime        @updatedAt
 
   company    Company  @relation(fields: [companyId], references: [id])
-  customer   Customer @relation(fields: [customerId], references: [id])
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  user       User?    @relation("LegalHoldUser", fields: [userId], references: [id])
   createdBy  User     @relation("LegalHoldCreatedBy", fields: [createdById], references: [id])
   releasedBy User?    @relation("LegalHoldReleasedBy", fields: [releasedById], references: [id])
 
   @@index([companyId])
   @@index([customerId])
+  @@index([userId])
   @@index([status])
   @@index([periodFrom])
   @@index([periodTo])
@@ -1830,6 +1837,7 @@ model User {
   createdDataRetentionPolicies DataRetentionPolicy[] @relation("DataRetentionPolicyCreatedBy")
   updatedDataRetentionPolicies DataRetentionPolicy[] @relation("DataRetentionPolicyUpdatedBy")
   createdLegalHolds LegalHold[] @relation("LegalHoldCreatedBy")
+  subjectLegalHolds LegalHold[] @relation("LegalHoldUser")
   releasedLegalHolds LegalHold[] @relation("LegalHoldReleasedBy")
   governanceRuns GovernanceRun[] @relation("GovernanceRunTriggeredBy")
   sodPoliciesCreated      SodPolicy[]            @relation("SodPolicyCreatedBy")
