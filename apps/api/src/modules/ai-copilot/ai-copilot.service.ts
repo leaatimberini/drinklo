@@ -3,6 +3,8 @@ import { Prisma, type AiCopilotActionType, type AiCopilotProposalStatus } from "
 import { PrismaService } from "../prisma/prisma.service";
 import { redactDeep, dlpSummary } from "../data-governance/dlp-redactor";
 import { ImmutableAuditService } from "../immutable-audit/immutable-audit.service";
+import { OpsService } from "../ops/ops.service";
+import { buildStaticDocsRagIndex, filterChunksByAccess, searchRagChunks, type RagChunk } from "./rag-index";
 
 type CopilotUser = {
   sub: string;
@@ -23,13 +25,18 @@ export class AiCopilotService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: ImmutableAuditService,
+    private readonly ops: OpsService,
   ) {}
 
   async chat(user: CopilotUser, prompt: string, mode = "admin") {
     const redactedPrompt = redactDeep(prompt);
     const promptDlp = dlpSummary(prompt);
+    const effectiveMode = String(mode ?? "admin");
+    const incidentMode = this.isIncidentMode(effectiveMode, prompt);
     const messages: string[] = [];
     const proposals: any[] = [];
+    const ragCitations: Array<{ docId: string; section: string; sourceType: string; scope: string; score: number }> = [];
+    const ragChunks = await this.resolveRagContext(user, prompt, incidentMode);
 
     if (this.hasKeyword(prompt, ["venta", "ventas"])) {
       if (this.hasPermission(user, "pricing:read")) {
@@ -76,7 +83,24 @@ export class AiCopilotService {
       }
     }
 
-    const actionPreviews = this.buildActionPreviews(prompt);
+    if (incidentMode) {
+      const incidentSummary = await this.incidentInsight(user);
+      if (incidentSummary.denied) {
+        messages.push("Sin permiso para modo incidentes / runbooks (requiere admin/soporte o settings:write).");
+      } else {
+        messages.push(
+          `Incidentes recientes: ${incidentSummary.errorCount} errores y ${incidentSummary.jobFailureCount} jobs fallidos.`,
+        );
+        if (incidentSummary.topErrorMessage) {
+          messages.push(`Error frecuente: ${incidentSummary.topErrorMessage}`);
+        }
+        if (incidentSummary.runbookHint) {
+          messages.push(`Runbook sugerido: ${incidentSummary.runbookHint.docId} / ${incidentSummary.runbookHint.section}`);
+        }
+      }
+    }
+
+    const actionPreviews = this.buildActionPreviews(prompt, incidentMode, ragChunks);
     for (const preview of actionPreviews) {
       if (!this.hasPermission(user, preview.requiredPermission)) {
         messages.push(`No autorizado para proponer accion: ${preview.title}.`);
@@ -101,17 +125,37 @@ export class AiCopilotService {
       messages.push("No pude inferir una consulta o accion. Proba con ventas/stock/clientes/compras/campanas o una accion concreta.");
     }
 
+    for (const row of searchRagChunks(ragChunks, `${prompt} ${incidentMode ? "runbook incident" : ""}`, 6)) {
+      ragCitations.push({
+        docId: row.chunk.docId,
+        section: row.chunk.section,
+        sourceType: row.chunk.sourceType,
+        scope: row.chunk.scope,
+        score: row.score,
+      });
+    }
+    const dedupedCitations = this.uniqueCitations(ragCitations);
+    if (dedupedCitations.length > 0) {
+      messages.push("");
+      messages.push("Referencias internas (docId/section):");
+      for (const cite of dedupedCitations.slice(0, 5)) {
+        messages.push(`- ${cite.docId} / ${cite.section}`);
+      }
+    }
+
     const response = {
       message: messages.join("\n"),
       proposals,
       approvalRequired: true,
+      mode: effectiveMode,
+      citations: dedupedCitations,
     };
 
     await this.prisma.aiCopilotLog.create({
       data: {
         companyId: user.companyId,
         userId: user.sub,
-        mode,
+        mode: effectiveMode,
         promptRedacted: String(redactedPrompt),
         response: redactDeep(response),
         status: "ok",
@@ -287,17 +331,27 @@ export class AiCopilotService {
           stockItemId: stockItem.id,
           delta,
           reason: "copilot_adjustment",
-          createdById: user.sub,
         },
       });
 
       return { ok: true, resource: "stockItem", id: updated.id, newQuantity: updated.quantity };
     }
 
+    if (proposal.actionType === "RUN_INCIDENT_PLAYBOOK") {
+      return {
+        ok: true,
+        resource: "incidentPlaybook",
+        manualRequired: true,
+        suggestedRunbook: details.runbook ?? null,
+        note:
+          "Accion propuesta registrada. Ejecutar runbook/operacion real requiere paso manual o integracion de jobs.",
+      };
+    }
+
     return { ok: false, error: "Unsupported action" };
   }
 
-  private buildActionPreviews(prompt: string): CopilotActionPreview[] {
+  private buildActionPreviews(prompt: string, incidentMode = false, ragChunks: RagChunk[] = []): CopilotActionPreview[] {
     const previews: CopilotActionPreview[] = [];
 
     if (this.hasKeyword(prompt, ["cupon", "coupon"])) {
@@ -345,7 +399,172 @@ export class AiCopilotService {
       });
     }
 
+    if (
+      incidentMode &&
+      this.hasKeyword(prompt, ["incidente", "error", "falla", "caida", "runbook", "mitigar", "resolver", "smoke"])
+    ) {
+      const hint =
+        searchRagChunks(
+          ragChunks.filter((chunk) => chunk.sourceType === "runbook" || chunk.scope === "kb.instance.incidents"),
+          `${prompt} runbook`,
+          1,
+        )[0]?.chunk ?? null;
+      previews.push({
+        actionType: "RUN_INCIDENT_PLAYBOOK",
+        requiredPermission: "settings:write",
+        title: "Ejecutar asistencia de runbook (requiere aprobacion)",
+        details: {
+          runbook: hint ? { docId: hint.docId, section: hint.section } : null,
+          mode: "incident_assist",
+          promptSummary: prompt.slice(0, 240),
+          requiresApproval: true,
+        },
+      });
+    }
+
     return previews;
+  }
+
+  async getRagStatus(user: CopilotUser, mode = "admin") {
+    const incidentMode = this.isIncidentMode(mode, "");
+    const chunks = await this.resolveRagContext(user, "", incidentMode);
+    const bySource = chunks.reduce(
+      (acc, chunk) => {
+        acc[chunk.sourceType] = (acc[chunk.sourceType] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    return {
+      mode,
+      incidentMode,
+      totalChunks: chunks.length,
+      bySource,
+      sample: chunks.slice(0, 10).map((chunk) => ({
+        docId: chunk.docId,
+        section: chunk.section,
+        sourceType: chunk.sourceType,
+        scope: chunk.scope,
+      })),
+    };
+  }
+
+  private isIncidentMode(mode: string, prompt: string) {
+    const m = String(mode ?? "").toLowerCase();
+    if (m.includes("incident")) return true;
+    return this.hasKeyword(prompt, ["incidente", "error", "falla", "caida", "alerta", "runbook"]);
+  }
+
+  private async resolveRagContext(user: CopilotUser, prompt: string, incidentMode: boolean) {
+    const staticChunks = buildStaticDocsRagIndex();
+    const instanceChunks = incidentMode ? await this.buildInstanceKnowledgeChunks(user, prompt) : [];
+    const all = [...staticChunks, ...instanceChunks];
+    return filterChunksByAccess(all, user, incidentMode ? "incident" : "admin");
+  }
+
+  private async buildInstanceKnowledgeChunks(user: CopilotUser, _prompt: string): Promise<RagChunk[]> {
+    if (!this.canUseIncidentScopes(user)) return [];
+
+    const snapshot = await this.ops.getSnapshot(user.companyId);
+    const chunks: RagChunk[] = [];
+
+    if (Array.isArray(snapshot.errors) && snapshot.errors.length > 0) {
+      const topErrors = snapshot.errors.slice(0, 10);
+      const text = topErrors
+        .map((err: any, idx: number) => `${idx + 1}. route=${err.route ?? "-"} req=${err.requestId ?? "-"} msg=${err.message ?? "-"}`)
+        .join("\n");
+      chunks.push({
+        docId: `KB_INSTANCE_${user.companyId}_OPS_ERRORS`,
+        section: "Recent Errors",
+        content: `Recent ops errors:\n${text}`,
+        sourceType: "instance_kb",
+        scope: "kb.instance.incidents",
+        companyId: user.companyId,
+        scoreBoost: 2,
+      });
+    }
+
+    if (Array.isArray(snapshot.jobFailures) && snapshot.jobFailures.length > 0) {
+      const text = snapshot.jobFailures
+        .slice(0, 10)
+        .map((job: any, idx: number) => `${idx + 1}. queue=${job.queue ?? "-"} name=${job.name ?? "-"} reason=${job.reason ?? "-"}`)
+        .join("\n");
+      chunks.push({
+        docId: `KB_INSTANCE_${user.companyId}_JOB_FAILURES`,
+        section: "Recent Job Failures",
+        content: `Recent failed jobs:\n${text}`,
+        sourceType: "instance_kb",
+        scope: "kb.instance.incidents",
+        companyId: user.companyId,
+        scoreBoost: 2,
+      });
+    }
+
+    const alertFindMany = (this.prisma as any).alert?.findMany;
+    if (typeof alertFindMany === "function") {
+      const alerts = await alertFindMany({
+        where: { companyId: user.companyId },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }).catch(() => []);
+      if (Array.isArray(alerts) && alerts.length > 0) {
+        chunks.push({
+          docId: `KB_INSTANCE_${user.companyId}_ALERTS`,
+          section: "Recent Alerts",
+          content: alerts.map((a: any, idx: number) => `${idx + 1}. ${a.level ?? "info"}: ${a.message ?? ""}`).join("\n"),
+          sourceType: "instance_kb",
+          scope: "kb.instance.incidents",
+          companyId: user.companyId,
+          scoreBoost: 1.5,
+        });
+      }
+    }
+
+    return chunks;
+  }
+
+  private async incidentInsight(user: CopilotUser) {
+    if (!this.canUseIncidentScopes(user)) {
+      return { denied: true, errorCount: 0, jobFailureCount: 0 } as const;
+    }
+    const snapshot = await this.ops.getSnapshot(user.companyId);
+    const errors = Array.isArray(snapshot.errors) ? snapshot.errors : [];
+    const jobFailures = Array.isArray(snapshot.jobFailures) ? snapshot.jobFailures : [];
+    const topErrorMessage = errors[0]?.message ? String(errors[0].message).slice(0, 180) : null;
+    const runbookHint =
+      searchRagChunks(
+        filterChunksByAccess(buildStaticDocsRagIndex(), user, "incident").filter((chunk) => chunk.sourceType === "runbook"),
+        `${topErrorMessage ?? ""} ${jobFailures[0]?.reason ?? ""} runbook`,
+        1,
+      )[0]?.chunk ?? null;
+
+    return {
+      denied: false,
+      errorCount: errors.length,
+      jobFailureCount: jobFailures.length,
+      topErrorMessage,
+      runbookHint: runbookHint ? { docId: runbookHint.docId, section: runbookHint.section } : null,
+    } as const;
+  }
+
+  private canUseIncidentScopes(user: CopilotUser) {
+    return String(user.role ?? "").toLowerCase() === "admin"
+      || String(user.role ?? "").toLowerCase() === "support"
+      || this.hasPermission(user, "settings:write");
+  }
+
+  private uniqueCitations(
+    citations: Array<{ docId: string; section: string; sourceType: string; scope: string; score: number }>,
+  ) {
+    const seen = new Set<string>();
+    const out: typeof citations = [];
+    for (const citation of citations) {
+      const key = `${citation.docId}::${citation.section}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(citation);
+    }
+    return out;
   }
 
   private extractSku(prompt: string) {

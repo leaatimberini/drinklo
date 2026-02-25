@@ -12,11 +12,21 @@ type Proposal = {
   createdAt: string;
 };
 
+type Citation = {
+  docId: string;
+  section: string;
+  sourceType: string;
+  scope: string;
+  score: number;
+};
+
 export default function CopilotPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
   const [prompt, setPrompt] = useState("");
   const [answer, setAnswer] = useState("");
+  const [mode, setMode] = useState<"admin" | "incident">("admin");
+  const [citations, setCitations] = useState<Citation[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -45,13 +55,14 @@ export default function CopilotPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ prompt, mode: "admin" }),
+        body: JSON.stringify({ prompt, mode }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.message ?? "Error consultando copiloto");
       }
       setAnswer(String(data.message ?? ""));
+      setCitations(Array.isArray(data.citations) ? data.citations : []);
       await refreshProposals();
     } catch (err: any) {
       setError(err.message ?? "Error inesperado");
@@ -98,9 +109,17 @@ export default function CopilotPage() {
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Ej: mostrar ventas y crear cupon del 10%"
+          placeholder={mode === "incident" ? "Ej: incidente webhook duplicado / errores redis, sugerir runbook" : "Ej: mostrar ventas y crear cupon del 10%"}
           style={{ display: "block", width: "100%", marginTop: 6, minHeight: 100 }}
         />
+      </label>
+
+      <label style={{ display: "block", marginBottom: 12 }}>
+        Modo
+        <select value={mode} onChange={(e) => setMode(e.target.value as any)} style={{ display: "block", marginTop: 6 }}>
+          <option value="admin">admin</option>
+          <option value="incident">incident</option>
+        </select>
       </label>
 
       <button type="button" onClick={askCopilot} disabled={!token || !prompt.trim() || isLoading}>
@@ -112,6 +131,18 @@ export default function CopilotPage() {
         <section style={{ marginTop: 16, padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
           <strong>Respuesta</strong>
           <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>{answer}</pre>
+          {citations.length > 0 && (
+            <div style={{ marginTop: 8 }}>
+              <strong>Referencias</strong>
+              <ul>
+                {citations.map((c, i) => (
+                  <li key={`${c.docId}-${c.section}-${i}`}>
+                    {c.docId} / {c.section} ({c.sourceType}, {c.scope})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
 

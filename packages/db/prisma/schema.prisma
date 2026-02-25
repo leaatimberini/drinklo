@@ -1198,6 +1198,7 @@ enum AiCopilotActionType {
   CREATE_COUPON
   CREATE_PURCHASE_ORDER
   ADJUST_STOCK
+  RUN_INCIDENT_PLAYBOOK
 }
 
 model Coupon {

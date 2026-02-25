@@ -25,6 +25,12 @@ export class AiCopilotController {
     return this.copilot.listProposals(req.user.companyId, status ?? "PENDING");
   }
 
+  @Get("rag/status")
+  @Permissions("products:read")
+  ragStatus(@Req() req: any, @Query("mode") mode?: string) {
+    return this.copilot.getRagStatus(req.user, mode ?? "admin");
+  }
+
   @Post("proposals/:id/approve")
   @Permissions("products:read")
   approve(@Req() req: any, @Param("id") id: string, @Body() body: CopilotApproveDto) {
