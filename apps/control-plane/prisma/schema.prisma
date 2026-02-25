@@ -788,15 +788,20 @@ model PluginRelease {
   version       String
   channel       String
   compatibility String?
+  compatibilityMatrix Json?
   changelog     String?
   signature     String
   permissions   String[] @default([])
   dependencies  String[] @default([])
   reviewStatus  String   @default("approved")
+  certified     Boolean  @default(false)
+  certifiedAt   DateTime?
+  certificationReport Json?
   createdAt     DateTime @default(now())
 
   publisher     Publisher? @relation(fields: [publisherId], references: [id])
   sourceSubmission PluginSubmission? @relation(fields: [sourceSubmissionId], references: [id])
+  reviews       PluginMarketplaceReview[]
 
   @@unique([name, version, channel])
   @@index([name])
@@ -848,6 +853,7 @@ model PluginSubmission {
   version            String
   channel            String
   compatibility      String?
+  compatibilityMatrix Json?
   changelog          String?
   bundleUrl          String
   manifest           Json
@@ -869,6 +875,27 @@ model PluginSubmission {
   @@index([publisherId])
   @@index([status])
   @@index([pluginName, version])
+}
+
+model PluginMarketplaceReview {
+  id           String   @id @default(uuid())
+  pluginName   String
+  releaseId    String?
+  version      String?
+  rating       Int
+  title        String?
+  body         String?
+  reviewerName String
+  status       String   @default("PUBLISHED")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  release PluginRelease? @relation(fields: [releaseId], references: [id])
+
+  @@index([pluginName])
+  @@index([releaseId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model PluginRollout {

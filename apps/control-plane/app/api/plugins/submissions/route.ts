@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
   const channel = String(body.channel ?? "stable").trim() || "stable";
   const bundleUrl = String(body.bundleUrl ?? "").trim();
   const manifest = body.manifest && typeof body.manifest === "object" ? body.manifest : {};
+  const compatibilityMatrix = Array.isArray(body.compatibilityMatrix) ? body.compatibilityMatrix : null;
   const signature = String(body.signature ?? "").trim();
   const requestedPermissions = Array.isArray(body.requestedPermissions)
     ? body.requestedPermissions.map((x: any) => String(x))
@@ -73,6 +74,9 @@ export async function POST(req: NextRequest) {
     pluginName,
     version,
     channel,
+    compatibility: body.compatibility ?? null,
+    compatibilityMatrix,
+    changelog: body.changelog ?? null,
     bundleUrl,
     manifest,
     requestedPermissions,
@@ -102,6 +106,7 @@ export async function POST(req: NextRequest) {
       version,
       channel,
       compatibility: body.compatibility ?? null,
+      compatibilityMatrix,
       changelog: body.changelog ?? null,
       bundleUrl,
       manifest,

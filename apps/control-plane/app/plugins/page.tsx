@@ -21,6 +21,7 @@ type Submission = {
   version: string;
   channel: string;
   compatibility?: string | null;
+  compatibilityMatrix?: any;
   bundleUrl: string;
   requestedPermissions: string[];
   dependencies: string[];
@@ -37,8 +38,11 @@ type Release = {
   version: string;
   channel: string;
   compatibility?: string | null;
+  compatibilityMatrix?: any;
   changelog?: string | null;
   reviewStatus?: string;
+  certified?: boolean;
+  certificationReport?: any;
   permissions?: string[];
   dependencies?: string[];
   publisher?: { id: string; name: string; verificationStatus: string } | null;
@@ -66,6 +70,8 @@ export default function PluginsMarketplacePage() {
     version: "",
     channel: "stable",
     compatibility: "",
+    compatibilityMatrixJson:
+      '[{"platformVersion":"0.1.x","status":"supported","notes":"validated"},{"platformVersion":"0.2.x","status":"warning","notes":"smoke only"}]',
     changelog: "",
     bundleUrl: "https://plugins.example.com/bundles/plugin.tgz",
     signature: "",
@@ -151,10 +157,22 @@ export default function PluginsMarketplacePage() {
     setError(null);
 
     let manifest: Record<string, any>;
+    let compatibilityMatrix: any[] | undefined;
     try {
       manifest = JSON.parse(submissionForm.manifestJson);
     } catch {
       setError("manifestJson is invalid JSON");
+      return;
+    }
+    try {
+      compatibilityMatrix = submissionForm.compatibilityMatrixJson
+        ? JSON.parse(submissionForm.compatibilityMatrixJson)
+        : undefined;
+      if (compatibilityMatrix && !Array.isArray(compatibilityMatrix)) {
+        throw new Error("compatibilityMatrix must be array");
+      }
+    } catch {
+      setError("compatibilityMatrixJson is invalid JSON array");
       return;
     }
 
@@ -168,6 +186,7 @@ export default function PluginsMarketplacePage() {
         channel: submissionForm.channel,
         compatibility: submissionForm.compatibility || null,
         changelog: submissionForm.changelog || null,
+        compatibilityMatrix,
         bundleUrl: submissionForm.bundleUrl,
         signature: submissionForm.signature,
         requestedPermissions: submissionForm.requestedPermissions
@@ -307,6 +326,14 @@ export default function PluginsMarketplacePage() {
           <input value={submissionForm.bundleUrl} onChange={(e) => setSubmissionForm((prev) => ({ ...prev, bundleUrl: e.target.value }))} />
         </label>
         <label>
+          Compatibility Matrix JSON
+          <textarea
+            rows={4}
+            value={submissionForm.compatibilityMatrixJson}
+            onChange={(e) => setSubmissionForm((prev) => ({ ...prev, compatibilityMatrixJson: e.target.value }))}
+          />
+        </label>
+        <label>
           Requested Permissions (CSV)
           <input value={submissionForm.requestedPermissions} onChange={(e) => setSubmissionForm((prev) => ({ ...prev, requestedPermissions: e.target.value }))} />
         </label>
@@ -359,6 +386,9 @@ export default function PluginsMarketplacePage() {
             <strong>{release.name}</strong> {release.version} ({release.channel})
             <span style={{ marginLeft: 8 }}>compatibility: {release.compatibility ?? "-"}</span>
             <span style={{ marginLeft: 8 }}>review: {release.reviewStatus ?? "-"}</span>
+            <span style={{ marginLeft: 8, fontWeight: 600, color: release.certified ? "green" : "#666" }}>
+              {release.certified ? "Certified" : "Not certified"}
+            </span>
             <span style={{ marginLeft: 8 }}>publisher: {release.publisher?.name ?? "-"}</span>
             <div>
               permissions: {release.permissions?.join(", ") || "-"}
@@ -366,6 +396,14 @@ export default function PluginsMarketplacePage() {
             <div>
               dependencies: {release.dependencies?.join(", ") || "-"}
             </div>
+            <div>
+              public page: <a href={`/marketplace/plugins/${encodeURIComponent(release.name)}`}>/marketplace/plugins/{release.name}</a>
+            </div>
+            {Array.isArray(release.compatibilityMatrix) && release.compatibilityMatrix.length > 0 ? (
+              <pre style={{ background: "#f6f6f6", padding: 8 }}>
+                {JSON.stringify(release.compatibilityMatrix, null, 2)}
+              </pre>
+            ) : null}
           </div>
         ))}
       </section>

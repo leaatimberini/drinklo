@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { isAdminRequest } from "../../../../../lib/admin-auth";
+import { buildReleaseDataFromSubmission, ensureSubmissionCanBeApproved } from "../../../../../lib/plugin-marketplace-public";
 
 export async function POST(req: NextRequest, ctx: any) {
   if (!isAdminRequest(req)) {
@@ -48,20 +49,27 @@ export async function POST(req: NextRequest, ctx: any) {
     return NextResponse.json({ id: updated.id, status: updated.status });
   }
 
+  const reviewGuard = ensureSubmissionCanBeApproved(submission.reviewReport as any);
+  if (!reviewGuard.ok) {
+    return NextResponse.json({ error: reviewGuard.reason }, { status: 409 });
+  }
+
   const release = await prisma.pluginRelease.create({
-    data: {
+    data: buildReleaseDataFromSubmission({
+      id: submission.id,
       publisherId: submission.publisherId,
-      sourceSubmissionId: submission.id,
-      name: submission.pluginName,
+      pluginName: submission.pluginName,
       version: submission.version,
       channel: submission.channel,
       compatibility: submission.compatibility,
+      compatibilityMatrix: (submission as any).compatibilityMatrix,
       changelog: submission.changelog,
       signature: submission.signature,
-      permissions: submission.requestedPermissions,
+      requestedPermissions: submission.requestedPermissions,
       dependencies: submission.dependencies,
-      reviewStatus: "approved",
-    },
+      publisher: { verificationStatus: submission.publisher?.verificationStatus ?? null },
+      reviewReport: submission.reviewReport as any,
+    }),
   });
 
   const updated = await prisma.pluginSubmission.update({
