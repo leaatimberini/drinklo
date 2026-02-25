@@ -1,6 +1,11 @@
 {
-  "generatedAt": "2026-02-25T18:32:07.761Z",
+  "generatedAt": "2026-02-25T18:50:21.062Z",
   "entries": [
+    {
+      "sha": "6af5de4",
+      "date": "2026-02-25",
+      "subject": "feat(copilot): add RAG citations and incident mode"
+    },
     {
       "sha": "251e6dc",
       "date": "2026-02-25",

@@ -78,11 +78,95 @@ model Installation {
   sodAccessReviewReports SodAccessReviewReport[]
   integrationBuilderReports IntegrationBuilderReport[]
   partnerConversions Conversion[]
+  mobileBrandProfile MobileBrandProfile?
+  mobileBuildProfiles MobileBuildProfile[]
+  mobileOtaUpdates MobileOtaUpdate[]
 
   @@index([clientName])
   @@index([domain])
   @@index([healthStatus])
   @@index([primaryRegion])
+}
+
+model MobileBrandProfile {
+  id               String   @id @default(uuid())
+  installationId   String   @unique
+  instanceId       String   @unique
+  companyId        String?
+  appName          String
+  appSlug          String
+  logoUrl          String?
+  iconUrl          String?
+  splashUrl        String?
+  assets           Json?
+  themeTokens      Json
+  otaStableChannel String   @default("stable")
+  otaBetaChannel   String   @default("beta")
+  defaultChannel   String   @default("stable")
+  apiBaseUrl       String?
+  configVersion    Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  buildProfiles MobileBuildProfile[]
+  otaUpdates    MobileOtaUpdate[]
+
+  @@index([instanceId])
+  @@index([companyId])
+  @@index([defaultChannel])
+}
+
+model MobileBuildProfile {
+  id              String   @id @default(uuid())
+  installationId  String
+  brandProfileId  String?
+  instanceId      String
+  companyId       String?
+  profileName     String
+  channel         String
+  runtimeVersion  String
+  appVersion      String
+  status          String   @default("GENERATED")
+  config          Json
+  generatedBy     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  brandProfile MobileBrandProfile? @relation(fields: [brandProfileId], references: [id])
+
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([channel, createdAt])
+}
+
+model MobileOtaUpdate {
+  id              String   @id @default(uuid())
+  installationId  String
+  brandProfileId  String?
+  instanceId      String
+  companyId       String?
+  channel         String
+  targetVersion   String
+  runtimeVersion  String
+  rolloutChannel  String?
+  releaseId       String?
+  status          String   @default("PUBLISHED")
+  message         String?
+  manifest        Json?
+  publishedBy     String?
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  brandProfile MobileBrandProfile? @relation(fields: [brandProfileId], references: [id])
+
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([channel, createdAt])
+  @@index([status, createdAt])
 }
 
 model DastFinding {

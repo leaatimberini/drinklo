@@ -4,6 +4,13 @@
     "slug": "erp-mobile",
     "scheme": "erp-mobile",
     "version": "0.1.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "platforms": ["ios", "android"],
     "jsEngine": "hermes",
@@ -18,7 +25,10 @@
       }
     },
     "extra": {
-      "apiUrl": "http://localhost:3001"
+      "apiUrl": "http://localhost:3001",
+      "instanceId": "demo-instance",
+      "brandingConfigUrl": "http://localhost:3010/api/mobile/white-label/config?instanceId=demo-instance",
+      "otaChannel": "stable"
     }
   }
 }

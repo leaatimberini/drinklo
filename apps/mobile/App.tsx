@@ -1,12 +1,15 @@
-Ôªøimport { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import type { RoleName, StockLookupResponse } from "@erp/shared";
 import { clearToken, getToken, listOrders, login, lookupStock, receiveStock, updateOrderStatus } from "./src/services/api";
+import { buildAppPalette, resolveMobileBranding } from "./src/branding/whiteLabel";
+import { downloadBrandingConfig, getCachedBrandingConfig } from "./src/services/mobileBranding";
 
 type Screen = "scan" | "receive" | "orders";
 
 export default function App() {
+  const [branding, setBranding] = useState(() => resolveMobileBranding());
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<RoleName | null>(null);
   const [email, setEmail] = useState("");
@@ -22,10 +25,21 @@ export default function App() {
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersStatus, setOrdersStatus] = useState("PAID");
 
+  const palette = useMemo(() => buildAppPalette(branding), [branding]);
+
   useEffect(() => {
     getToken().then((stored) => {
       if (stored) setToken(stored);
     });
+  }, []);
+
+  useEffect(() => {
+    getCachedBrandingConfig().then((cached) => {
+      if (cached) setBranding(cached as any);
+    }).catch(() => undefined);
+    downloadBrandingConfig().then((remote) => {
+      if (remote) setBranding(remote as any);
+    }).catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -44,8 +58,8 @@ export default function App() {
       const res = await login(email, password);
       setToken(res.accessToken);
       setRole(res.user.role);
-    } catch (err) {
-      setError("Credenciales inv√°lidas");
+    } catch {
+      setError("Credenciales inv·lidas");
     }
   }
 
@@ -62,8 +76,8 @@ export default function App() {
       const data = await lookupStock(token, code);
       setScanResult(data);
       setReceiveVariantId(data.variantId);
-    } catch (err) {
-      setError("No se encontr√≥ el producto");
+    } catch {
+      setError("No se encontrÛ el producto");
     }
   }
 
@@ -77,9 +91,9 @@ export default function App() {
         quantity: Number(receiveQty),
         reason: "receive",
       });
-      setError("Recepci√≥n registrada");
-    } catch (err) {
-      setError("No se pudo registrar recepci√≥n");
+      setError("RecepciÛn registrada");
+    } catch {
+      setError("No se pudo registrar recepciÛn");
     }
   }
 
@@ -89,7 +103,7 @@ export default function App() {
     try {
       const data = await listOrders(token, ordersStatus);
       setOrders(data);
-    } catch (err) {
+    } catch {
       setError("No se pudieron cargar pedidos");
     }
   }
@@ -100,81 +114,76 @@ export default function App() {
     try {
       await updateOrderStatus(token, orderId, { status });
       await loadOrders();
-    } catch (err) {
+    } catch {
       setError("No se pudo actualizar estado");
     }
   }
 
   if (!token) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>ERP Mobile</Text>
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
-        <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-        <TouchableOpacity style={styles.primary} onPress={handleLogin}>
-          <Text style={styles.primaryText}>Ingresar</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}>
+        <HeaderBranding branding={branding} palette={palette} />
+        <TextInput style={[styles.input, themedInput(palette)]} placeholder="Email" placeholderTextColor={palette.textMuted} value={email} onChangeText={setEmail} />
+        <TextInput style={[styles.input, themedInput(palette)]} placeholder="Password" placeholderTextColor={palette.textMuted} secureTextEntry value={password} onChangeText={setPassword} />
+        <TouchableOpacity style={[styles.primary, { backgroundColor: palette.primary, borderRadius: palette.radii.md }]} onPress={handleLogin}>
+          <Text style={[styles.primaryText, { color: palette.primaryText }]}>Ingresar</Text>
         </TouchableOpacity>
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={[styles.error, { color: palette.danger }]}>{error}</Text>}
       </SafeAreaView>
     );
   }
 
   if (!canOperate) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Sin permisos</Text>
-        <Text>Tu rol actual no habilita operaciones m√≥viles.</Text>
-        <TouchableOpacity style={styles.secondary} onPress={handleLogout}>
-          <Text style={styles.secondaryText}>Cerrar sesi√≥n</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}>
+        <HeaderBranding branding={branding} palette={palette} />
+        <Text style={[styles.title, { color: palette.text }]}>Sin permisos</Text>
+        <Text style={{ color: palette.text }}>Tu rol actual no habilita operaciones mÛviles.</Text>
+        <TouchableOpacity style={[styles.secondary, themedSecondary(palette)]} onPress={handleLogout}>
+          <Text style={[styles.secondaryText, { color: palette.primary }]}>Cerrar sesiÛn</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>ERP Mobile</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}>
+      <HeaderBranding branding={branding} palette={palette} />
+      <Text style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
+        OTA: {branding.ota.channel} / runtime {branding.ota.runtimeVersion}
+      </Text>
       <View style={styles.tabRow}>
-        <TouchableOpacity style={screen === "scan" ? styles.tabActive : styles.tab} onPress={() => setScreen("scan")}>
-          <Text style={styles.tabText}>Scan</Text>
+        <TouchableOpacity style={screen === "scan" ? [styles.tabActive, { backgroundColor: palette.accent }] : [styles.tab, { backgroundColor: palette.border }]} onPress={() => setScreen("scan")}>
+          <Text style={[styles.tabText, { color: palette.text }]}>Scan</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={screen === "receive" ? styles.tabActive : styles.tab} onPress={() => setScreen("receive")}>
-          <Text style={styles.tabText}>Recepci√≥n</Text>
+        <TouchableOpacity style={screen === "receive" ? [styles.tabActive, { backgroundColor: palette.accent }] : [styles.tab, { backgroundColor: palette.border }]} onPress={() => setScreen("receive")}>
+          <Text style={[styles.tabText, { color: palette.text }]}>RecepciÛn</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={screen === "orders" ? styles.tabActive : styles.tab} onPress={() => setScreen("orders")}>
-          <Text style={styles.tabText}>Picking</Text>
+        <TouchableOpacity style={screen === "orders" ? [styles.tabActive, { backgroundColor: palette.accent }] : [styles.tab, { backgroundColor: palette.border }]} onPress={() => setScreen("orders")}>
+          <Text style={[styles.tabText, { color: palette.text }]}>Picking</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.panel}>
         {screen === "scan" && (
           <View style={{ gap: 12 }}>
-            <Text style={styles.sectionTitle}>Escaneo de barcode</Text>
-            {hasPermission === false && <Text>Permiso de c√°mara denegado.</Text>}
+            <Text style={[styles.sectionTitle, { color: palette.text }]}>Escaneo de barcode</Text>
+            {hasPermission === false && <Text style={{ color: palette.text }}>Permiso de c·mara denegado.</Text>}
             {hasPermission && (
-              <View style={styles.cameraBox}>
-                <BarCodeScanner
-                  onBarCodeScanned={({ data }) => runLookup(data)}
-                  style={StyleSheet.absoluteFillObject}
-                />
+              <View style={[styles.cameraBox, { borderRadius: palette.radii.lg }]}>
+                <BarCodeScanner onBarCodeScanned={({ data }) => runLookup(data)} style={StyleSheet.absoluteFillObject} />
               </View>
             )}
-            <TextInput
-              style={styles.input}
-              placeholder="C√≥digo manual"
-              value={manualCode}
-              onChangeText={setManualCode}
-            />
-            <TouchableOpacity style={styles.primary} onPress={() => runLookup(manualCode)}>
-              <Text style={styles.primaryText}>Buscar</Text>
+            <TextInput style={[styles.input, themedInput(palette)]} placeholder="CÛdigo manual" placeholderTextColor={palette.textMuted} value={manualCode} onChangeText={setManualCode} />
+            <TouchableOpacity style={[styles.primary, { backgroundColor: palette.primary, borderRadius: palette.radii.md }]} onPress={() => runLookup(manualCode)}>
+              <Text style={[styles.primaryText, { color: palette.primaryText }]}>Buscar</Text>
             </TouchableOpacity>
-
             {scanResult && (
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>{scanResult.name}</Text>
-                <Text>SKU: {scanResult.sku}</Text>
-                <Text>Stock: {scanResult.stock}</Text>
-                <Text>Precio: ${scanResult.price}</Text>
+              <View style={[styles.card, themedCard(palette)]}>
+                <Text style={[styles.cardTitle, { color: palette.text }]}>{scanResult.name}</Text>
+                <Text style={{ color: palette.text }}>SKU: {scanResult.sku}</Text>
+                <Text style={{ color: palette.text }}>Stock: {scanResult.stock}</Text>
+                <Text style={{ color: palette.text }}>Precio: ${scanResult.price}</Text>
               </View>
             )}
           </View>
@@ -182,59 +191,40 @@ export default function App() {
 
         {screen === "receive" && (
           <View style={{ gap: 12 }}>
-            <Text style={styles.sectionTitle}>Recepci√≥n de mercader√≠a</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Variant ID"
-              value={receiveVariantId}
-              onChangeText={setReceiveVariantId}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Location ID"
-              value={receiveLocationId}
-              onChangeText={setReceiveLocationId}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Cantidad"
-              keyboardType="numeric"
-              value={receiveQty}
-              onChangeText={setReceiveQty}
-            />
-            <TouchableOpacity style={styles.primary} onPress={submitReceive}>
-              <Text style={styles.primaryText}>Registrar</Text>
+            <Text style={[styles.sectionTitle, { color: palette.text }]}>RecepciÛn de mercaderÌa</Text>
+            <TextInput style={[styles.input, themedInput(palette)]} placeholder="Variant ID" placeholderTextColor={palette.textMuted} value={receiveVariantId} onChangeText={setReceiveVariantId} />
+            <TextInput style={[styles.input, themedInput(palette)]} placeholder="Location ID" placeholderTextColor={palette.textMuted} value={receiveLocationId} onChangeText={setReceiveLocationId} />
+            <TextInput style={[styles.input, themedInput(palette)]} placeholder="Cantidad" placeholderTextColor={palette.textMuted} keyboardType="numeric" value={receiveQty} onChangeText={setReceiveQty} />
+            <TouchableOpacity style={[styles.primary, { backgroundColor: palette.primary, borderRadius: palette.radii.md }]} onPress={submitReceive}>
+              <Text style={[styles.primaryText, { color: palette.primaryText }]}>Registrar</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {screen === "orders" && (
           <View style={{ gap: 12 }}>
-            <Text style={styles.sectionTitle}>Picking / Packing</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Estado (PAID/PACKED)"
-              value={ordersStatus}
-              onChangeText={setOrdersStatus}
-            />
-            <TouchableOpacity style={styles.primary} onPress={loadOrders}>
-              <Text style={styles.primaryText}>Cargar pedidos</Text>
+            <Text style={[styles.sectionTitle, { color: palette.text }]}>Picking / Packing</Text>
+            <TextInput style={[styles.input, themedInput(palette)]} placeholder="Estado (PAID/PACKED)" placeholderTextColor={palette.textMuted} value={ordersStatus} onChangeText={setOrdersStatus} />
+            <TouchableOpacity style={[styles.primary, { backgroundColor: palette.primary, borderRadius: palette.radii.md }]} onPress={loadOrders}>
+              <Text style={[styles.primaryText, { color: palette.primaryText }]}>Cargar pedidos</Text>
             </TouchableOpacity>
             {orders.map((order) => (
-              <View key={order.id} style={styles.card}>
-                <Text style={styles.cardTitle}>Pedido {order.id}</Text>
-                <Text>Cliente: {order.customerName}</Text>
-                <Text>Estado: {order.status}</Text>
-                <Text>Items:</Text>
+              <View key={order.id} style={[styles.card, themedCard(palette)]}>
+                <Text style={[styles.cardTitle, { color: palette.text }]}>Pedido {order.id}</Text>
+                <Text style={{ color: palette.text }}>Cliente: {order.customerName}</Text>
+                <Text style={{ color: palette.text }}>Estado: {order.status}</Text>
+                <Text style={{ color: palette.text }}>Items:</Text>
                 {order.items.map((item: any, idx: number) => (
-                  <Text key={`${order.id}-${idx}`}>- {item.quantity} x {item.name}</Text>
+                  <Text key={`${order.id}-${idx}`} style={{ color: palette.text }}>
+                    - {item.quantity} x {item.name}
+                  </Text>
                 ))}
                 <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                  <TouchableOpacity style={styles.secondary} onPress={() => changeStatus(order.id, "PACKED")}>
-                    <Text style={styles.secondaryText}>Marcar PACKED</Text>
+                  <TouchableOpacity style={[styles.secondary, themedSecondary(palette)]} onPress={() => changeStatus(order.id, "PACKED")}>
+                    <Text style={[styles.secondaryText, { color: palette.primary }]}>Marcar PACKED</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.secondary} onPress={() => changeStatus(order.id, "SHIPPED")}>
-                    <Text style={styles.secondaryText}>Marcar SHIPPED</Text>
+                  <TouchableOpacity style={[styles.secondary, themedSecondary(palette)]} onPress={() => changeStatus(order.id, "SHIPPED")}>
+                    <Text style={[styles.secondaryText, { color: palette.primary }]}>Marcar SHIPPED</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -242,13 +232,54 @@ export default function App() {
           </View>
         )}
 
-        {error && <Text style={styles.error}>{error}</Text>}
-        <TouchableOpacity style={styles.secondary} onPress={handleLogout}>
-          <Text style={styles.secondaryText}>Cerrar sesi√≥n</Text>
+        {error && <Text style={[styles.error, { color: palette.danger }]}>{error}</Text>}
+        <TouchableOpacity style={[styles.secondary, themedSecondary(palette)]} onPress={handleLogout}>
+          <Text style={[styles.secondaryText, { color: palette.primary }]}>Cerrar sesiÛn</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function HeaderBranding({ branding, palette }: { branding: ReturnType<typeof resolveMobileBranding>; palette: ReturnType<typeof buildAppPalette> }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
+      {branding.logoUrl ? (
+        <Image source={{ uri: branding.logoUrl }} style={{ width: 32, height: 32, borderRadius: 8 }} />
+      ) : (
+        <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: palette.accent }} />
+      )}
+      <View>
+        <Text style={[styles.title, { marginBottom: 0, color: palette.text }]}>{branding.appName}</Text>
+        <Text style={{ color: palette.textMuted, fontSize: 12 }}>{branding.channel.toUpperCase()}</Text>
+      </View>
+    </View>
+  );
+}
+
+function themedInput(palette: ReturnType<typeof buildAppPalette>) {
+  return {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: palette.radii.md,
+    color: palette.text,
+  } as const;
+}
+
+function themedCard(palette: ReturnType<typeof buildAppPalette>) {
+  return {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: palette.radii.lg,
+  } as const;
+}
+
+function themedSecondary(palette: ReturnType<typeof buildAppPalette>) {
+  return {
+    backgroundColor: palette.surface,
+    borderColor: palette.primary,
+    borderRadius: palette.radii.md,
+  } as const;
 }
 
 const styles = StyleSheet.create({
