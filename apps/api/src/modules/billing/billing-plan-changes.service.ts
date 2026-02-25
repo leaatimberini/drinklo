@@ -5,6 +5,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { PlansService } from "../plans/plans.service";
 import { addDaysPreservingBuenosAiresWallClock } from "../plans/plan-time.util";
 import { ImmutableAuditService } from "../immutable-audit/immutable-audit.service";
+import { MercadoPagoBillingSubscriptionsService } from "../payments/mercadopago-billing-subscriptions.service";
 
 type Tier = "C1" | "C2" | "C3";
 
@@ -46,6 +47,7 @@ export class BillingPlanChangesService {
     private readonly prisma: PrismaService,
     private readonly plans: PlansService,
     private readonly audit: ImmutableAuditService,
+    private readonly recurringBilling: MercadoPagoBillingSubscriptionsService,
   ) {}
 
   @Cron("20 * * * *")
@@ -230,6 +232,17 @@ export class BillingPlanChangesService {
         dryRun: false,
       },
     });
+
+    if (subscription.status === "TRIAL_ACTIVE" || subscription.status === "GRACE" || subscription.status === "RESTRICTED") {
+      await this.recurringBilling
+        .createOrUpdatePreapproval(companyId, {
+          allowDuringTrial: true,
+          activate: true,
+          targetTier,
+          actorUserId,
+        })
+        .catch(() => undefined);
+    }
 
     return {
       ...estimate,

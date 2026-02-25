@@ -22,9 +22,11 @@ export const EnvSchema = z.object({
   MERCADOPAGO_ACCESS_TOKEN: z.string().optional(),
   MERCADOPAGO_WEBHOOK_SECRET: z.string().optional(),
   MERCADOPAGO_WEBHOOK_URL: z.string().optional(),
+  MERCADOPAGO_BILLING_WEBHOOK_URL: z.string().optional(),
   MERCADOPAGO_SUCCESS_URL: z.string().optional(),
   MERCADOPAGO_FAILURE_URL: z.string().optional(),
   MERCADOPAGO_PENDING_URL: z.string().optional(),
+  MERCADOPAGO_BILLING_BACK_URL: z.string().optional(),
 
   AFIP_CERT_PATH: z.string().optional(),
   AFIP_KEY_PATH: z.string().optional(),

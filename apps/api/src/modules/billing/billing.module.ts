@@ -10,9 +10,10 @@ import { SecretsModule } from "../secrets/secrets.module";
 import { SandboxModule } from "../sandbox/sandbox.module";
 import { PlansModule } from "../plans/plans.module";
 import { ImmutableAuditModule } from "../immutable-audit/immutable-audit.module";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
-  imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, SandboxModule, PlansModule, ImmutableAuditModule],
+  imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, SandboxModule, PlansModule, ImmutableAuditModule, PaymentsModule],
   controllers: [BillingController, BillingSupportController],
   providers: [BillingService, BillingPlanChangesService],
   exports: [BillingPlanChangesService],

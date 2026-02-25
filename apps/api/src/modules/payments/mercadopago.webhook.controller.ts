@@ -3,6 +3,7 @@ import { Body, Controller, Headers, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { PrismaService } from "../prisma/prisma.service";
 import { PaymentsService } from "./payments.service";
+import { MercadoPagoBillingSubscriptionsService } from "./mercadopago-billing-subscriptions.service";
 import { SecretsService } from "../secrets/secrets.service";
 import { MetricsService } from "../metrics/metrics.service";
 import { FraudService } from "../fraud/fraud.service";
@@ -43,6 +44,7 @@ export class MercadoPagoWebhookController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly payments: PaymentsService,
+    private readonly recurringBilling: MercadoPagoBillingSubscriptionsService,
     private readonly secrets: SecretsService,
     private readonly metrics: MetricsService,
     private readonly fraud: FraudService,
@@ -112,7 +114,41 @@ export class MercadoPagoWebhookController {
       return { ok: false };
     }
 
-    const topic = body?.type ?? body?.topic;
+    const topic = String(body?.type ?? body?.topic ?? query?.topic ?? "").toLowerCase();
+
+    if (
+      topic === "preapproval" ||
+      topic === "subscription_preapproval" ||
+      topic === "authorized_payment" ||
+      topic === "subscription_authorized_payment"
+    ) {
+      try {
+        const handled = await this.recurringBilling.handlePreapprovalWebhook({
+          companyId: company?.id ?? null,
+          dataId,
+          body,
+          topic,
+        });
+        await this.prisma.webhookLog.update({
+          where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
+          data: {
+            status: handled.handled ? "processed" : "ignored",
+            companyId: handled.companyId ?? company?.id ?? null,
+            processedAt: new Date(),
+          },
+        });
+        this.metrics.recordWebhook("mercadopago", handled.handled ? "processed" : "ignored");
+        return { ok: true, recurring: true, handled: handled.handled };
+      } catch (error: any) {
+        await this.prisma.webhookLog.update({
+          where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
+          data: { status: "error", error: redactDeep(error?.message ?? String(error)), processedAt: new Date() },
+        });
+        this.metrics.recordWebhook("mercadopago", "error");
+        return { ok: false };
+      }
+    }
+
     if (topic !== "payment" && topic !== "payment.created") {
       await this.prisma.webhookLog.update({
         where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
@@ -128,6 +164,23 @@ export class MercadoPagoWebhookController {
     try {
       const paymentId = queryId ?? body?.data?.id ?? body?.resource;
       const payment = await this.payments.getPayment(String(paymentId));
+      const recurringHandled = await this.recurringBilling.tryHandleRecurringPaymentWebhook({
+        payment,
+        paymentId: String(paymentId),
+        companyIdHint: company?.id ?? null,
+      });
+      if (recurringHandled.handled) {
+        await this.prisma.webhookLog.update({
+          where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
+          data: {
+            status: recurringHandled.ignored ? "ignored" : "processed",
+            companyId: recurringHandled.companyId ?? company?.id ?? null,
+            processedAt: new Date(),
+          },
+        });
+        this.metrics.recordWebhook("mercadopago", recurringHandled.ignored ? "ignored" : "processed");
+        return { ok: true, recurring: true };
+      }
       const orderId = payment?.external_reference;
       if (!orderId) {
         throw new Error("No external_reference");

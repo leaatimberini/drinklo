@@ -1,8 +1,9 @@
 import {
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
-  TooManyRequestsException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
@@ -264,7 +265,7 @@ export class DeveloperApiService {
         userAgent: input.userAgent,
         rateLimited: true,
       });
-      throw new TooManyRequestsException("Rate limit exceeded");
+      throw new HttpException("Rate limit exceeded", HttpStatus.TOO_MANY_REQUESTS);
     }
 
     await this.prisma.developerApiKey.update({

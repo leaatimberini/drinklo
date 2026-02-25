@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, PrismaService } from "@erp/db";
+import { Prisma } from "@erp/db";
+import { PrismaService } from "../prisma/prisma.service";
 import { StockReservationService } from "../stock-reservations/stock-reservation.service";
 
 function decimal(value: number) {
@@ -51,7 +52,7 @@ export class SandboxService {
   }
 
   async resetCompany(companyId: string) {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       await tx.stockReservationLot.deleteMany({ where: { companyId } });
       await tx.stockReservation.deleteMany({ where: { companyId } });
       await tx.orderStatusEvent.deleteMany({ where: { order: { companyId } } });
@@ -193,6 +194,24 @@ export class SandboxService {
     };
   }
 
+  deterministicPreapproval(companyId: string, amount: number, tier: string) {
+    const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    return {
+      id: `sbx-preapp-${companyId}`,
+      status: "authorized",
+      reason: `Plan ${tier}`,
+      auto_recurring: {
+        transaction_amount: amount,
+        currency_id: "ARS",
+        frequency: 1,
+        frequency_type: "months",
+      },
+      next_payment_date: nextBillingDate.toISOString(),
+      external_reference: companyId,
+      init_point: `https://sandbox.local/subscriptions/${companyId}`,
+    };
+  }
+
   deterministicArcaInvoice(input: { orderRef: string; pointOfSale: number; type: string; total: number; currency: string }) {
     const caeSuffix = String(Math.abs(this.hash(input.orderRef))).padStart(8, "0").slice(0, 8);
     const number = Math.abs(this.hash(`${input.pointOfSale}:${input.orderRef}`)) % 99999999;
@@ -216,7 +235,7 @@ export class SandboxService {
       throw new NotFoundException("Order not found");
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       const payment = await tx.payment.findFirst({
         where: { orderId, provider: "MERCADOPAGO" },
       });

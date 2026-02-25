@@ -1017,6 +1017,11 @@ model Subscription {
   trialEndAt         DateTime?
   graceEndAt         DateTime?
   lastPaymentAt      DateTime?
+  billingProvider    String?
+  mpPreapprovalId    String?            @unique
+  mpPreapprovalStatus String?
+  mpNextBillingDate  DateTime?
+  mpSubscriptionRaw  Json?
   cancelAtPeriodEnd  Boolean            @default(false)
   cancelledAt        DateTime?
   softLimited        Boolean            @default(false)
@@ -1032,6 +1037,7 @@ model Subscription {
   @@index([status])
   @@index([currentTier])
   @@index([currentPeriodEnd])
+  @@index([mpPreapprovalStatus])
 }
 
 enum ProrationInvoiceStatus {

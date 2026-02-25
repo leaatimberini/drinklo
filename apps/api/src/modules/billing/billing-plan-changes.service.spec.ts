@@ -18,6 +18,7 @@ describe("BillingPlanChangesService", () => {
     getCurrentUsage: jest.fn(),
   };
   const auditMock = { append: jest.fn() };
+  const recurringMock = { createOrUpdatePreapproval: jest.fn() };
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -31,12 +32,13 @@ describe("BillingPlanChangesService", () => {
     plansMock.getSubscription.mockReset();
     plansMock.getCurrentUsage.mockReset();
     auditMock.append.mockReset();
+    recurringMock.createOrUpdatePreapproval.mockReset();
   });
 
   afterEach(() => jest.useRealTimers());
 
   function buildService() {
-    return new BillingPlanChangesService(prismaMock, plansMock, auditMock as any);
+    return new BillingPlanChangesService(prismaMock, plansMock, auditMock as any, recurringMock as any);
   }
 
   function catalog() {
