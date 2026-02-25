@@ -81,6 +81,7 @@ model Installation {
   mobileBrandProfile MobileBrandProfile?
   mobileBuildProfiles MobileBuildProfile[]
   mobileOtaUpdates MobileOtaUpdate[]
+  marketingLeads  MarketingLead[]
 
   @@index([clientName])
   @@index([domain])
@@ -1387,11 +1388,39 @@ model LeadAttribution {
   ipHash           String?
   fingerprintHash  String?
   createdAt        DateTime @default(now())
+  marketingLeads   MarketingLead[]
 
   @@index([campaignId, createdAt])
   @@index([redemptionId])
   @@index([instanceId])
   @@index([utmSource, utmCampaign, createdAt])
+}
+
+model MarketingLead {
+  id               String   @id @default(uuid())
+  installationId   String?
+  instanceId       String?
+  companyId        String?
+  leadAttributionId String?
+  email            String
+  businessType     String
+  city             String?
+  trialCode        String?
+  source           String   @default("marketing-site")
+  status           String   @default("CAPTURED")
+  notes            String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  installation   Installation?  @relation(fields: [installationId], references: [id])
+  leadAttribution LeadAttribution? @relation(fields: [leadAttributionId], references: [id])
+
+  @@index([email, createdAt])
+  @@index([businessType, createdAt])
+  @@index([trialCode, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([status, createdAt])
 }
 
 model TrialLifecycleEvent {

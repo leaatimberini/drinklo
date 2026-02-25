@@ -306,6 +306,31 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@25.2.3)(terser@5.46.0)
 
+  apps/marketing-site:
+    dependencies:
+      next:
+        specifier: ^15.1.0
+        version: 15.5.12(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      eslint-config-next:
+        specifier: ^15.1.0
+        version: 15.5.12(eslint@8.57.1)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   apps/mobile:
     dependencies:
       '@erp/shared':
