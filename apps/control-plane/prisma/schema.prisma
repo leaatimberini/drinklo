@@ -407,6 +407,24 @@ enum BillingPeriod {
   YEARLY
 }
 
+enum TrialCampaignTier {
+  C1
+  C2
+}
+
+enum TrialCampaignStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum TrialRedemptionStatus {
+  PENDING_APPROVAL
+  REDEEMED
+  REJECTED
+  BLOCKED
+  EXPIRED
+}
+
 enum InvoiceStatus {
   OPEN
   PAID
@@ -1204,4 +1222,76 @@ model FinOpsCostRecord {
   installation Installation @relation(fields: [installationId], references: [id])
 
   @@index([installationId, periodStart, periodEnd])
+}
+
+model TrialCampaign {
+  id              String             @id @default(uuid())
+  code            String             @unique
+  tier            TrialCampaignTier
+  durationDays    Int
+  maxRedemptions  Int?
+  expiresAt       DateTime?
+  requiresApproval Boolean           @default(false)
+  allowedDomains  String[]           @default([])
+  blockedDomains  String[]           @default([])
+  notes           String?
+  status          TrialCampaignStatus @default(ACTIVE)
+  revokedAt       DateTime?
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@index([tier, createdAt])
+  @@index([expiresAt])
+}
+
+model TrialRedemption {
+  id              String               @id @default(uuid())
+  campaignId      String
+  companyId       String?
+  instanceId      String?
+  billingAccountId String?
+  email           String?
+  emailDomain     String?
+  ipHash          String?
+  fingerprintHash String?
+  redeemedAt      DateTime             @default(now())
+  status          TrialRedemptionStatus @default(REDEEMED)
+  reason          String?
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([campaignId, redeemedAt])
+  @@index([campaignId, status, redeemedAt])
+  @@index([emailDomain, redeemedAt])
+  @@index([fingerprintHash, redeemedAt])
+  @@index([ipHash, redeemedAt])
+  @@index([instanceId])
+  @@index([billingAccountId])
+}
+
+model LeadAttribution {
+  id               String   @id @default(uuid())
+  campaignId       String?
+  redemptionId     String?
+  companyId        String?
+  instanceId       String?
+  utmSource        String?
+  utmCampaign      String?
+  referral         String?
+  landing          String?
+  utmMedium        String?
+  utmTerm          String?
+  utmContent       String?
+  ipHash           String?
+  fingerprintHash  String?
+  createdAt        DateTime @default(now())
+
+  @@index([campaignId, createdAt])
+  @@index([redemptionId])
+  @@index([instanceId])
+  @@index([utmSource, utmCampaign, createdAt])
 }

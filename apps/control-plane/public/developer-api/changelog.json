@@ -1,6 +1,16 @@
 {
-  "generatedAt": "2026-02-25T19:50:11.149Z",
+  "generatedAt": "2026-02-25T20:13:14.510Z",
   "entries": [
+    {
+      "sha": "051647c",
+      "date": "2026-02-25",
+      "subject": "feat(billing): add mercadopago recurring subscriptions sync"
+    },
+    {
+      "sha": "2932e07",
+      "date": "2026-02-25",
+      "subject": "feat(billing): add plan change proration workflow"
+    },
     {
       "sha": "29f79e7",
       "date": "2026-02-25",
