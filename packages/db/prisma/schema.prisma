@@ -102,6 +102,7 @@ model Company {
   orderTaxBreakdowns     OrderTaxBreakdown[]
   subscription           Subscription?
   usageCounters          UsageCounter[]
+  subscriptionLifecycleNotifications SubscriptionLifecycleNotification[]
   orders                 Order[]
   sales                  Sale[]
   quotes                 Quote[]
@@ -1018,11 +1019,47 @@ model Subscription {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
+  company                     Company                           @relation(fields: [companyId], references: [id])
+  lifecycleNotifications      SubscriptionLifecycleNotification[]
 
   @@index([status])
   @@index([currentTier])
   @@index([currentPeriodEnd])
+}
+
+enum SubscriptionLifecycleNotificationChannel {
+  EMAIL
+  TELEGRAM
+  ADMIN_BANNER
+}
+
+enum SubscriptionLifecycleNotificationStatus {
+  SENT
+  SKIPPED
+  FAILED
+}
+
+model SubscriptionLifecycleNotification {
+  id             String                                @id @default(uuid())
+  companyId      String
+  subscriptionId String
+  channel        SubscriptionLifecycleNotificationChannel
+  kind           String
+  dedupeKey      String                                @unique
+  status         SubscriptionLifecycleNotificationStatus @default(SENT)
+  recipient      String?
+  payload        Json?
+  sentAt         DateTime?
+  error          String?
+  createdAt      DateTime                              @default(now())
+  updatedAt      DateTime                              @updatedAt
+
+  company       Company       @relation(fields: [companyId], references: [id])
+  subscription  Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@index([subscriptionId, kind])
+  @@index([channel, status])
 }
 
 model UsageCounter {

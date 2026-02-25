@@ -95,6 +95,12 @@ export const EnvSchema = z.object({
   GOVERNANCE_CRON_ENABLED: z.coerce.boolean().optional(),
   GOVERNANCE_CRON_SCHEDULE: z.string().optional(),
   GOVERNANCE_DLP_ENABLED: z.coerce.boolean().optional(),
+  SUBSCRIPTION_LIFECYCLE_CRON_ENABLED: z.coerce.boolean().optional(),
+  SUBSCRIPTION_LIFECYCLE_HOURLY_CRON: z.string().optional(),
+  SUBSCRIPTION_LIFECYCLE_DAILY_CRON: z.string().optional(),
+  SUBSCRIPTION_LIFECYCLE_GRACE_DAYS: z.coerce.number().optional(),
+  SUBSCRIPTION_ALERT_TELEGRAM_CHAT_IDS: z.string().optional(),
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
 
   EVENT_INGEST_TOKEN: z.string().optional(),
   EVENT_SINK_URL: z.string().optional(),

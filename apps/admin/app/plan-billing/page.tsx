@@ -35,6 +35,18 @@ type EntitlementsResponse = {
   };
   usagePercentages?: Record<string, number>;
   timezone?: string;
+  lifecycleBanners?: Array<{
+    kind: string;
+    severity: "info" | "warning" | "danger";
+    title: string;
+    message: string;
+  }>;
+  restrictedPolicy?: {
+    keepsData: boolean;
+    basicSalesAllowed: boolean;
+    blockedActions: string[];
+    degradedActions: string[];
+  };
 };
 
 export default function PlanBillingPage() {
@@ -42,14 +54,16 @@ export default function PlanBillingPage() {
   const [token, setToken] = useState("");
   const [catalog, setCatalog] = useState<any[]>([]);
   const [data, setData] = useState<EntitlementsResponse | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [message, setMessage] = useState<string | null>(null);
 
   async function load() {
     setMessage(null);
     const headers = { Authorization: `Bearer ${token}` };
-    const [catalogRes, entitlementsRes] = await Promise.all([
+    const [catalogRes, entitlementsRes, notificationsRes] = await Promise.all([
       fetch(`${apiUrl}/admin/plans/catalog`, { headers }),
       fetch(`${apiUrl}/admin/plans/entitlements`, { headers }),
+      fetch(`${apiUrl}/admin/plans/lifecycle/notifications?limit=10`, { headers }),
     ]);
     if (!catalogRes.ok || !entitlementsRes.ok) {
       setMessage("No se pudo cargar informacion del plan");
@@ -57,6 +71,7 @@ export default function PlanBillingPage() {
     }
     setCatalog(await catalogRes.json());
     setData(await entitlementsRes.json());
+    setNotifications(notificationsRes.ok ? await notificationsRes.json() : []);
   }
 
   const rows = data
@@ -80,6 +95,33 @@ export default function PlanBillingPage() {
         <input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Bearer token" />
       </label>
       <button style={{ marginTop: 12 }} onClick={load}>Cargar</button>
+
+      {data?.lifecycleBanners?.map((banner) => (
+        <div
+          key={banner.kind}
+          style={{
+            marginTop: 12,
+            padding: 12,
+            borderRadius: "var(--radius-md)",
+            border: "1px solid",
+            borderColor:
+              banner.severity === "danger"
+                ? "#dc2626"
+                : banner.severity === "warning"
+                  ? "#d97706"
+                  : "#2563eb",
+            background:
+              banner.severity === "danger"
+                ? "#fef2f2"
+                : banner.severity === "warning"
+                  ? "#fffbeb"
+                  : "#eff6ff",
+          }}
+        >
+          <strong>{banner.title}</strong>
+          <div>{banner.message}</div>
+        </div>
+      ))}
 
       {data && (
         <>
@@ -118,6 +160,13 @@ export default function PlanBillingPage() {
                 ))}
               </tbody>
             </table>
+            {data.restrictedPolicy ? (
+              <div style={{ marginTop: 12 }}>
+                <strong>Politica restricted (preview)</strong>
+                <div>Conserva datos: {String(data.restrictedPolicy.keepsData)} | Ventas basicas: {String(data.restrictedPolicy.basicSalesAllowed)}</div>
+                <div>Bloqueos: {data.restrictedPolicy.blockedActions.join(", ")}</div>
+              </div>
+            ) : null}
           </section>
         </>
       )}
@@ -146,6 +195,32 @@ export default function PlanBillingPage() {
                 <td align="right">{item.pluginsMax}</td>
                 <td align="right">{item.branchesMax}</td>
                 <td align="right">{item.adminUsersMax}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section style={{ marginTop: 20, padding: 16, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)", background: "var(--card-bg)" }}>
+        <h2 style={{ marginTop: 0 }}>Notificaciones lifecycle recientes</h2>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th align="left">Canal</th>
+              <th align="left">Tipo</th>
+              <th align="left">Destino</th>
+              <th align="left">Estado</th>
+              <th align="left">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {notifications.map((item) => (
+              <tr key={item.id}>
+                <td>{item.channel}</td>
+                <td>{item.kind}</td>
+                <td>{item.recipient ?? "-"}</td>
+                <td>{item.status}</td>
+                <td>{item.sentAt ? new Date(item.sentAt).toLocaleString() : new Date(item.createdAt).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

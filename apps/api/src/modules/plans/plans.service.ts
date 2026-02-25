@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { PLAN_CATALOG_DEFAULTS, type PlanTierCode } from "./plan-catalog.constants";
 import { buildTrialPeriod, getCurrentUsagePeriodBuenosAires } from "./plan-time.util";
+import { computeLifecycleBanners, SUBSCRIPTION_RESTRICTED_CAPABILITIES } from "./subscription-lifecycle.policy";
 
 type PrismaLike = Pick<
   PrismaService,
@@ -144,6 +145,8 @@ export class PlansService {
           entitlement.adminUsersMax > 0 ? Math.round((usage.adminUsersCount / entitlement.adminUsersMax) * 100) : 0,
       },
       timezone: "America/Argentina/Buenos_Aires",
+      lifecycleBanners: computeLifecycleBanners(subscription),
+      restrictedPolicy: SUBSCRIPTION_RESTRICTED_CAPABILITIES,
     };
   }
 
@@ -167,4 +170,3 @@ export class PlansService {
     return this.getEffective(companyId);
   }
 }
-

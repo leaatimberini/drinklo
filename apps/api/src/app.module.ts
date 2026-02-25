@@ -69,6 +69,7 @@ import { SodAccessReviewsModule } from "./modules/sod-access-reviews/sod-access-
 import { EdiscoveryModule } from "./modules/ediscovery/ediscovery.module";
 import { IntegrationBuilderModule } from "./modules/integration-builder/integration-builder.module";
 import { PlansModule } from "./modules/plans/plans.module";
+import { SubscriptionLifecycleModule } from "./modules/subscription-lifecycle/subscription-lifecycle.module";
 
 @Module({
   imports: [
@@ -135,6 +136,7 @@ import { PlansModule } from "./modules/plans/plans.module";
     EdiscoveryModule,
     IntegrationBuilderModule,
     PlansModule,
+    SubscriptionLifecycleModule,
     AuthModule,
     CompaniesModule,
     UsersModule,
