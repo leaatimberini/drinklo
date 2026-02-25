@@ -91,6 +91,9 @@ model Company {
   developerWebhooks     DeveloperWebhookEndpoint[]
   developerWebhookDeliveries DeveloperWebhookDelivery[]
   shippingZones          ShippingZone[]
+  taxProfiles            TaxProfile[]
+  taxRules               TaxRule[]
+  orderTaxBreakdowns     OrderTaxBreakdown[]
   orders                 Order[]
   sales                  Sale[]
   quotes                 Quote[]
@@ -958,6 +961,28 @@ enum PaymentStatus {
   CANCELED
 }
 
+enum TaxRuleKind {
+  IVA
+  PERCEPTION
+  WITHHOLDING
+}
+
+enum TaxPriceMode {
+  INCLUDED
+  EXCLUDED
+}
+
+enum TaxRoundingMode {
+  HALF_UP
+  UP
+  DOWN
+}
+
+enum TaxRoundingScope {
+  LINE
+  TOTAL
+}
+
 enum FraudAction {
   NONE
   HOLD_ORDER
@@ -1386,6 +1411,7 @@ model Order {
   loyaltyTransactions LoyaltyTransaction[]
   experimentEvents ExperimentEvent[]
   stockReservations StockReservation[]
+  taxBreakdown    OrderTaxBreakdown?
 
   @@index([companyId])
   @@index([branchId])
@@ -1443,6 +1469,104 @@ model Payment {
 
   @@index([orderId])
   @@index([paymentId])
+}
+
+model TaxProfile {
+  id               String           @id @default(uuid())
+  companyId        String
+  name             String           @default("Default")
+  isDefault        Boolean          @default(true)
+  currency         String           @default("ARS")
+  ivaDefaultMode   TaxPriceMode     @default(EXCLUDED)
+  roundingMode     TaxRoundingMode  @default(HALF_UP)
+  roundingScope    TaxRoundingScope @default(TOTAL)
+  roundingIncrement Decimal         @default(0.01) @db.Decimal(10, 4)
+  enabled          Boolean          @default(true)
+  createdById      String?
+  updatedById      String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  company   Company              @relation(fields: [companyId], references: [id])
+  rules     TaxRule[]
+  ordersTax OrderTaxBreakdown[]
+  createdBy User?                @relation("TaxProfileCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?                @relation("TaxProfileUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([companyId])
+  @@index([isDefault])
+  @@unique([companyId, name])
+}
+
+model TaxRule {
+  id                String       @id @default(uuid())
+  companyId         String
+  taxProfileId      String
+  name              String
+  isActive          Boolean      @default(true)
+  kind              TaxRuleKind
+  rate              Decimal      @db.Decimal(10, 6)
+  priceMode         TaxPriceMode?
+  priority          Int          @default(100)
+  applyToShipping   Boolean      @default(false)
+  categoryId        String?
+  productId         String?
+  locationCountry   String?
+  locationState     String?
+  locationCity      String?
+  postalCodePrefix  String?
+  metadata          Json?
+  createdById       String?
+  updatedById       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  deletedAt         DateTime?
+
+  company     Company    @relation(fields: [companyId], references: [id])
+  taxProfile  TaxProfile @relation(fields: [taxProfileId], references: [id])
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  product     Product?   @relation(fields: [productId], references: [id])
+  createdBy   User?      @relation("TaxRuleCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?      @relation("TaxRuleUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([companyId])
+  @@index([taxProfileId])
+  @@index([categoryId])
+  @@index([productId])
+  @@index([isActive, deletedAt])
+  @@index([locationCountry, locationState, locationCity])
+}
+
+model OrderTaxBreakdown {
+  id                 String   @id @default(uuid())
+  companyId          String
+  orderId            String   @unique
+  taxProfileId       String?
+  currency           String
+  engineVersion      String   @default("v1")
+  baseAmount         Decimal  @default(0) @db.Decimal(12, 2)
+  shippingAmount     Decimal  @default(0) @db.Decimal(12, 2)
+  discountAmount     Decimal  @default(0) @db.Decimal(12, 2)
+  ivaAmount          Decimal  @default(0) @db.Decimal(12, 2)
+  perceptionAmount   Decimal  @default(0) @db.Decimal(12, 2)
+  withholdingAmount  Decimal  @default(0) @db.Decimal(12, 2)
+  totalTaxAmount     Decimal  @default(0) @db.Decimal(12, 2)
+  totalAmount        Decimal  @default(0) @db.Decimal(12, 2)
+  roundingMode       TaxRoundingMode
+  roundingScope      TaxRoundingScope
+  roundingIncrement  Decimal  @db.Decimal(10, 4)
+  lines              Json
+  inputSnapshot      Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  company    Company     @relation(fields: [companyId], references: [id])
+  order      Order       @relation(fields: [orderId], references: [id])
+  taxProfile TaxProfile? @relation(fields: [taxProfileId], references: [id])
+
+  @@index([companyId])
+  @@index([taxProfileId])
+  @@index([createdAt])
 }
 
 model WebhookLog {
@@ -1688,6 +1812,10 @@ model User {
   customersUpdated         Customer[]       @relation("CustomerUpdatedBy")
   productsCreated          Product[]        @relation("ProductCreatedBy")
   productsUpdated          Product[]        @relation("ProductUpdatedBy")
+  taxProfilesCreated       TaxProfile[]     @relation("TaxProfileCreatedBy")
+  taxProfilesUpdated       TaxProfile[]     @relation("TaxProfileUpdatedBy")
+  taxRulesCreated          TaxRule[]        @relation("TaxRuleCreatedBy")
+  taxRulesUpdated          TaxRule[]        @relation("TaxRuleUpdatedBy")
   variantsCreated          ProductVariant[] @relation("VariantCreatedBy")
   variantsUpdated          ProductVariant[] @relation("VariantUpdatedBy")
   stockLocationsCreated    StockLocation[]  @relation("StockLocationCreatedBy")
@@ -1811,6 +1939,7 @@ model Category {
   productCats    ProductCategory[]
   coupons        Coupon[]
   loyaltyRules   LoyaltyRule[]
+  taxRules       TaxRule[]
 
   @@index([companyId])
   @@index([parentId])
@@ -1839,6 +1968,7 @@ model Product {
   quoteItems  QuoteItem[]
   attributes  ProductAttribute[]
   loyaltyRules LoyaltyRule[]
+  taxRules    TaxRule[]
   createdBy   User? @relation("ProductCreatedBy", fields: [createdById], references: [id])
   updatedBy   User? @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
 

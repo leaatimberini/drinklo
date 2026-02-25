@@ -64,6 +64,7 @@ import { EdgeCacheModule } from "./modules/edge-cache/edge-cache.module";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { DeveloperApiModule } from "./modules/developer-api/developer-api.module";
 import { SandboxModule } from "./modules/sandbox/sandbox.module";
+import { TaxesModule } from "./modules/taxes/taxes.module";
 
 @Module({
   imports: [
@@ -125,6 +126,7 @@ import { SandboxModule } from "./modules/sandbox/sandbox.module";
     AiCopilotModule,
     DeveloperApiModule,
     SandboxModule,
+    TaxesModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

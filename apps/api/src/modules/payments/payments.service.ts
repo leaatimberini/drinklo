@@ -38,7 +38,7 @@ export class PaymentsService {
   async createPreference(orderId: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true },
+      include: { items: true, taxBreakdown: true },
     });
     if (!order) {
       throw new Error("Order not found");
@@ -60,14 +60,12 @@ export class PaymentsService {
       where: { companyId: order.companyId },
     });
     const currency = settings?.currency ?? "ARS";
+    const preGiftTotal =
+      Number(order.taxBreakdown?.totalAmount ?? 0) > 0
+        ? Number(order.taxBreakdown?.totalAmount ?? 0)
+        : Number(order.subtotal) + Number(order.shippingCost) - Number(order.discountTotal);
+    const payableAmount = Math.max(0, preGiftTotal - Number(order.giftCardAmount));
     if (settings?.sandboxMode) {
-      const amount = Math.max(
-        0,
-        Number(order.subtotal) +
-          Number(order.shippingCost) -
-          Number(order.discountTotal) -
-          Number(order.giftCardAmount),
-      );
       const deterministic = this.sandbox.deterministicPreference(order.id);
       const payload = {
         id: deterministic.id,
@@ -91,7 +89,7 @@ export class PaymentsService {
             provider: PaymentProvider.MERCADOPAGO,
             preferenceId: deterministic.id,
             status: PaymentStatus.PENDING,
-            amount: new Prisma.Decimal(amount),
+            amount: new Prisma.Decimal(payableAmount),
             currency,
             raw: payload as any,
           },
@@ -129,9 +127,7 @@ export class PaymentsService {
           provider: PaymentProvider.MERCADOPAGO,
           preferenceId: preference.id,
           status: PaymentStatus.PENDING,
-          amount: new Prisma.Decimal(
-            preference.items?.reduce((sum: number, i: any) => sum + i.unit_price * i.quantity, 0) ?? 0,
-          ),
+          amount: new Prisma.Decimal(payableAmount),
           currency,
           raw: preference as any,
         },

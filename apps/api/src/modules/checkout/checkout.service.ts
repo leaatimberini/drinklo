@@ -9,6 +9,7 @@ import { EventsService } from "../events/events.service";
 import { PromosService } from "../promos/promos.service";
 import { FraudService } from "../fraud/fraud.service";
 import { DeveloperApiService } from "../developer-api/developer-api.service";
+import { TaxesService } from "../taxes/taxes.service";
 
 @Injectable()
 export class CheckoutService {
@@ -21,6 +22,7 @@ export class CheckoutService {
     private readonly promos: PromosService,
     private readonly fraud: FraudService,
     private readonly developerApi: DeveloperApiService,
+    private readonly taxes: TaxesService,
   ) {}
 
   async getCompany() {
@@ -33,6 +35,10 @@ export class CheckoutService {
 
   async createOrder(dto: CreateOrderDto, riskContext?: { ip?: string; geoCountry?: string }) {
     const company = await this.getCompany();
+    const settings = await this.prisma.companySettings.findUnique({
+      where: { companyId: company.id },
+      select: { currency: true },
+    });
 
     const quote = await this.shipping.quote(company.id, {
       shippingMode: dto.shippingMode,
@@ -111,8 +117,28 @@ export class CheckoutService {
 
       const discountTotal = couponDiscount + loyaltyDiscount;
       const totalBeforeGiftCard = Math.max(0, subtotal + shippingCostValue - discountTotal);
+      const taxCalc = await this.taxes.calculateForCheckoutTx(tx as Prisma.TransactionClient, company.id, {
+        currency: settings?.currency ?? "ARS",
+        shippingCost: shippingCostValue,
+        discountTotal,
+        address: dto.address
+          ? {
+              country: dto.address.country,
+              state: dto.address.state,
+              city: dto.address.city,
+              postalCode: dto.address.postalCode,
+            }
+          : undefined,
+        items: detailedItems.map((item) => ({
+          productId: item.productId,
+          categoryIds: item.categoryIds,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      });
 
       const created = await tx.order.create({
+        include: { taxBreakdown: true },
         data: {
           companyId: company.id,
           branchId: branchId ?? undefined,
@@ -156,6 +182,9 @@ export class CheckoutService {
                 unitPrice,
               };
             }),
+          },
+          taxBreakdown: {
+            create: this.taxes.buildOrderTaxBreakdownCreateInput(company.id, taxCalc),
           },
         },
       });
