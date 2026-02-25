@@ -65,6 +65,7 @@ import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { DeveloperApiModule } from "./modules/developer-api/developer-api.module";
 import { SandboxModule } from "./modules/sandbox/sandbox.module";
 import { TaxesModule } from "./modules/taxes/taxes.module";
+import { SodAccessReviewsModule } from "./modules/sod-access-reviews/sod-access-reviews.module";
 
 @Module({
   imports: [
@@ -127,6 +128,7 @@ import { TaxesModule } from "./modules/taxes/taxes.module";
     DeveloperApiModule,
     SandboxModule,
     TaxesModule,
+    SodAccessReviewsModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

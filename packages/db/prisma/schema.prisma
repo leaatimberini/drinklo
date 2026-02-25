@@ -82,6 +82,10 @@ model Company {
   dataRetentionPolicies DataRetentionPolicy[]
   legalHolds            LegalHold[]
   governanceRuns        GovernanceRun[]
+  sodPolicies           SodPolicy[]
+  sodViolationEvents    SodViolationEvent[]
+  accessReviewCampaigns AccessReviewCampaign[]
+  accessReviewItems     AccessReviewItem[]
   webhookLogs           WebhookLog[]
   botCommandLogs        BotCommandLog[]
   aiCopilotLogs         AiCopilotLog[]
@@ -1008,6 +1012,35 @@ enum LegalHoldStatus {
   RELEASED
 }
 
+enum SodPolicyMode {
+  DENY
+  ALERT
+}
+
+enum SodViolationOutcome {
+  DENIED
+  ALLOWED_ALERTED
+}
+
+enum AccessReviewCadence {
+  MONTHLY
+  QUARTERLY
+}
+
+enum AccessReviewCampaignStatus {
+  OPEN
+  APPROVED
+  COMPLETED
+  CANCELED
+}
+
+enum AccessReviewDecision {
+  PENDING
+  APPROVE
+  REVOKE
+  CHANGES_REQUIRED
+}
+
 enum CouponType {
   PERCENT
   FIXED
@@ -1799,6 +1832,13 @@ model User {
   createdLegalHolds LegalHold[] @relation("LegalHoldCreatedBy")
   releasedLegalHolds LegalHold[] @relation("LegalHoldReleasedBy")
   governanceRuns GovernanceRun[] @relation("GovernanceRunTriggeredBy")
+  sodPoliciesCreated      SodPolicy[]            @relation("SodPolicyCreatedBy")
+  sodPoliciesUpdated      SodPolicy[]            @relation("SodPolicyUpdatedBy")
+  sodViolationEvents      SodViolationEvent[]    @relation("SodViolationActor")
+  accessReviewCampaignsCreated  AccessReviewCampaign[] @relation("AccessReviewCampaignCreatedBy")
+  accessReviewCampaignsApproved AccessReviewCampaign[] @relation("AccessReviewCampaignApprovedBy")
+  accessReviewItemsSubject      AccessReviewItem[]     @relation("AccessReviewItemSubject")
+  accessReviewItemsReviewed     AccessReviewItem[]     @relation("AccessReviewItemReviewer")
   aiCopilotLogs  AiCopilotLog[] @relation("AiCopilotLogActor")
   createdAiCopilotProposals AiCopilotProposal[] @relation("AiCopilotProposalCreatedBy")
   approvedAiCopilotProposals AiCopilotProposal[] @relation("AiCopilotProposalApprovedBy")
@@ -1841,6 +1881,7 @@ model Role {
   company         Company         @relation(fields: [companyId], references: [id])
   users           User[]
   rolePermissions RolePermission[]
+  accessReviewItems AccessReviewItem[]
 
   @@unique([companyId, name])
   @@index([companyId])
@@ -1875,6 +1916,111 @@ model RolePermission {
   @@index([companyId])
   @@index([roleId])
   @@index([permissionId])
+}
+
+model SodPolicy {
+  id          String        @id @default(uuid())
+  companyId   String
+  code        String
+  name        String
+  description String?
+  pairKey     String
+  actionA     String
+  actionB     String
+  mode        SodPolicyMode @default(DENY)
+  enabled     Boolean       @default(true)
+  createdById String?
+  updatedById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  company    Company            @relation(fields: [companyId], references: [id])
+  createdBy  User?              @relation("SodPolicyCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?              @relation("SodPolicyUpdatedBy", fields: [updatedById], references: [id])
+  violations SodViolationEvent[]
+
+  @@unique([companyId, code])
+  @@unique([companyId, pairKey])
+  @@index([companyId])
+  @@index([enabled])
+}
+
+model SodViolationEvent {
+  id               String             @id @default(uuid())
+  companyId        String
+  userId           String?
+  policyId         String?
+  requestAction    String
+  conflictingAction String?
+  route            String?
+  method           String?
+  outcome          SodViolationOutcome
+  metadata         Json?
+  createdAt        DateTime           @default(now())
+
+  company Company  @relation(fields: [companyId], references: [id])
+  user    User?    @relation("SodViolationActor", fields: [userId], references: [id])
+  policy   SodPolicy? @relation(fields: [policyId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([userId, createdAt])
+  @@index([policyId, createdAt])
+  @@index([outcome, createdAt])
+}
+
+model AccessReviewCampaign {
+  id          String                   @id @default(uuid())
+  companyId   String
+  name        String
+  cadence     AccessReviewCadence
+  status      AccessReviewCampaignStatus @default(OPEN)
+  periodStart DateTime
+  periodEnd   DateTime
+  dueAt       DateTime
+  createdById String?
+  approvedById String?
+  approvedAt  DateTime?
+  completedAt DateTime?
+  notes       String?
+  summary     Json?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  company    Company           @relation(fields: [companyId], references: [id])
+  createdBy  User?             @relation("AccessReviewCampaignCreatedBy", fields: [createdById], references: [id])
+  approvedBy User?             @relation("AccessReviewCampaignApprovedBy", fields: [approvedById], references: [id])
+  items      AccessReviewItem[]
+
+  @@index([companyId, status])
+  @@index([companyId, cadence, createdAt])
+  @@index([dueAt])
+}
+
+model AccessReviewItem {
+  id          String               @id @default(uuid())
+  companyId   String
+  campaignId  String
+  userId      String
+  roleId      String?
+  roleName    String?
+  permissionCodes Json
+  decision    AccessReviewDecision @default(PENDING)
+  reviewerId  String?
+  reviewedAt  DateTime?
+  reviewNotes String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  company   Company             @relation(fields: [companyId], references: [id])
+  campaign  AccessReviewCampaign @relation(fields: [campaignId], references: [id])
+  user      User                @relation("AccessReviewItemSubject", fields: [userId], references: [id])
+  role      Role?               @relation(fields: [roleId], references: [id])
+  reviewer  User?               @relation("AccessReviewItemReviewer", fields: [reviewerId], references: [id])
+
+  @@unique([campaignId, userId])
+  @@index([companyId, campaignId])
+  @@index([userId])
+  @@index([decision])
 }
 
 model Customer {

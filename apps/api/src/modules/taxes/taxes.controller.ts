@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Put, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
-import { Permissions } from "../common/rbac.decorators";
+import { Permissions, SodAction } from "../common/rbac.decorators";
 import { PermissionsGuard } from "../common/permissions.guard";
 import { ReplaceTaxRulesDto, TaxSimulateDto, UpsertTaxProfileDto } from "./dto/taxes.dto";
 import { TaxesService } from "./taxes.service";
@@ -21,6 +21,7 @@ export class TaxesAdminController {
 
   @Put("profile")
   @Permissions("pricing:write")
+  @SodAction("PRICING_CONFIGURE")
   upsertProfile(@Req() req: any, @Body() body: UpsertTaxProfileDto) {
     return this.taxes.upsertProfile(req.user.companyId, body, req.user.sub);
   }
@@ -33,6 +34,7 @@ export class TaxesAdminController {
 
   @Put("rules")
   @Permissions("pricing:write")
+  @SodAction("PRICING_CONFIGURE")
   replaceRules(@Req() req: any, @Body() body: ReplaceTaxRulesDto) {
     return this.taxes.replaceRules(req.user.companyId, body, req.user.sub);
   }
@@ -43,4 +45,3 @@ export class TaxesAdminController {
     return this.taxes.simulate(req.user.companyId, body);
   }
 }
-

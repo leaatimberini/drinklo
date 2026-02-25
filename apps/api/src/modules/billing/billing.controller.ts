@@ -1,12 +1,16 @@
-import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Param, Post, Res, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { BillingService } from "./billing.service";
 import { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { PdfService } from "../shared/pdf.service";
 import { StorageService } from "../storage/storage.service";
+import { AuthGuard } from "@nestjs/passport";
+import { Permissions, SodAction } from "../common/rbac.decorators";
+import { PermissionsGuard } from "../common/permissions.guard";
 import type { Response } from "express";
 
 @ApiTags("billing")
+@ApiBearerAuth()
 @Controller("billing")
 export class BillingController {
   constructor(
@@ -16,6 +20,9 @@ export class BillingController {
   ) {}
 
   @Post("invoices")
+  @UseGuards(AuthGuard("jwt"), PermissionsGuard)
+  @Permissions("settings:write")
+  @SodAction("INVOICE_ISSUE")
   create(@Body() body: CreateInvoiceDto) {
     return this.billing.createInvoice(body);
   }

@@ -75,6 +75,7 @@ model Installation {
   dastFindings DastFinding[]
   accessibilityReports AccessibilityReport[]
   featureUsageSamples FeatureUsageSample[]
+  sodAccessReviewReports SodAccessReviewReport[]
   partnerConversions Conversion[]
 
   @@index([clientName])
@@ -233,6 +234,27 @@ model FeatureUsageSample {
   @@index([installationId, capturedAt])
   @@index([instanceId, capturedAt])
   @@index([feature, capturedAt])
+}
+
+model SodAccessReviewReport {
+  id             String   @id @default(uuid())
+  installationId String?
+  instanceId     String
+  companyId      String?
+  capturedAt     DateTime
+  activePolicies Int      @default(0)
+  totalPolicies  Int      @default(0)
+  violations24h  Int      @default(0)
+  openCampaigns  Int      @default(0)
+  overdueCampaigns Int    @default(0)
+  payload        Json?
+  createdAt      DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, capturedAt])
+  @@index([instanceId, capturedAt])
+  @@index([capturedAt])
 }
 
 model ChaosRun {

@@ -1,7 +1,7 @@
 ﻿import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
-import { Permissions } from "../common/rbac.decorators";
+import { Permissions, SodAction } from "../common/rbac.decorators";
 import { PermissionsGuard } from "../common/permissions.guard";
 import { PurchasingService } from "./purchasing.service";
 import {
@@ -44,6 +44,7 @@ export class PurchasingController {
 
   @Post("orders/:id/approve")
   @Permissions("inventory:write")
+  @SodAction("PURCHASE_APPROVE")
   approveOrder(@Req() req: any, @Param("id") id: string) {
     return this.purchasing.approvePurchaseOrder(req.user.companyId, id, req.user.sub);
   }
