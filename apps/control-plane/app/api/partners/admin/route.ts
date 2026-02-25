@@ -12,6 +12,8 @@ export async function GET(req: NextRequest) {
     include: {
       commissionPlans: { orderBy: { createdAt: "desc" } },
       referralLinks: { orderBy: { createdAt: "desc" } },
+      certificationRuns: { orderBy: { submittedAt: "desc" }, take: 20 },
+      certifications: { orderBy: { issuedAt: "desc" }, take: 10 },
       _count: { select: { leads: true, conversions: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -111,4 +113,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ error: "unsupported kind" }, { status: 400 });
 }
-

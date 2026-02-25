@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "../lib/prisma";
 import { getAuthorizedPartnerByPortalCredentials } from "../lib/partner-auth";
 import { parseBaDateRange } from "../lib/partner-program";
+import { resolvePartnerCertificationStatus } from "../lib/partner-certification";
+import { PartnerCertificationSection } from "./PartnerCertificationSection";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +45,51 @@ export default async function PartnerPortalPage({
     : [];
 
   const estimatedCommission = conversions.reduce((sum, item) => sum + (item.estimatedCommissionAmount ?? 0), 0);
+  const [certRuns, certifications] = partner
+    ? await Promise.all([
+        prisma.partnerCertificationRun.findMany({
+          where: { partnerId: partner.id },
+          orderBy: { submittedAt: "desc" },
+          take: 5,
+        }),
+        prisma.partnerCertification.findMany({
+          where: { partnerId: partner.id },
+          orderBy: { issuedAt: "desc" },
+          take: 5,
+        }),
+      ])
+    : [[], []];
+
+  const defaultCertReport = JSON.stringify(
+    {
+      kitVersion: "partner-cert-kit-v1",
+      executedAt: new Date().toISOString(),
+      openapi: { passed: true, testsRun: 12, failures: 0, openapiVersion: "v1" },
+      events: { passed: true, schemasChecked: 8, incompatibleSchemas: 0 },
+      sandbox: { passed: true, scenariosRun: 4, failedScenarios: 0 },
+      security: {
+        checklist: [
+          { id: "webhook-signature-validation", passed: true },
+          { id: "idempotency-handling", passed: true },
+          { id: "secret-storage-rotation", passed: true },
+          { id: "least-privilege-scopes", passed: true },
+          { id: "audit-logging-enabled", passed: true },
+        ],
+      },
+      performance: {
+        p95ApiMs: 320,
+        p95WebhookProcessingMs: 650,
+        checklist: [
+          { id: "p95-api-under-500ms", passed: true },
+          { id: "p95-webhook-processing-under-1000ms", passed: true },
+          { id: "retry-backoff-implemented", passed: true },
+          { id: "dlq-observable", passed: true },
+        ],
+      },
+    },
+    null,
+    2,
+  );
 
   return (
     <main>
@@ -119,9 +166,37 @@ export default async function PartnerPortalPage({
               {conversions.length === 0 && <li>Sin conversiones en el rango.</li>}
             </ul>
           </div>
+
+          <div className="card" style={{ marginTop: 16 }}>
+            <h2>Certificación Partner</h2>
+            <p>Últimas ejecuciones del Certification Test Kit y certificados emitidos.</p>
+            <h3>Certificados</h3>
+            <ul>
+              {certifications.map((cert) => (
+                <li key={cert.id}>
+                  {cert.certificateNo} - {resolvePartnerCertificationStatus({ status: cert.status, expiresAt: cert.expiresAt })}
+                  {" · "}
+                  emitido {cert.issuedAt.toISOString().slice(0, 10)}
+                  {" · "}
+                  vence {cert.expiresAt.toISOString().slice(0, 10)}
+                </li>
+              ))}
+              {certifications.length === 0 && <li>Sin certificaciones emitidas.</li>}
+            </ul>
+            <h3>Runs</h3>
+            <ul>
+              {certRuns.map((run) => (
+                <li key={run.id}>
+                  {run.submittedAt.toISOString()} - {run.status} - score {run.score} - kit {run.kitVersion}
+                </li>
+              ))}
+              {certRuns.length === 0 && <li>Sin runs cargados.</li>}
+            </ul>
+          </div>
+
+          <PartnerCertificationSection partnerSlug={partner.slug} token={token} defaultReportJson={defaultCertReport} />
         </>
       )}
     </main>
   );
 }
-

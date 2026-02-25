@@ -354,6 +354,18 @@ enum CommissionPlanType {
   HYBRID
 }
 
+enum PartnerCertificationRunStatus {
+  SUBMITTED
+  PASSED
+  FAILED
+}
+
+enum PartnerCertificationStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
 model Partner {
   id             String       @id @default(uuid())
   name           String
@@ -370,9 +382,60 @@ model Partner {
   referralLinks   ReferralLink[]
   leads           Lead[]
   conversions     Conversion[]
+  certificationRuns PartnerCertificationRun[]
+  certifications    PartnerCertification[]
 
   @@index([status])
   @@index([websiteDomain])
+}
+
+model PartnerCertificationRun {
+  id              String   @id @default(uuid())
+  partnerId       String
+  kitVersion      String
+  reportPayload   Json
+  reportHash      String
+  signature       String
+  status          PartnerCertificationRunStatus @default(SUBMITTED)
+  score           Int      @default(0)
+  validationErrors Json?
+  validationSummary Json?
+  submittedAt     DateTime @default(now())
+  validatedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  partner         Partner  @relation(fields: [partnerId], references: [id])
+  certifications  PartnerCertification[]
+
+  @@index([partnerId, submittedAt])
+  @@index([status, submittedAt])
+  @@index([kitVersion])
+}
+
+model PartnerCertification {
+  id             String   @id @default(uuid())
+  partnerId      String
+  runId          String?
+  scope          String   @default("INTEGRATION_PARTNER")
+  status         PartnerCertificationStatus @default(ACTIVE)
+  certificateNo  String   @unique
+  issuedBy       String?
+  issuedAt       DateTime @default(now())
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  revokedReason  String?
+  evidenceHash   String?
+  payload        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id])
+  run     PartnerCertificationRun? @relation(fields: [runId], references: [id])
+
+  @@index([partnerId, status])
+  @@index([expiresAt])
+  @@index([issuedAt])
 }
 
 model CommissionPlan {
