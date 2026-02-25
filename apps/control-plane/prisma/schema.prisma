@@ -407,6 +407,22 @@ enum BillingPeriod {
   YEARLY
 }
 
+enum BulkBillingActionType {
+  SET_TIER
+  EXTEND_TRIAL
+  FRAUD_PAUSE
+  FRAUD_CANCEL
+}
+
+enum BulkBillingActionStatus {
+  PENDING_APPROVAL
+  APPROVED
+  EXECUTING
+  EXECUTED
+  REJECTED
+  FAILED
+}
+
 enum TrialCampaignTier {
   C1
   C2
@@ -1232,6 +1248,54 @@ model FinOpsCostRecord {
   installation Installation @relation(fields: [installationId], references: [id])
 
   @@index([installationId, periodStart, periodEnd])
+}
+
+model BulkBillingAction {
+  id                     String                @id @default(uuid())
+  actionType             BulkBillingActionType
+  status                 BulkBillingActionStatus @default(PENDING_APPROVAL)
+  requestedByRole        String
+  requestedByActor       String?
+  approvedByRoles        String[]              @default([])
+  approvalsNeeded        Int                   @default(1)
+  requiresTwoPersonApproval Boolean            @default(false)
+  manifestHash           String
+  evidenceSignature      String
+  targetCount            Int                   @default(0)
+  payload                Json
+  result                 Json?
+  note                   String?
+  error                  String?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  approvedAt             DateTime?
+  executedAt             DateTime?
+  rejectedAt             DateTime?
+
+  approvals BulkBillingActionApproval[]
+
+  @@index([status, createdAt])
+  @@index([actionType, createdAt])
+  @@index([requestedByRole, createdAt])
+  @@index([manifestHash])
+}
+
+model BulkBillingActionApproval {
+  id            String   @id @default(uuid())
+  actionId       String
+  approverRole   String
+  approverActor  String?
+  decision       String   @default("APPROVE")
+  note           String?
+  manifestHash   String
+  evidenceSignature String
+  createdAt      DateTime @default(now())
+
+  action BulkBillingAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@unique([actionId, approverRole, decision])
+  @@index([actionId, createdAt])
+  @@index([approverRole, createdAt])
 }
 
 model TrialCampaign {
