@@ -3,6 +3,7 @@ import type { PlanTier } from "@prisma/client";
 
 export type PlanCatalogSeedItem = {
   tier: PlanTier;
+  monthlyPriceArs: number;
   ordersMonth: number;
   apiCallsMonth: number;
   storageGb: number;
@@ -17,6 +18,7 @@ export type PlanCatalogSeedItem = {
 export const DEFAULT_PLAN_CATALOG: readonly PlanCatalogSeedItem[] = [
   {
     tier: "C1",
+    monthlyPriceArs: 49900,
     ordersMonth: 2_500,
     apiCallsMonth: 150_000,
     storageGb: 10,
@@ -29,6 +31,7 @@ export const DEFAULT_PLAN_CATALOG: readonly PlanCatalogSeedItem[] = [
   },
   {
     tier: "C2",
+    monthlyPriceArs: 149900,
     ordersMonth: 15_000,
     apiCallsMonth: 1_000_000,
     storageGb: 100,
@@ -41,6 +44,7 @@ export const DEFAULT_PLAN_CATALOG: readonly PlanCatalogSeedItem[] = [
   },
   {
     tier: "C3",
+    monthlyPriceArs: 399900,
     ordersMonth: 100_000,
     apiCallsMonth: 10_000_000,
     storageGb: 1_000,
@@ -68,6 +72,7 @@ export async function seedDefaultPlanCatalog(
       where: { tier: item.tier },
       update: {
         ordersMonth: item.ordersMonth,
+        monthlyPriceArs: item.monthlyPriceArs,
         apiCallsMonth: item.apiCallsMonth,
         storageGb: item.storageGb,
         pluginsMax: item.pluginsMax,
@@ -81,4 +86,3 @@ export async function seedDefaultPlanCatalog(
     });
   }
 }
-

@@ -9,6 +9,7 @@ export type PlanSubscriptionStatusCode =
 
 export type PlanEntitlementCatalogItem = {
   tier: PlanTierCode;
+  monthlyPriceArs: number;
   ordersMonth: number;
   apiCallsMonth: number;
   storageGb: number;
@@ -23,6 +24,7 @@ export type PlanEntitlementCatalogItem = {
 export const PLAN_CATALOG_DEFAULTS: readonly PlanEntitlementCatalogItem[] = [
   {
     tier: "C1",
+    monthlyPriceArs: 49900,
     ordersMonth: 2_500,
     apiCallsMonth: 150_000,
     storageGb: 10,
@@ -35,6 +37,7 @@ export const PLAN_CATALOG_DEFAULTS: readonly PlanEntitlementCatalogItem[] = [
   },
   {
     tier: "C2",
+    monthlyPriceArs: 149900,
     ordersMonth: 15_000,
     apiCallsMonth: 1_000_000,
     storageGb: 100,
@@ -47,6 +50,7 @@ export const PLAN_CATALOG_DEFAULTS: readonly PlanEntitlementCatalogItem[] = [
   },
   {
     tier: "C3",
+    monthlyPriceArs: 399900,
     ordersMonth: 100_000,
     apiCallsMonth: 10_000_000,
     storageGb: 1_000,
@@ -58,4 +62,3 @@ export const PLAN_CATALOG_DEFAULTS: readonly PlanEntitlementCatalogItem[] = [
     supportLevel: "enterprise",
   },
 ] as const;
-

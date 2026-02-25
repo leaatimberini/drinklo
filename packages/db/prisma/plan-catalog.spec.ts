@@ -12,6 +12,7 @@ test("default Plan C catalog is deterministic and complete", () => {
   );
   assert.deepEqual(DEFAULT_PLAN_CATALOG[0], {
     tier: "C1",
+    monthlyPriceArs: 49900,
     ordersMonth: 2500,
     apiCallsMonth: 150000,
     storageGb: 10,

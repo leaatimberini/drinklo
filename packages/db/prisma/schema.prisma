@@ -103,6 +103,7 @@ model Company {
   subscription           Subscription?
   usageCounters          UsageCounter[]
   subscriptionLifecycleNotifications SubscriptionLifecycleNotification[]
+  prorationInvoices      ProrationInvoice[]
   orders                 Order[]
   sales                  Sale[]
   quotes                 Quote[]
@@ -990,6 +991,7 @@ enum SubscriptionStatus {
 model PlanEntitlement {
   id              String   @id @default(uuid())
   tier            PlanTier @unique
+  monthlyPriceArs Decimal  @default(0) @db.Decimal(12, 2)
   ordersMonth     Int
   apiCallsMonth   Int
   storageGb       Int
@@ -1015,16 +1017,78 @@ model Subscription {
   trialEndAt         DateTime?
   graceEndAt         DateTime?
   lastPaymentAt      DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
   cancelledAt        DateTime?
+  softLimited        Boolean            @default(false)
+  softLimitReason    String?
+  softLimitSnapshot  Json?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   company                     Company                           @relation(fields: [companyId], references: [id])
   lifecycleNotifications      SubscriptionLifecycleNotification[]
+  prorationInvoices           ProrationInvoice[]
 
   @@index([status])
   @@index([currentTier])
   @@index([currentPeriodEnd])
+}
+
+enum ProrationInvoiceStatus {
+  ESTIMATED
+  FINALIZED
+  VOID
+}
+
+enum PlanChangeDirection {
+  UPGRADE
+  DOWNGRADE
+  CANCEL
+  REACTIVATE
+}
+
+model ProrationInvoice {
+  id              String                @id @default(uuid())
+  companyId       String
+  subscriptionId  String
+  direction       PlanChangeDirection
+  status          ProrationInvoiceStatus @default(FINALIZED)
+  fromTier        PlanTier?
+  toTier          PlanTier?
+  currency        String                @default("ARS")
+  periodStart     DateTime
+  periodEnd       DateTime
+  effectiveAt     DateTime
+  remainingRatio  Decimal               @db.Decimal(10, 6)
+  subtotal        Decimal               @db.Decimal(12, 2)
+  total           Decimal               @db.Decimal(12, 2)
+  details         Json?
+  createdById     String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  company       Company       @relation(fields: [companyId], references: [id])
+  subscription  Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  items         ProrationInvoiceItem[]
+
+  @@index([companyId, createdAt])
+  @@index([subscriptionId, createdAt])
+  @@index([status])
+}
+
+model ProrationInvoiceItem {
+  id                String   @id @default(uuid())
+  prorationInvoiceId String
+  type              String
+  description       String
+  amount            Decimal  @db.Decimal(12, 2)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+
+  prorationInvoice ProrationInvoice @relation(fields: [prorationInvoiceId], references: [id], onDelete: Cascade)
+
+  @@index([prorationInvoiceId])
+  @@index([type])
 }
 
 enum SubscriptionLifecycleNotificationChannel {

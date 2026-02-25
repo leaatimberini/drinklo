@@ -18,6 +18,7 @@ export class PlansService {
       await client.planEntitlement.upsert({
         where: { tier: item.tier },
         update: {
+          monthlyPriceArs: item.monthlyPriceArs,
           ordersMonth: item.ordersMonth,
           apiCallsMonth: item.apiCallsMonth,
           storageGb: item.storageGb,
@@ -30,6 +31,7 @@ export class PlansService {
         },
         create: {
           tier: item.tier,
+          monthlyPriceArs: item.monthlyPriceArs,
           ordersMonth: item.ordersMonth,
           apiCallsMonth: item.apiCallsMonth,
           storageGb: item.storageGb,

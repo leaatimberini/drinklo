@@ -11,9 +11,12 @@ type EntitlementsResponse = {
     currentPeriodEnd: string;
     trialEndAt?: string | null;
     graceEndAt?: string | null;
+    cancelAtPeriodEnd?: boolean;
+    softLimited?: boolean;
   };
   entitlements: {
     tier: string;
+    monthlyPriceArs?: number;
     ordersMonth: number;
     apiCallsMonth: number;
     storageGb: number;
@@ -55,6 +58,8 @@ export default function PlanBillingPage() {
   const [catalog, setCatalog] = useState<any[]>([]);
   const [data, setData] = useState<EntitlementsResponse | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [targetTier, setTargetTier] = useState("C2");
+  const [changePreview, setChangePreview] = useState<any | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   async function load() {
@@ -72,6 +77,73 @@ export default function PlanBillingPage() {
     setCatalog(await catalogRes.json());
     setData(await entitlementsRes.json());
     setNotifications(notificationsRes.ok ? await notificationsRes.json() : []);
+  }
+
+  async function previewPlanChange(kind: "upgrade" | "downgrade") {
+    setMessage(null);
+    setChangePreview(null);
+    const res = await fetch(`${apiUrl}/billing/${kind}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ targetTier, dryRun: true }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setMessage(payload.error ?? `No se pudo previsualizar ${kind}`);
+      return;
+    }
+    setChangePreview({ kind, ...payload });
+  }
+
+  async function applyPlanChange(kind: "upgrade" | "downgrade") {
+    const preview = changePreview ?? null;
+    const confirmText =
+      kind === "upgrade"
+        ? `Confirmar upgrade a ${targetTier}${preview?.proration ? ` (total prorrateo ARS ${preview.proration.total})` : ""}?`
+        : `Confirmar downgrade programado a ${targetTier} para proximo ciclo?`;
+    if (!window.confirm(confirmText)) return;
+    const res = await fetch(`${apiUrl}/billing/${kind}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ targetTier, dryRun: false }),
+    });
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      setMessage(payload.error ?? `No se pudo aplicar ${kind}`);
+      return;
+    }
+    setMessage(kind === "upgrade" ? "Upgrade aplicado" : "Downgrade programado");
+    await load();
+  }
+
+  async function scheduleCancel() {
+    const res = await fetch(`${apiUrl}/billing/cancel`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ dryRun: false }),
+    });
+    setMessage(res.ok ? "Cancelacion programada para fin de ciclo" : "No se pudo programar cancelacion");
+    if (res.ok) await load();
+  }
+
+  async function reactivate() {
+    const res = await fetch(`${apiUrl}/billing/reactivate`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    setMessage(res.ok ? "Suscripcion reactivada" : "No se pudo reactivar");
+    if (res.ok) await load();
   }
 
   const rows = data
@@ -126,14 +198,48 @@ export default function PlanBillingPage() {
       {data && (
         <>
           <section style={{ marginTop: 20, padding: 16, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)", background: "var(--card-bg)" }}>
+            <h2 style={{ marginTop: 0 }}>Cambiar plan</h2>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <label>
+                Target tier
+                <select value={targetTier} onChange={(e) => setTargetTier(e.target.value)}>
+                  <option value="C1">C1</option>
+                  <option value="C2">C2</option>
+                  <option value="C3">C3</option>
+                </select>
+              </label>
+              <button onClick={() => previewPlanChange("upgrade")}>Preview upgrade</button>
+              <button onClick={() => previewPlanChange("downgrade")}>Preview downgrade</button>
+              <button onClick={() => applyPlanChange("upgrade")}>Aplicar upgrade</button>
+              <button onClick={() => applyPlanChange("downgrade")}>Programar downgrade</button>
+              <button onClick={scheduleCancel}>Cancelar fin de ciclo</button>
+              <button onClick={reactivate}>Reactivar</button>
+            </div>
+            {changePreview ? (
+              <div style={{ marginTop: 12 }}>
+                <strong>Confirm modal (preview)</strong>
+                <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto" }}>{JSON.stringify(changePreview, null, 2)}</pre>
+              </div>
+            ) : null}
+            {data.subscription.nextTier ? (
+              <p style={{ marginTop: 12 }}>
+                Cambio programado: downgrade a <strong>{data.subscription.nextTier}</strong> en{" "}
+                {new Date(data.subscription.currentPeriodEnd).toLocaleString()}
+              </p>
+            ) : null}
+          </section>
+
+          <section style={{ marginTop: 20, padding: 16, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)", background: "var(--card-bg)" }}>
             <h2 style={{ marginTop: 0 }}>Resumen</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(180px, 1fr))", gap: 10 }}>
               <div><strong>Estado:</strong> {data.subscription.status}</div>
               <div><strong>Tier actual:</strong> {data.subscription.currentTier}</div>
               <div><strong>Proximo tier:</strong> {data.subscription.nextTier ?? "-"}</div>
+              <div><strong>Cancel fin ciclo:</strong> {String((data.subscription as any).cancelAtPeriodEnd ?? false)}</div>
               <div><strong>Periodo actual:</strong> {new Date(data.subscription.currentPeriodStart).toLocaleString()} - {new Date(data.subscription.currentPeriodEnd).toLocaleString()}</div>
               <div><strong>Trial hasta:</strong> {data.subscription.trialEndAt ? new Date(data.subscription.trialEndAt).toLocaleString() : "-"}</div>
               <div><strong>Timezone:</strong> {data.timezone ?? "America/Argentina/Buenos_Aires"}</div>
+              <div><strong>Soft limit:</strong> {String((data.subscription as any).softLimited ?? false)}</div>
             </div>
           </section>
 
@@ -178,6 +284,7 @@ export default function PlanBillingPage() {
             <tr>
               <th align="left">Tier</th>
               <th align="right">Orders</th>
+              <th align="right">Precio ARS/mes</th>
               <th align="right">API calls</th>
               <th align="right">Storage GB</th>
               <th align="right">Plugins</th>
@@ -190,6 +297,7 @@ export default function PlanBillingPage() {
               <tr key={item.tier}>
                 <td>{item.tier}</td>
                 <td align="right">{item.ordersMonth}</td>
+                <td align="right">{item.monthlyPriceArs ?? 0}</td>
                 <td align="right">{item.apiCallsMonth}</td>
                 <td align="right">{item.storageGb}</td>
                 <td align="right">{item.pluginsMax}</td>

@@ -1,6 +1,16 @@
 {
-  "generatedAt": "2026-02-25T18:50:21.062Z",
+  "generatedAt": "2026-02-25T19:50:11.149Z",
   "entries": [
+    {
+      "sha": "29f79e7",
+      "date": "2026-02-25",
+      "subject": "feat(billing): add subscription lifecycle jobs and notifications"
+    },
+    {
+      "sha": "c492d5f",
+      "date": "2026-02-25",
+      "subject": "feat(billing): add plan c entitlements tiers"
+    },
     {
       "sha": "6af5de4",
       "date": "2026-02-25",

@@ -30,6 +30,7 @@ export class SetupService {
         await tx.planEntitlement.upsert({
           where: { tier: item.tier },
           update: {
+            monthlyPriceArs: item.monthlyPriceArs,
             ordersMonth: item.ordersMonth,
             apiCallsMonth: item.apiCallsMonth,
             storageGb: item.storageGb,
