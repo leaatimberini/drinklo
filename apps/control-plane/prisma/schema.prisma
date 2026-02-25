@@ -716,8 +716,31 @@ model BillingPlan {
   updatedAt  DateTime @updatedAt
 
   accounts BillingAccount[]
+  prices   PlanPrice[]
 
   @@index([name])
+}
+
+model PlanPrice {
+  id           String        @id @default(uuid())
+  planId        String?
+  tier          String
+  billingPeriod BillingPeriod
+  currency      String
+  amount        Float
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  notes         String?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  plan BillingPlan? @relation(fields: [planId], references: [id])
+
+  @@index([tier, billingPeriod, currency, effectiveFrom])
+  @@index([effectiveFrom, effectiveTo])
+  @@index([planId])
 }
 
 model BillingAccount {

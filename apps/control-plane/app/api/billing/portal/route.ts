@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { calculateDynamicPricing, evaluateTrialAndEnforcement } from "../../../lib/billing-advanced";
+import { resolveCurrentAndNextPlanPrice } from "../../../lib/pricing-catalog";
 
 export async function GET(req: NextRequest) {
   const token = req.headers.get("x-portal-token") ?? "";
@@ -48,6 +49,32 @@ export async function GET(req: NextRequest) {
     },
   );
 
+  const inferredTier =
+    ["C1", "C2", "C3"].find((tier) => {
+      const name = String(account.plan?.name ?? "").toUpperCase();
+      return name === tier || name.startsWith(`${tier} `) || name.includes(` ${tier} `);
+    }) ?? null;
+  const planPrices = inferredTier
+    ? await prisma.planPrice.findMany({
+        where: { tier: inferredTier, billingPeriod: account.plan.period },
+        orderBy: [{ effectiveFrom: "desc" }, { createdAt: "desc" }],
+        take: 100,
+      })
+    : [];
+  const pricingCatalog =
+    inferredTier
+      ? Array.from(new Set(planPrices.map((p) => p.currency.toUpperCase())))
+          .sort()
+          .map((currency) => {
+            const rows = planPrices.filter((p) => p.currency.toUpperCase() === currency);
+            const resolved = resolveCurrentAndNextPlanPrice(
+              rows.map((r) => ({ ...r, amount: Number(r.amount), effectiveTo: r.effectiveTo ?? null })) as any,
+              new Date(),
+            );
+            return { currency, current: resolved.current, next: resolved.next };
+          })
+      : [];
+
   return NextResponse.json({
     account: {
       instanceId: account.instanceId,
@@ -65,6 +92,8 @@ export async function GET(req: NextRequest) {
       softLimitPremium: enforcement.softLimitPremium,
       hardLimitPremium: enforcement.hardLimitPremium,
       pricingPreview: usagePricing,
+      pricingCatalogTier: inferredTier,
+      pricingCatalog,
     },
     invoices: account.invoices,
     usage: account.usageRecords,
