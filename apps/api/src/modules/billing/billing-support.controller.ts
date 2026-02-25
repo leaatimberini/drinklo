@@ -36,5 +36,11 @@ export class BillingSupportController {
   reactivate(@Param("companyId") companyId: string) {
     return this.planChanges.reactivate(companyId, "support");
   }
-}
 
+  @Post("apply-due")
+  @Roles("admin", "support")
+  applyDue(@Body() body?: { now?: string }) {
+    const now = body?.now ? new Date(body.now) : new Date();
+    return this.planChanges.applyDueScheduledChanges(now, "support");
+  }
+}

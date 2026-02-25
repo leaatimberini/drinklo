@@ -121,3 +121,36 @@ jobs:
           PERF_P95_ADMIN_MS: ${{ secrets.PERF_P95_ADMIN_MS }}
           PERF_TTFB_MS: ${{ secrets.PERF_TTFB_MS }}
           PERF_LCP_MS: ${{ secrets.PERF_LCP_MS }}
+
+  billing-e2e-staging:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.BILLING_E2E_API_URL != '' && secrets.BILLING_E2E_DATABASE_URL != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm -C apps/control-plane prisma:generate
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Run billing E2E (staging mocks)
+        env:
+          BILLING_E2E_ENABLE_MUTATIONS: "true"
+          BILLING_E2E_PROFILE: "staging-mocks"
+          BILLING_E2E_API_URL: ${{ secrets.BILLING_E2E_API_URL }}
+          BILLING_E2E_ADMIN_URL: ${{ secrets.BILLING_E2E_ADMIN_URL }}
+          BILLING_E2E_STOREFRONT_URL: ${{ secrets.BILLING_E2E_STOREFRONT_URL }}
+          BILLING_E2E_CONTROL_PLANE_URL: ${{ secrets.BILLING_E2E_CONTROL_PLANE_URL }}
+          BILLING_E2E_DATABASE_URL: ${{ secrets.BILLING_E2E_DATABASE_URL }}
+          BILLING_E2E_CONTROL_PLANE_DATABASE_URL: ${{ secrets.BILLING_E2E_CONTROL_PLANE_DATABASE_URL }}
+          BILLING_E2E_CONTROL_PLANE_ADMIN_TOKEN: ${{ secrets.BILLING_E2E_CONTROL_PLANE_ADMIN_TOKEN }}
+          BILLING_E2E_ADMIN_EMAIL: ${{ secrets.BILLING_E2E_ADMIN_EMAIL }}
+          BILLING_E2E_ADMIN_PASSWORD: ${{ secrets.BILLING_E2E_ADMIN_PASSWORD }}
+          PAYMENT_SANDBOX: "true"
+          AFIP_SANDBOX: "true"
+          INTEGRATIONS_MOCK: "true"
+        run: pnpm exec playwright test tests/e2e/billing.spec.ts
