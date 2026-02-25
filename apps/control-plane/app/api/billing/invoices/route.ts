@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
+import { applyCommissionForInvoice } from "../../../lib/partner-program";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -22,6 +23,12 @@ export async function POST(req: NextRequest) {
       dueAt: body.dueAt ? new Date(body.dueAt) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       provider: body.provider ?? account.provider,
     },
+  });
+  await applyCommissionForInvoice({
+    prisma,
+    billingAccountId: account.id,
+    invoiceAmount: invoice.amount,
+    currency: invoice.currency,
   });
   return NextResponse.json(invoice);
 }

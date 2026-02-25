@@ -75,6 +75,7 @@ model Installation {
   dastFindings DastFinding[]
   accessibilityReports AccessibilityReport[]
   featureUsageSamples FeatureUsageSample[]
+  partnerConversions Conversion[]
 
   @@index([clientName])
   @@index([domain])
@@ -278,6 +279,184 @@ enum InvoiceStatus {
   VOID
 }
 
+enum PartnerStatus {
+  ACTIVE
+  PAUSED
+  BLOCKED
+}
+
+enum ReferralLinkStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum LeadStatus {
+  CLICKED
+  QUALIFIED
+  DISQUALIFIED
+  CONVERTED
+}
+
+enum ConversionStatus {
+  ATTRIBUTED
+  REVIEW
+  REJECTED
+  APPROVED
+}
+
+enum CommissionPlanType {
+  PERCENT_REVENUE
+  FLAT_PER_CONVERSION
+  HYBRID
+}
+
+model Partner {
+  id             String       @id @default(uuid())
+  name           String
+  slug           String       @unique
+  contactEmail   String?
+  websiteDomain  String?
+  status         PartnerStatus @default(ACTIVE)
+  portalTokenHash String
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  commissionPlans CommissionPlan[]
+  referralLinks   ReferralLink[]
+  leads           Lead[]
+  conversions     Conversion[]
+
+  @@index([status])
+  @@index([websiteDomain])
+}
+
+model CommissionPlan {
+  id                 String             @id @default(uuid())
+  partnerId          String
+  name               String
+  type               CommissionPlanType
+  percentRate        Float              @default(0)
+  flatAmount         Float              @default(0)
+  currency           String             @default("ARS")
+  cookieTtlDays      Int                @default(30)
+  recurringInvoiceCap Int?              
+  active             Boolean            @default(true)
+  isDefault          Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  partner      Partner       @relation(fields: [partnerId], references: [id])
+  referralLinks ReferralLink[]
+  conversions  Conversion[]
+
+  @@index([partnerId, active])
+  @@index([partnerId, isDefault])
+}
+
+model ReferralLink {
+  id               String             @id @default(uuid())
+  partnerId        String
+  code             String             @unique
+  label            String
+  targetUrl        String?
+  status           ReferralLinkStatus @default(ACTIVE)
+  commissionPlanId String?
+  metadata         Json?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  partner        Partner         @relation(fields: [partnerId], references: [id])
+  commissionPlan CommissionPlan? @relation(fields: [commissionPlanId], references: [id])
+  leads          Lead[]
+  conversions    Conversion[]
+
+  @@index([partnerId, status])
+  @@index([commissionPlanId])
+}
+
+model Lead {
+  id              String     @id @default(uuid())
+  partnerId       String
+  referralLinkId  String?
+  cookieId        String?
+  email           String?
+  emailDomain     String?
+  installationDomain String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmTerm         String?
+  utmContent      String?
+  landingUrl      String?
+  sourceUrl       String?
+  ipAddress       String?
+  userAgent       String?
+  status          LeadStatus  @default(CLICKED)
+  fraudScore      Int         @default(0)
+  fraudFlags      Json?
+  fraudReason     String?
+  metadata        Json?
+  convertedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  partner      Partner       @relation(fields: [partnerId], references: [id])
+  referralLink ReferralLink? @relation(fields: [referralLinkId], references: [id])
+  conversions  Conversion[]
+
+  @@index([partnerId, createdAt])
+  @@index([referralLinkId, createdAt])
+  @@index([cookieId])
+  @@index([emailDomain])
+  @@index([ipAddress])
+  @@index([status])
+}
+
+model Conversion {
+  id                     String           @id @default(uuid())
+  partnerId              String
+  referralLinkId         String?
+  leadId                 String?
+  commissionPlanId       String?
+  installationId         String?
+  billingAccountId       String?
+  instanceId             String?
+  status                 ConversionStatus @default(ATTRIBUTED)
+  attributionSource      String           @default("cookie+utm")
+  attributedAt           DateTime         @default(now())
+  approvedAt             DateTime?
+  rejectedAt             DateTime?
+  rejectionReason        String?
+  accountCreationIp      String?
+  accountEmailDomain     String?
+  installationDomain     String?
+  fraudScore             Int              @default(0)
+  fraudFlags             Json?
+  estimatedRevenueAmount Float            @default(0)
+  estimatedCommissionAmount Float         @default(0)
+  commissionCurrency     String           @default("ARS")
+  invoiceCountApplied    Int              @default(0)
+  commissionSnapshot     Json?
+  metadata               Json?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  partner        Partner         @relation(fields: [partnerId], references: [id])
+  referralLink   ReferralLink?   @relation(fields: [referralLinkId], references: [id])
+  lead           Lead?           @relation(fields: [leadId], references: [id])
+  commissionPlan CommissionPlan? @relation(fields: [commissionPlanId], references: [id])
+  installation   Installation?   @relation(fields: [installationId], references: [id])
+  billingAccount BillingAccount? @relation(fields: [billingAccountId], references: [id])
+
+  @@unique([billingAccountId])
+  @@index([partnerId, createdAt])
+  @@index([leadId])
+  @@index([installationId])
+  @@index([instanceId])
+  @@index([status])
+}
+
 model BillingPlan {
   id         String   @id @default(uuid())
   name       String
@@ -328,6 +507,7 @@ model BillingAccount {
   payments     BillingPayment[]
   usageRecords BillingUsageRecord[]
   planChanges  BillingPlanChange[]
+  partnerConversions Conversion[]
 
   @@index([installationId])
   @@index([planId])

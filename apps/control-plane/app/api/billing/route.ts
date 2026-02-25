@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import { calculateDynamicPricing, calculateProration, evaluateTrialAndEnforcement } from "../../lib/billing-advanced";
+import {
+  applyCommissionForInvoice,
+  detectBasicLeadFraud,
+  emailDomain,
+  getRequestIp,
+  normalizeDomain,
+  parseAttributionCookie,
+  resolveAttributionForAccountCreation,
+} from "../../lib/partner-program";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -84,6 +93,14 @@ export async function POST(req: NextRequest) {
         rpoTargetMin: plan.rpoTargetMin ?? undefined,
         rtoTargetMin: plan.rtoTargetMin ?? undefined,
       },
+    });
+    await attachPartnerConversionIfAny(req, {
+      accountId: account.id,
+      installationId: installation.id,
+      instanceId: account.instanceId,
+      email: account.email,
+      installationDomain: installation.domain,
+      attribution: body.attribution ?? null,
     });
     return NextResponse.json(account);
   }
@@ -188,7 +205,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (proration.prorationAmount !== 0) {
-      await prisma.billingInvoice.create({
+      const invoice = await prisma.billingInvoice.create({
         data: {
           accountId: updated.id,
           amount: Math.abs(proration.prorationAmount),
@@ -200,10 +217,150 @@ export async function POST(req: NextRequest) {
           externalId: null,
         },
       });
+      await applyCommissionForInvoice({
+        prisma,
+        billingAccountId: updated.id,
+        invoiceAmount: invoice.amount,
+        currency: invoice.currency,
+      });
     }
 
     return NextResponse.json({ account: updated, proration });
   }
 
   return NextResponse.json({ error: "unsupported kind" }, { status: 400 });
+}
+
+async function attachPartnerConversionIfAny(
+  req: NextRequest,
+  input: {
+    accountId: string;
+    installationId: string;
+    instanceId: string;
+    email?: string | null;
+    installationDomain?: string | null;
+    attribution?: any;
+  },
+) {
+  const existing = await prisma.conversion.findUnique({
+    where: { billingAccountId: input.accountId },
+  });
+  if (existing) return existing;
+
+  const cookie = parseAttributionCookie(req.cookies.get("pp_attr")?.value);
+  const resolved = resolveAttributionForAccountCreation({
+    cookie,
+    referralCode: input.attribution?.referralCode ?? null,
+    utm: {
+      utmSource: input.attribution?.utmSource ?? input.attribution?.utm_source ?? null,
+      utmMedium: input.attribution?.utmMedium ?? input.attribution?.utm_medium ?? null,
+      utmCampaign: input.attribution?.utmCampaign ?? input.attribution?.utm_campaign ?? null,
+      utmTerm: input.attribution?.utmTerm ?? input.attribution?.utm_term ?? null,
+      utmContent: input.attribution?.utmContent ?? input.attribution?.utm_content ?? null,
+    },
+  });
+  if (!resolved.hasAttribution) return null;
+
+  let referralLink =
+    resolved.referralCode
+      ? await prisma.referralLink.findUnique({
+          where: { code: resolved.referralCode },
+          include: { partner: true, commissionPlan: true },
+        })
+      : null;
+
+  if (!referralLink && resolved.partnerSlug) {
+    referralLink = await prisma.referralLink.findFirst({
+      where: { partner: { slug: resolved.partnerSlug }, status: "ACTIVE" },
+      include: { partner: true, commissionPlan: true },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+  if (!referralLink || referralLink.partner.status !== "ACTIVE") return null;
+
+  const lead =
+    (resolved.leadId
+      ? await prisma.lead.findFirst({
+          where: { id: resolved.leadId, partnerId: referralLink.partnerId },
+        })
+      : null) ??
+    (resolved.leadId
+      ? null
+      : await prisma.lead.create({
+          data: {
+            partnerId: referralLink.partnerId,
+            referralLinkId: referralLink.id,
+            email: input.email ?? null,
+            emailDomain: emailDomain(input.email) ?? null,
+            installationDomain: normalizeDomain(input.installationDomain) ?? null,
+            utmSource: resolved.utmSource ?? null,
+            utmMedium: resolved.utmMedium ?? null,
+            utmCampaign: resolved.utmCampaign ?? null,
+            utmTerm: resolved.utmTerm ?? null,
+            utmContent: resolved.utmContent ?? null,
+            status: "QUALIFIED",
+            ipAddress: getRequestIp(req),
+            metadata: { createdFrom: "billing-account" },
+          },
+        }));
+
+  const fraud = detectBasicLeadFraud({
+    partnerWebsiteDomain: referralLink.partner.websiteDomain,
+    clickIp: lead?.ipAddress ?? null,
+    accountIp: getRequestIp(req),
+    accountEmail: input.email ?? null,
+    installationDomain: input.installationDomain ?? null,
+  });
+
+  const commissionPlan =
+    referralLink.commissionPlan ??
+    (await prisma.commissionPlan.findFirst({
+      where: { partnerId: referralLink.partnerId, active: true },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+    }));
+
+  const conversion = await prisma.conversion.create({
+    data: {
+      partnerId: referralLink.partnerId,
+      referralLinkId: referralLink.id,
+      leadId: lead?.id ?? null,
+      commissionPlanId: commissionPlan?.id ?? null,
+      installationId: input.installationId,
+      billingAccountId: input.accountId,
+      instanceId: input.instanceId,
+      status: fraud.flags.length ? "REVIEW" : "ATTRIBUTED",
+      attributionSource: resolved.source,
+      accountCreationIp: getRequestIp(req),
+      accountEmailDomain: emailDomain(input.email) ?? null,
+      installationDomain: normalizeDomain(input.installationDomain) ?? null,
+      fraudScore: fraud.score,
+      fraudFlags: fraud.flags.length ? fraud.flags : undefined,
+      commissionCurrency: commissionPlan?.currency ?? "ARS",
+      commissionSnapshot: commissionPlan
+        ? {
+            id: commissionPlan.id,
+            name: commissionPlan.name,
+            type: commissionPlan.type,
+            percentRate: commissionPlan.percentRate,
+            flatAmount: commissionPlan.flatAmount,
+            recurringInvoiceCap: commissionPlan.recurringInvoiceCap,
+          }
+        : undefined,
+      metadata: {
+        utmSource: resolved.utmSource,
+        utmMedium: resolved.utmMedium,
+        utmCampaign: resolved.utmCampaign,
+        utmTerm: resolved.utmTerm,
+        utmContent: resolved.utmContent,
+      },
+    },
+  });
+
+  if (lead && lead.status !== "CONVERTED") {
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { status: "CONVERTED", convertedAt: new Date() },
+    });
+  }
+  return conversion;
 }

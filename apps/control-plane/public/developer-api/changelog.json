@@ -1,6 +1,11 @@
 {
-  "generatedAt": "2026-02-13T18:30:51.493Z",
+  "generatedAt": "2026-02-25T16:45:54.075Z",
   "entries": [
+    {
+      "sha": "9f559e8",
+      "date": "2026-02-13",
+      "subject": "fix: stabilize prisma schema and control-plane build"
+    },
     {
       "sha": "ba2f057",
       "date": "2026-02-13",
