@@ -67,6 +67,7 @@ import { SandboxModule } from "./modules/sandbox/sandbox.module";
 import { TaxesModule } from "./modules/taxes/taxes.module";
 import { SodAccessReviewsModule } from "./modules/sod-access-reviews/sod-access-reviews.module";
 import { EdiscoveryModule } from "./modules/ediscovery/ediscovery.module";
+import { IntegrationBuilderModule } from "./modules/integration-builder/integration-builder.module";
 
 @Module({
   imports: [
@@ -131,6 +132,7 @@ import { EdiscoveryModule } from "./modules/ediscovery/ediscovery.module";
     TaxesModule,
     SodAccessReviewsModule,
     EdiscoveryModule,
+    IntegrationBuilderModule,
     AuthModule,
     CompaniesModule,
     UsersModule,

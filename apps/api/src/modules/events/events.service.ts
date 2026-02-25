@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { validateEvent, type EventEnvelope } from "@erp/shared";
+import { IntegrationBuilderService } from "../integration-builder/integration-builder.service";
 
 type QueueItem = EventEnvelope;
 
@@ -16,7 +17,10 @@ export class EventsService {
   private queue: QueueItem[] = [];
   private processing = false;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly integrationBuilder: IntegrationBuilderService,
+  ) {
     setInterval(() => {
       this.flush().catch(() => undefined);
     }, 2000).unref();
@@ -63,6 +67,7 @@ export class EventsService {
             status: "stored",
           },
         });
+        await this.integrationBuilder.onEventStored(event).catch(() => undefined);
       }
 
       const sinkUrl = process.env.EVENT_SINK_URL ?? "";

@@ -76,6 +76,7 @@ model Installation {
   accessibilityReports AccessibilityReport[]
   featureUsageSamples FeatureUsageSample[]
   sodAccessReviewReports SodAccessReviewReport[]
+  integrationBuilderReports IntegrationBuilderReport[]
   partnerConversions Conversion[]
 
   @@index([clientName])
@@ -249,6 +250,27 @@ model SodAccessReviewReport {
   overdueCampaigns Int    @default(0)
   payload        Json?
   createdAt      DateTime @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, capturedAt])
+  @@index([instanceId, capturedAt])
+  @@index([capturedAt])
+}
+
+model IntegrationBuilderReport {
+  id              String   @id @default(uuid())
+  installationId  String?
+  instanceId      String
+  companyId       String?
+  capturedAt      DateTime
+  connectorsTotal Int      @default(0)
+  connectorsActive Int     @default(0)
+  deliveriesSuccess24h Int @default(0)
+  deliveriesFailed24h Int  @default(0)
+  dlqOpen         Int      @default(0)
+  payload         Json?
+  createdAt       DateTime @default(now())
 
   installation Installation? @relation(fields: [installationId], references: [id])
 

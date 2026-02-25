@@ -1,6 +1,16 @@
 {
-  "generatedAt": "2026-02-25T17:26:07.559Z",
+  "generatedAt": "2026-02-25T17:57:39.215Z",
   "entries": [
+    {
+      "sha": "fd546b6",
+      "date": "2026-02-25",
+      "subject": "feat(legal): extend ediscovery and legal holds"
+    },
+    {
+      "sha": "5fb6d96",
+      "date": "2026-02-25",
+      "subject": "feat(security): add SoD policies and access reviews"
+    },
     {
       "sha": "de15594",
       "date": "2026-02-25",

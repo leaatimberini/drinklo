@@ -39,6 +39,8 @@ model Company {
   secretAudits   SecretAudit[]
   scimLogs       ScimProvisionLog[]
   integrationHealthLogs IntegrationHealthLog[]
+  integrationConnectors IntegrationConnector[]
+  integrationConnectorDeliveries IntegrationConnectorDelivery[]
   privacyRequests       PrivacyRequest[]
   consentRecords        ConsentRecord[]
   emailDomain           EmailDomain?
@@ -289,6 +291,73 @@ model IntegrationHealthLog {
   @@index([provider])
   @@index([status])
   @@index([checkedAt])
+}
+
+model IntegrationConnector {
+  id                 String                             @id @default(uuid())
+  companyId          String
+  name               String
+  sourceEvent        String
+  enabled            Boolean                            @default(true)
+  destinationType    IntegrationConnectorDestinationType @default(WEBHOOK)
+  method             String                             @default("POST")
+  destinationUrl     String
+  headers            Json?
+  mapping            Json
+  timeoutMs          Int                                @default(10000)
+  retryMaxAttempts   Int                                @default(3)
+  retryBackoffBaseMs Int                                @default(1000)
+  authMode           IntegrationConnectorAuthMode       @default(NONE)
+  authHeaderName     String?
+  secretProviderKey  String?
+  lastTestAt         DateTime?
+  lastSuccessAt      DateTime?
+  lastFailureAt      DateTime?
+  lastError          String?
+  createdAt          DateTime                           @default(now())
+  updatedAt          DateTime                           @updatedAt
+  deletedAt          DateTime?
+
+  company    Company                       @relation(fields: [companyId], references: [id])
+  deliveries IntegrationConnectorDelivery[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([companyId, enabled])
+  @@index([sourceEvent])
+  @@index([deletedAt])
+}
+
+model IntegrationConnectorDelivery {
+  id             String                           @id @default(uuid())
+  companyId      String
+  connectorId    String
+  eventId        String
+  sourceEvent    String
+  status         IntegrationConnectorDeliveryStatus @default(PENDING)
+  attemptCount   Int                              @default(0)
+  maxAttempts    Int
+  nextAttemptAt  DateTime?
+  lastAttemptAt  DateTime?
+  deliveredAt    DateTime?
+  durationMs     Int?
+  requestPayload Json?
+  requestHeaders Json?
+  responseStatus Int?
+  responseBody   String?
+  error          String?
+  eventEnvelope  Json
+  createdAt      DateTime                         @default(now())
+  updatedAt      DateTime                         @updatedAt
+
+  company   Company              @relation(fields: [companyId], references: [id])
+  connector IntegrationConnector @relation(fields: [connectorId], references: [id])
+
+  @@unique([connectorId, eventId])
+  @@index([companyId, createdAt])
+  @@index([connectorId, createdAt])
+  @@index([status, nextAttemptAt])
+  @@index([sourceEvent, createdAt])
 }
 
 model DeveloperApiKey {
@@ -949,6 +1018,26 @@ enum ShippingMode {
 enum ShippingProvider {
   ANDREANI
   OWN
+}
+
+enum IntegrationConnectorDestinationType {
+  WEBHOOK
+  API
+}
+
+enum IntegrationConnectorAuthMode {
+  NONE
+  BEARER_TOKEN
+  API_KEY_HEADER
+}
+
+enum IntegrationConnectorDeliveryStatus {
+  PENDING
+  PROCESSING
+  RETRY_SCHEDULED
+  SUCCESS
+  FAILED
+  DLQ
 }
 
 enum OrderStatus {
