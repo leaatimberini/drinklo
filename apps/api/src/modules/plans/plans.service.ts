@@ -2,11 +2,15 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { PLAN_CATALOG_DEFAULTS, type PlanTierCode } from "./plan-catalog.constants";
 import { buildTrialPeriod, getCurrentUsagePeriodBuenosAires } from "./plan-time.util";
-import { computeLifecycleBanners, SUBSCRIPTION_RESTRICTED_CAPABILITIES } from "./subscription-lifecycle.policy";
+import {
+  buildRestrictedCapabilities,
+  computeLifecycleBanners,
+  normalizeRestrictedModeVariant,
+} from "./subscription-lifecycle.policy";
 
 type PrismaLike = Pick<
   PrismaService,
-  "planEntitlement" | "subscription" | "usageCounter" | "order" | "branch" | "companyPlugin" | "user"
+  "planEntitlement" | "subscription" | "usageCounter" | "order" | "branch" | "companyPlugin" | "user" | "companySettings"
 >;
 
 @Injectable()
@@ -123,15 +127,21 @@ export class PlansService {
   }
 
   async getEffective(companyId: string) {
-    const [catalog, subscription, usage] = await Promise.all([
+    const [catalog, subscription, usage, settings] = await Promise.all([
       this.getPlanCatalog(),
       this.getSubscription(companyId),
       this.getCurrentUsage(companyId),
+      this.prisma.companySettings.findUnique({
+        where: { companyId },
+        select: { restrictedModeVariant: true },
+      }),
     ]);
     const entitlement = catalog.find((item) => item.tier === subscription.currentTier);
     if (!entitlement) {
       throw new NotFoundException(`Plan entitlement not found for ${subscription.currentTier}`);
     }
+    const restrictedVariant = normalizeRestrictedModeVariant(settings?.restrictedModeVariant);
+    const restrictedPolicy = buildRestrictedCapabilities(restrictedVariant);
     return {
       subscription,
       entitlements: entitlement,
@@ -147,8 +157,43 @@ export class PlansService {
           entitlement.adminUsersMax > 0 ? Math.round((usage.adminUsersCount / entitlement.adminUsersMax) * 100) : 0,
       },
       timezone: "America/Argentina/Buenos_Aires",
-      lifecycleBanners: computeLifecycleBanners(subscription),
-      restrictedPolicy: SUBSCRIPTION_RESTRICTED_CAPABILITIES,
+      lifecycleBanners: computeLifecycleBanners(subscription, { restrictedVariant }),
+      restrictedPolicy,
+    };
+  }
+
+  async getRestrictedModeConfig(companyId: string) {
+    await this.ensureCompanySubscription(companyId);
+    const [subscription, settings] = await Promise.all([
+      this.prisma.subscription.findUniqueOrThrow({ where: { companyId } }),
+      this.prisma.companySettings.findUnique({
+        where: { companyId },
+        select: { restrictedModeVariant: true },
+      }),
+    ]);
+    const variant = normalizeRestrictedModeVariant(settings?.restrictedModeVariant);
+    return {
+      companyId,
+      subscriptionStatus: subscription.status,
+      restrictedModeVariant: variant,
+      policy: buildRestrictedCapabilities(variant),
+    };
+  }
+
+  async setRestrictedModeVariant(companyId: string, variant: "CATALOG_ONLY" | "ALLOW_BASIC_SALES") {
+    const normalized = normalizeRestrictedModeVariant(variant);
+    const companySettings = await this.prisma.companySettings.findUnique({ where: { companyId } });
+    if (!companySettings) {
+      throw new NotFoundException("Company settings not found");
+    }
+    const updated = await this.prisma.companySettings.update({
+      where: { companyId },
+      data: { restrictedModeVariant: normalized },
+      select: { companyId: true, restrictedModeVariant: true, updatedAt: true },
+    });
+    return {
+      ...updated,
+      policy: buildRestrictedCapabilities(normalized),
     };
   }
 

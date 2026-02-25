@@ -45,10 +45,12 @@ type EntitlementsResponse = {
     message: string;
   }>;
   restrictedPolicy?: {
+    variant?: "CATALOG_ONLY" | "ALLOW_BASIC_SALES";
     keepsData: boolean;
     basicSalesAllowed: boolean;
     blockedActions: string[];
     degradedActions: string[];
+    developerApiRestrictedRateLimitPerMin?: number;
   };
 };
 
@@ -61,6 +63,7 @@ export default function PlanBillingPage() {
   const [targetTier, setTargetTier] = useState("C2");
   const [changePreview, setChangePreview] = useState<any | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [restrictedVariant, setRestrictedVariant] = useState<"CATALOG_ONLY" | "ALLOW_BASIC_SALES">("ALLOW_BASIC_SALES");
 
   async function load() {
     setMessage(null);
@@ -75,8 +78,27 @@ export default function PlanBillingPage() {
       return;
     }
     setCatalog(await catalogRes.json());
-    setData(await entitlementsRes.json());
+    const entitlementsPayload = await entitlementsRes.json();
+    setData(entitlementsPayload);
+    const variant = entitlementsPayload?.restrictedPolicy?.variant;
+    if (variant === "CATALOG_ONLY" || variant === "ALLOW_BASIC_SALES") {
+      setRestrictedVariant(variant);
+    }
     setNotifications(notificationsRes.ok ? await notificationsRes.json() : []);
+  }
+
+  async function saveRestrictedVariant() {
+    const res = await fetch(`${apiUrl}/admin/plans/restricted-mode`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ variant: restrictedVariant }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    setMessage(res.ok ? `Variante restricted actualizada: ${payload.restrictedModeVariant ?? restrictedVariant}` : payload.error ?? "No se pudo actualizar variante restricted");
+    if (res.ok) await load();
   }
 
   async function previewPlanChange(kind: "upgrade" | "downgrade") {
@@ -269,8 +291,27 @@ export default function PlanBillingPage() {
             {data.restrictedPolicy ? (
               <div style={{ marginTop: 12 }}>
                 <strong>Politica restricted (preview)</strong>
-                <div>Conserva datos: {String(data.restrictedPolicy.keepsData)} | Ventas basicas: {String(data.restrictedPolicy.basicSalesAllowed)}</div>
+                <div>
+                  Variante: <strong>{data.restrictedPolicy.variant ?? "ALLOW_BASIC_SALES"}</strong> | Conserva datos:{" "}
+                  {String(data.restrictedPolicy.keepsData)} | Ventas basicas: {String(data.restrictedPolicy.basicSalesAllowed)}
+                </div>
+                <div>API pública rate limit duro (/min): {data.restrictedPolicy.developerApiRestrictedRateLimitPerMin ?? 30}</div>
                 <div>Bloqueos: {data.restrictedPolicy.blockedActions.join(", ")}</div>
+                <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <label>
+                    Variante provider
+                    <select value={restrictedVariant} onChange={(e) => setRestrictedVariant(e.target.value as any)}>
+                      <option value="ALLOW_BASIC_SALES">allow-basic-sales</option>
+                      <option value="CATALOG_ONLY">catalog-only</option>
+                    </select>
+                  </label>
+                  <button onClick={saveRestrictedVariant}>Guardar variante</button>
+                </div>
+                {data.subscription.status === "RESTRICTED" ? (
+                  <div style={{ marginTop: 8, color: "#b91c1c" }}>
+                    Modo RESTRICTED activo. Algunas acciones de edición fallarán con explicación y CTA para upgrade.
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </section>

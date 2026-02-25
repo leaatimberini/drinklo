@@ -6,3 +6,7 @@ export class SetNextTierDto {
   nextTier?: "C1" | "C2" | "C3" | null;
 }
 
+export class UpdateRestrictedModeVariantDto {
+  @IsEnum({ CATALOG_ONLY: "CATALOG_ONLY", ALLOW_BASIC_SALES: "ALLOW_BASIC_SALES" } as const)
+  variant!: "CATALOG_ONLY" | "ALLOW_BASIC_SALES";
+}

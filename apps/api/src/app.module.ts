@@ -70,6 +70,7 @@ import { EdiscoveryModule } from "./modules/ediscovery/ediscovery.module";
 import { IntegrationBuilderModule } from "./modules/integration-builder/integration-builder.module";
 import { PlansModule } from "./modules/plans/plans.module";
 import { SubscriptionLifecycleModule } from "./modules/subscription-lifecycle/subscription-lifecycle.module";
+import { SubscriptionGuard } from "./modules/plans/subscription.guard";
 
 @Module({
   imports: [
@@ -148,6 +149,10 @@ import { SubscriptionLifecycleModule } from "./modules/subscription-lifecycle/su
     {
       provide: APP_GUARD,
       useClass: ApiThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: SubscriptionGuard,
     },
     {
       provide: APP_INTERCEPTOR,

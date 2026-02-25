@@ -4,7 +4,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "../common/roles.guard";
 import { Roles } from "../common/rbac.decorators";
 import { PlansService } from "./plans.service";
-import { SetNextTierDto } from "./dto/plans.dto";
+import { SetNextTierDto, UpdateRestrictedModeVariantDto } from "./dto/plans.dto";
 
 @ApiTags("plans")
 @ApiBearerAuth()
@@ -37,6 +37,18 @@ export class PlansController {
     return this.plans.getCurrentUsage(req.user.companyId);
   }
 
+  @Get("admin/plans/restricted-mode")
+  @Roles("admin", "support")
+  restrictedMode(@Req() req: any) {
+    return this.plans.getRestrictedModeConfig(req.user.companyId);
+  }
+
+  @Post("admin/plans/restricted-mode")
+  @Roles("admin", "support")
+  setRestrictedMode(@Req() req: any, @Body() body: UpdateRestrictedModeVariantDto) {
+    return this.plans.setRestrictedModeVariant(req.user.companyId, body.variant);
+  }
+
   @Get("admin/support/plans/:companyId/entitlements")
   @Roles("admin", "support")
   supportEntitlements(@Param("companyId") companyId: string) {
@@ -48,5 +60,10 @@ export class PlansController {
   setNextTier(@Param("companyId") companyId: string, @Body() body: SetNextTierDto) {
     return this.plans.setNextTier(companyId, body.nextTier ?? null);
   }
-}
 
+  @Post("admin/support/plans/:companyId/restricted-mode")
+  @Roles("admin", "support")
+  supportSetRestrictedMode(@Param("companyId") companyId: string, @Body() body: UpdateRestrictedModeVariantDto) {
+    return this.plans.setRestrictedModeVariant(companyId, body.variant);
+  }
+}

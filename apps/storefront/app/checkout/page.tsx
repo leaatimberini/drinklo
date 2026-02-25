@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "../cart/cart-context";
 import { emitEvent } from "../lib/events";
+import { isCheckoutBlockedByRestrictedMode, parseRestrictedCheckoutError } from "./restricted-mode";
 
 type ShippingOption = { id: string; label: string; price: number; etaDays?: number };
 
@@ -11,6 +12,14 @@ type QuoteResponse = {
   mode: "PICKUP" | "DELIVERY";
   provider?: "ANDREANI" | "OWN";
   options: ShippingOption[];
+};
+
+type RuntimeFlags = {
+  restricted?: {
+    enabled: boolean;
+    variant?: "CATALOG_ONLY" | "ALLOW_BASIC_SALES";
+    storefrontCheckoutBlocked?: boolean;
+  };
 };
 
 export default function CheckoutPage() {
@@ -34,6 +43,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [giftCardCode, setGiftCardCode] = useState("");
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [runtime, setRuntime] = useState<RuntimeFlags | null>(null);
 
   const canQuote = useMemo(() => {
     if (items.length === 0) return false;
@@ -44,6 +54,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     emitEvent(apiUrl, "CheckoutStarted", { itemsCount: items.length }, { token: eventToken });
   }, [apiUrl, eventToken, items.length]);
+
+  useEffect(() => {
+    fetch(`${apiUrl}/themes/public`)
+      .then((res) => res.json())
+      .then((data) => setRuntime(data?.runtime ?? null))
+      .catch(() => undefined);
+  }, [apiUrl]);
 
   async function handleQuote() {
     setMessage(null);
@@ -67,6 +84,10 @@ export default function CheckoutPage() {
   }
 
   async function handleOrder() {
+    if (isCheckoutBlockedByRestrictedMode(runtime?.restricted)) {
+      setMessage("Checkout deshabilitado: la tienda esta en modo catalogo por estado de suscripcion.");
+      return;
+    }
     setMessage(null);
     const res = await fetch(`${apiUrl}/checkout/orders`, {
       method: "POST",
@@ -86,7 +107,9 @@ export default function CheckoutPage() {
       }),
     });
     if (!res.ok) {
-      setMessage("No se pudo crear la orden.");
+      const payload = await res.json().catch(() => ({}));
+      const restricted = parseRestrictedCheckoutError(payload);
+      setMessage(restricted?.message ?? "No se pudo crear la orden.");
       return;
     }
     const data = await res.json();
@@ -106,6 +129,10 @@ export default function CheckoutPage() {
   }
 
   async function handleCheckoutPro() {
+    if (isCheckoutBlockedByRestrictedMode(runtime?.restricted)) {
+      setMessage("Checkout Pro deshabilitado: la tienda esta en modo catalogo por estado de suscripcion.");
+      return;
+    }
     if (!orderId) {
       await handleOrder();
     }
@@ -118,7 +145,9 @@ export default function CheckoutPage() {
       body: JSON.stringify({ orderId: finalOrderId }),
     });
     if (!res.ok) {
-      setMessage("No se pudo crear preferencia.");
+      const payload = await res.json().catch(() => ({}));
+      const restricted = parseRestrictedCheckoutError(payload);
+      setMessage(restricted?.message ?? "No se pudo crear preferencia.");
       return;
     }
     const data = await res.json();
@@ -130,6 +159,20 @@ export default function CheckoutPage() {
   return (
     <main style={{ padding: 32, maxWidth: 720 }}>
       <h1 style={{ fontSize: 32, marginBottom: 12, fontFamily: "var(--font-heading)" }}>Checkout</h1>
+      {isCheckoutBlockedByRestrictedMode(runtime?.restricted) ? (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: 12,
+            border: "1px solid #d97706",
+            borderRadius: "var(--radius-md)",
+            background: "#fffbeb",
+          }}
+        >
+          <strong>Modo catalogo activo</strong>
+          <div>El checkout esta deshabilitado temporalmente. Podes seguir navegando el catalogo.</div>
+        </div>
+      ) : null}
 
       <section style={{ marginBottom: 20 }}>
         <h2 style={{ fontSize: 20, marginBottom: 8 }}>Modo</h2>
@@ -226,10 +269,18 @@ export default function CheckoutPage() {
       )}
 
       <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
-        <button onClick={handleOrder} disabled={!option && mode === "DELIVERY"}>
+        <button
+          onClick={handleOrder}
+          disabled={isCheckoutBlockedByRestrictedMode(runtime?.restricted) || (!option && mode === "DELIVERY")}
+          title={isCheckoutBlockedByRestrictedMode(runtime?.restricted) ? "Modo catalogo activo" : undefined}
+        >
           Crear orden
         </button>
-        <button onClick={handleCheckoutPro} disabled={!option && mode === "DELIVERY"}>
+        <button
+          onClick={handleCheckoutPro}
+          disabled={isCheckoutBlockedByRestrictedMode(runtime?.restricted) || (!option && mode === "DELIVERY")}
+          title={isCheckoutBlockedByRestrictedMode(runtime?.restricted) ? "Modo catalogo activo" : undefined}
+        >
           Checkout Pro
         </button>
       </div>

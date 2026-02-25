@@ -3,6 +3,7 @@ import { ThemeProvider } from "./theme-provider";
 import { SwRegister } from "./sw-register";
 import type { ReactNode } from "react";
 import { TelemetryTracker } from "./telemetry-tracker";
+import { RestrictedModeBanner } from "./restricted-mode-banner";
 
 export const metadata = {
   title: "ERP Admin",
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider target="admin" />
         <TelemetryTracker />
         <SwRegister />
+        <RestrictedModeBanner />
         <div id="main-content">{children}</div>
       </body>
     </html>
