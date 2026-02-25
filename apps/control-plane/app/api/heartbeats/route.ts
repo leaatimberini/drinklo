@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
 import crypto from "node:crypto";
 import { bigIntDelta, estimateMonthlyCost, toBigIntOrNull } from "../../lib/finops";
+import { buildFleetInstanceScaling, computeShardKey } from "../../lib/fleet-scaling";
 
 async function notifyProviderAlert(message: string, payload: Record<string, any>) {
   const webhookUrl = process.env.CONTROL_PLANE_ALERT_WEBHOOK_URL ?? "";
@@ -188,6 +189,7 @@ export async function POST(req: NextRequest) {
         return {
           installationId: installation.id,
           instanceId,
+          shardKey: computeShardKey(instanceId),
           version: body.version ?? null,
           feature,
           action,
@@ -435,5 +437,58 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true });
+  const billingAccount = await prisma.billingAccount.findUnique({
+    where: { instanceId },
+    include: { plan: true },
+  }).catch(() => null);
+
+  const derivedApiCallsPerMin = body.api_calls_per_min != null ? Number(body.api_calls_per_min) : null;
+  const derivedWebhookPerMin = body.webhooks_per_min != null ? Number(body.webhooks_per_min) : null;
+  const fleetScaling = buildFleetInstanceScaling({
+    instanceId,
+    planName: billingAccount?.plan?.name ?? null,
+    monthlyOrders: billingAccount?.monthlyOrders ?? null,
+    eventsTotal1h: installation.eventsTotal1h ?? null,
+    jobsProcessed1h: installation.jobsProcessed1h ?? null,
+    jobsPending: installation.jobsPending ?? null,
+    apiCallsPerMin: Number.isFinite(derivedApiCallsPerMin as number) ? derivedApiCallsPerMin : null,
+    webhooksPerMin: Number.isFinite(derivedWebhookPerMin as number) ? derivedWebhookPerMin : null,
+    storageSizeBytes: installation.storageSizeBytes ?? null,
+    cpuUsagePct: installation.cpuUsagePct ?? null,
+    memoryUsedBytes: installation.memoryUsedBytes ?? null,
+    memoryTotalBytes: installation.memoryTotalBytes ?? null,
+  });
+
+  if (!fleetScaling.quotaCheck.ok) {
+    const message = `Technical quota exceeded (${fleetScaling.quota.normalizedPlan}): ${fleetScaling.quotaCheck.violations
+      .map((v) => `${v.metric}=${v.value}/${v.limit}`)
+      .join(", ")}`;
+    const recent = await prisma.alert.findFirst({
+      where: {
+        installationId: installation.id,
+        message,
+        createdAt: { gt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+      },
+    });
+    if (!recent) {
+      await prisma.alert.create({
+        data: {
+          installationId: installation.id,
+          level: "warning",
+          message,
+        },
+      }).catch(() => undefined);
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    fleetScaling: {
+      shardKey: fleetScaling.shardKey,
+      quotaPlan: fleetScaling.quota.normalizedPlan,
+      quotaOk: fleetScaling.quotaCheck.ok,
+      tuning: fleetScaling.tuning,
+      violations: fleetScaling.quotaCheck.violations,
+    },
+  });
 }

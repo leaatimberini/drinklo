@@ -179,6 +179,7 @@ model WebVitalSample {
   id             String   @id @default(uuid())
   installationId String?
   instanceId     String
+  shardKey       Int      @default(0)
   name           String
   value          Float
   rating         String?
@@ -193,6 +194,7 @@ model WebVitalSample {
 
   @@index([installationId, capturedAt])
   @@index([instanceId, capturedAt])
+  @@index([shardKey, capturedAt])
   @@index([name, capturedAt])
 }
 
@@ -220,6 +222,7 @@ model FeatureUsageSample {
   id             String   @id @default(uuid())
   installationId String?
   instanceId     String
+  shardKey       Int      @default(0)
   version        String?
   feature        String
   action         String
@@ -234,6 +237,7 @@ model FeatureUsageSample {
   @@unique([instanceId, windowFrom, windowTo, feature, action])
   @@index([installationId, capturedAt])
   @@index([instanceId, capturedAt])
+  @@index([shardKey, capturedAt])
   @@index([feature, capturedAt])
 }
 
@@ -262,6 +266,7 @@ model IntegrationBuilderReport {
   id              String   @id @default(uuid())
   installationId  String?
   instanceId      String
+  shardKey        Int      @default(0)
   companyId       String?
   capturedAt      DateTime
   connectorsTotal Int      @default(0)
@@ -276,6 +281,7 @@ model IntegrationBuilderReport {
 
   @@index([installationId, capturedAt])
   @@index([instanceId, capturedAt])
+  @@index([shardKey, capturedAt])
   @@index([capturedAt])
 }
 

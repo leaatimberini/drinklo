@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
+import { computeShardKey } from "../../../lib/fleet-scaling";
 
 function isIngestAuthorized(req: Request) {
   const expected = process.env.CONTROL_PLANE_INGEST_TOKEN ?? "";
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
     data: {
       installationId: installation?.id ?? null,
       instanceId,
+      shardKey: computeShardKey(instanceId),
       name,
       value,
       rating,
