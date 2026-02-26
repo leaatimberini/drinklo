@@ -454,7 +454,11 @@ bot.on("callback_query", async (ctx) => {
     return ctx.reply("No autorizado");
   }
 
-  const data = ctx.callbackQuery?.data ?? "";
+  if (!ctx.callbackQuery || !("data" in ctx.callbackQuery)) {
+    await ctx.answerCbQuery();
+    return;
+  }
+  const data = ctx.callbackQuery.data ?? "";
   if (data.startsWith("customer:create:")) {
     const admin = await getAdminToken();
     if (!admin) {
