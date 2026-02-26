@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-export const ROOT_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+export const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function normalizeWinPath(p) {
   if (process.platform !== "win32") return p;
@@ -22,16 +23,25 @@ export function exists(filePath) {
 }
 
 export function run(cmd, args, options = {}) {
-  const result = spawnSync(cmd, args, {
+  const isWindowsPnpm = process.platform === "win32" && cmd === "pnpm";
+  const executable = isWindowsPnpm ? "pnpm" : cmd;
+  const result = spawnSync(executable, args, {
     cwd: options.cwd ?? ROOT_DIR,
     stdio: options.stdio ?? "pipe",
-    shell: false,
+    shell: options.shell ?? isWindowsPnpm,
     env: { ...process.env, ...(options.env ?? {}) },
     encoding: "utf8",
   });
+  if (result.error && !options.allowFailure) {
+    throw new Error(result.error.message);
+  }
   if (options.allowFailure) return result;
   if (result.status !== 0) {
-    const err = result.stderr?.trim() || result.stdout?.trim() || `${cmd} exited with ${result.status}`;
+    const err =
+      result.stderr?.trim() ||
+      result.stdout?.trim() ||
+      result.error?.message ||
+      `${executable} exited with ${result.status}`;
     throw new Error(err);
   }
   return result;
@@ -340,4 +350,3 @@ export function printBootstrapSummary() {
     process.stdout.write(`- Credenciales demo: revisar ${creds.source}\n`);
   }
 }
-
