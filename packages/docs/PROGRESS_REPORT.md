@@ -205,3 +205,49 @@ It includes:
 - Validation run:
   - `pnpm -C packages/sdk test` ?
   - `pnpm test` ? (fails due additional issues outside `@erp/sdk`, including TS test failures in `apps/api` and build/test failures in `apps/control-plane`)
+
+## ES (Actualizacion branch feature/136-fix-global-tests-api-control-plane)
+
+### Fix global tests (API + Control Plane)
+- Objetivo de esta rama:
+  - destrabar `pnpm test` corrigiendo fallas en `apps/api` (tests TS/mocks) y el import faltante en `apps/control-plane`
+- Fixes aplicados:
+  - `apps/control-plane`: se restauró `app/lib/crm.ts` para resolver el import faltante desde `app/api/signup/route.ts`
+  - `apps/api`: ajustes mínimos de tipado y narrowing en tests/productivo para compatibilidad con `unknown` (sin volver a `any`)
+  - `apps/api`: fixes de mocks/expectativas en suites runtime (`privacy`, `purchasing`, `recommendations`, `immutable-audit`, `domain-email`)
+  - `scripts/contract-test.mjs`:
+    - ignora rutas locales `Next.js` (`/api/*`) fuera del OpenAPI de `apps/api`
+    - mejora matching para paths dinámicos (`/billing/:param` vs `/billing/upgrade`)
+    - parsea campos requeridos del `EventEnvelope` desde el type (menos frágil que regex sobre `if`)
+  - contratos OpenAPI regenerados (`packages/shared/contracts/openapi/v1.json`, `v2.json`)
+  - `packages/sdk`: agregado `@types/node` + `types: [\"node\"]` para destrabar `pnpm build` del SDK (bloqueante de `gate`, no cambio funcional)
+- Validacion ejecutada:
+  - `pnpm -C apps/api test` ✅
+  - `pnpm -C apps/control-plane build` ✅
+  - `pnpm contract:test` ✅
+  - `pnpm test` ✅
+  - `pnpm gate` ❌
+    - ahora falla en `build` por errores preexistentes fuera del alcance de esta rama (`@erp/bot#build`, `@erp/instance-agent#build`)
+
+## EN (Update for branch feature/136-fix-global-tests-api-control-plane)
+
+### Global tests fix (API + Control Plane)
+- Branch goal:
+  - unblock `pnpm test` by fixing `apps/api` TS/mock test breakage and the missing import in `apps/control-plane`
+- Applied fixes:
+  - `apps/control-plane`: restored `app/lib/crm.ts` to satisfy the import used by `app/api/signup/route.ts`
+  - `apps/api`: minimal typing/narrowing fixes in tests and a few production files to work with `unknown` (no `any` rollback)
+  - `apps/api`: runtime test mock/assertion fixes (`privacy`, `purchasing`, `recommendations`, `immutable-audit`, `domain-email`)
+  - `scripts/contract-test.mjs`:
+    - ignores local Next.js routes (`/api/*`) that are outside `apps/api` OpenAPI
+    - improves dynamic path matching (`/billing/:param` vs `/billing/upgrade`)
+    - parses required envelope fields from the `EventEnvelope` type (less brittle than regex over validation `if`s)
+  - regenerated OpenAPI contracts (`packages/shared/contracts/openapi/v1.json`, `v2.json`)
+  - `packages/sdk`: added `@types/node` + `types: [\"node\"]` to unblock SDK build (required for `gate`, no functional change)
+- Validation run:
+  - `pnpm -C apps/api test` ✅
+  - `pnpm -C apps/control-plane build` ✅
+  - `pnpm contract:test` ✅
+  - `pnpm test` ✅
+  - `pnpm gate` ❌
+    - now fails at `build` on pre-existing issues outside this branch scope (`@erp/bot#build`, `@erp/instance-agent#build`)
