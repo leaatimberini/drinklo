@@ -6,11 +6,18 @@
     "node": ">=24"
   },
   "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
     "dev": "turbo dev",
     "build": "turbo build",
     "test": "turbo test && pnpm contract:test",
     "lint": "turbo lint",
     "format": "prettier --write .",
+    "infra:up": "node scripts/infra.mjs up",
+    "infra:down": "node scripts/infra.mjs down",
+    "infra:logs": "node scripts/infra.mjs logs",
+    "db:migrate": "pnpm -C packages/db exec prisma migrate deploy",
+    "db:seed": "pnpm -C packages/db exec prisma db seed",
+    "db:reset": "pnpm -C packages/db exec prisma migrate reset --force",
     "smoke": "node scripts/smoke.mjs",
     "e2e": "playwright test",
     "gate": "pnpm lint && pnpm test && pnpm build && pnpm smoke",
