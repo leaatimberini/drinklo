@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { AgeGate } from "./age-gate";
 import { WebVitalsReporter } from "./web-vitals-reporter";
 import { RestrictedModeBanner } from "./restricted-mode-banner";
+import { ProductToursRunner } from "./product-tours-runner";
 
 export const metadata = {
   title: "ERP Storefront",
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <WebVitalsReporter />
         <ThemeProvider />
         <RestrictedModeBanner />
+        <ProductToursRunner />
         <AgeGate />
         <CartProvider>
           <div id="main-content">{children}</div>

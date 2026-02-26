@@ -88,6 +88,8 @@ model Installation {
   feedbackIssues      FeedbackIssue[]
   statusPageIncidents StatusPageIncident[]
   legalAcceptances    LegalAcceptance[]
+  productTours        ProductTour[]
+  productTourEvents   ProductTourEvent[]
 
   @@index([clientName])
   @@index([domain])
@@ -570,6 +572,30 @@ enum StatusPageSubscriptionStatus {
   UNVERIFIED
   ACTIVE
   PAUSED
+}
+
+enum ProductTourSurface {
+  ADMIN
+  STOREFRONT
+}
+
+enum ProductTourStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProductTourTriggerType {
+  ALWAYS
+  FIRST_TIME
+  FEATURE_UNUSED
+  TRIAL_NEARING_END
+}
+
+enum ProductTourEventType {
+  STARTED
+  COMPLETED
+  ABANDONED
 }
 
 enum InvoiceStatus {
@@ -1681,6 +1707,81 @@ model StatusPageSubscription {
   @@unique([channel, email])
   @@unique([channel, webhookUrl])
   @@index([status, createdAt])
+}
+
+model ProductTour {
+  id            String                 @id @default(uuid())
+  installationId String?
+  key           String                 @unique
+  name          String
+  surface       ProductTourSurface
+  status        ProductTourStatus      @default(DRAFT)
+  locale        String                 @default("es")
+  title         String?
+  description   String?
+  condition     Json?
+  triggerType   ProductTourTriggerType @default(ALWAYS)
+  triggerConfig Json?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  installation Installation?    @relation(fields: [installationId], references: [id])
+  steps        ProductTourStep[]
+  events       ProductTourEvent[]
+
+  @@index([installationId, surface, status])
+  @@index([surface, status, locale])
+}
+
+model ProductTourStep {
+  id             String   @id @default(uuid())
+  tourId         String
+  order          Int
+  locale         String?
+  title          String
+  body           String
+  targetSelector String
+  placement      String?
+  condition      Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tour ProductTour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, order])
+  @@index([tourId, order])
+}
+
+model ProductTourEvent {
+  id             String               @id @default(uuid())
+  tourId         String
+  installationId String?
+  instanceId     String?
+  companyId      String?
+  userId         String?
+  role           String?
+  icp            String?
+  locale         String?
+  surface        ProductTourSurface
+  eventType      ProductTourEventType
+  sessionId      String?
+  stepIndex      Int?
+  stepId         String?
+  path           String?
+  metadata       Json?
+  occurredAt     DateTime
+  createdAt      DateTime             @default(now())
+
+  tour          ProductTour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  installation  Installation? @relation(fields: [installationId], references: [id])
+
+  @@index([tourId, occurredAt])
+  @@index([installationId, occurredAt])
+  @@index([instanceId, occurredAt])
+  @@index([eventType, occurredAt])
+  @@index([surface, occurredAt])
 }
 
 model TrialRedemption {

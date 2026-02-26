@@ -4,6 +4,7 @@ import { SwRegister } from "./sw-register";
 import type { ReactNode } from "react";
 import { TelemetryTracker } from "./telemetry-tracker";
 import { RestrictedModeBanner } from "./restricted-mode-banner";
+import { ProductToursRunner } from "./product-tours-runner";
 
 export const metadata = {
   title: "ERP Admin",
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <TelemetryTracker />
         <SwRegister />
         <RestrictedModeBanner />
+        <ProductToursRunner />
         <div id="main-content">{children}</div>
       </body>
     </html>
