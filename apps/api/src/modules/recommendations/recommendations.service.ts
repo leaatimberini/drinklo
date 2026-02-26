@@ -19,6 +19,10 @@ export type RecommendationsBlock = {
 
 const DEFAULT_LIMIT = 6;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 @Injectable()
 export class RecommendationsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -180,8 +184,9 @@ export class RecommendationsService {
 
     const counts = new Map<string, number>();
     for (const event of events) {
-      const payload = event.payload as Record<string, unknown>;
-      const productId = payload.productId ?? payload.productIds?.[0];
+      const payload = isRecord(event.payload) ? event.payload : {};
+      const productIds = Array.isArray(payload.productIds) ? payload.productIds : [];
+      const productId = payload.productId ?? productIds[0];
       if (!productId) continue;
       counts.set(productId, (counts.get(productId) ?? 0) + 1);
     }
@@ -338,7 +343,16 @@ export class RecommendationsService {
         const margin = price - cost;
         return { product, selection, price, margin };
       })
-      .filter(Boolean) as Array<unknown>;
+      .filter(
+        (
+          item,
+        ): item is {
+          product: (typeof candidates)[number];
+          selection: { variant: (typeof candidates)[number]["variants"][number] };
+          price: number;
+          margin: number;
+        } => Boolean(item),
+      );
 
     return items
       .sort((a, b) => b.margin - a.margin)

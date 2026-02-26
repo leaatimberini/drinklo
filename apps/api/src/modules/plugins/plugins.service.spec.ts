@@ -9,9 +9,9 @@ const prismaMock = {
 
 describe("PluginsService", () => {
   it("applies pricing hooks only when scope allowed", async () => {
-    const service = new PluginsService(prismaMock as unknown);
-    (service as unknown).loaded = true;
-    (service as unknown).plugins = [
+    const service = new PluginsService(prismaMock as never as never);
+    (service as never).loaded = true;
+    (service as never).plugins = [
       {
         manifest: {
           name: "promo-rule",
@@ -38,9 +38,9 @@ describe("PluginsService", () => {
   });
 
   it("skips pricing hooks when permission is not allowed", async () => {
-    const service = new PluginsService(prismaMock as unknown);
-    (service as unknown).loaded = true;
-    (service as unknown).plugins = [
+    const service = new PluginsService(prismaMock as never as never);
+    (service as never).loaded = true;
+    (service as never).plugins = [
       {
         manifest: {
           name: "promo-rule",
@@ -67,9 +67,9 @@ describe("PluginsService", () => {
   });
 
   it("does not return UI slots when plugin disabled", async () => {
-    const service = new PluginsService(prismaMock as unknown);
-    (service as unknown).loaded = true;
-    (service as unknown).plugins = [
+    const service = new PluginsService(prismaMock as never as never);
+    (service as never).loaded = true;
+    (service as never).plugins = [
       {
         manifest: {
           name: "product-label",

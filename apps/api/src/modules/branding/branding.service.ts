@@ -16,6 +16,7 @@ const ALLOWED_FIELDS = [
 ] as const;
 
 export type BrandingPayload = Record<(typeof ALLOWED_FIELDS)[number], string | null>;
+type BrandingSettingsShape = Partial<Record<(typeof ALLOWED_FIELDS)[number], string | null>>;
 
 @Injectable()
 export class BrandingService {
@@ -28,7 +29,7 @@ export class BrandingService {
     }
 
     const payload = ALLOWED_FIELDS.reduce((acc, key) => {
-      acc[key] = (company.settings as unknown)[key] ?? null;
+      acc[key] = (company.settings as BrandingSettingsShape)[key] ?? null;
       return acc;
     }, {} as BrandingPayload);
 

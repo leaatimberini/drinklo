@@ -77,7 +77,7 @@ export class SandboxService {
 
   async resetDemoSnapshot(companyId: string) {
     await this.ensureDemoResetAllowed(companyId);
-    await this.prisma.$transaction(async (tx: unknown) => {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.stockReservationLot.deleteMany({ where: { companyId } });
       await tx.stockReservation.deleteMany({ where: { companyId } });
       await tx.orderStatusEvent.deleteMany({ where: { order: { companyId } } });

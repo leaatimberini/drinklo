@@ -47,7 +47,7 @@ class FakeLotsClient {
 
 describe("LotsService", () => {
   it("allocates FEFO by earliest expiry", async () => {
-    const service = new LotsService({} as unknown);
+    const service = new LotsService({} as never);
     const client = new FakeLotsClient();
     client.lots = [
       {
@@ -70,13 +70,13 @@ describe("LotsService", () => {
       },
     ];
 
-    const picks = await service.allocateLotsWithClient(client as unknown, "c1", "v1", 2);
+    const picks = await service.allocateLotsWithClient(client as never, "c1", "v1", 2);
     expect(picks[0].lotCode).toBe("EARLY");
     expect(picks[0].quantity).toBe(2);
   });
 
   it("consumes sale using multiple lots", async () => {
-    const service = new LotsService({} as unknown);
+    const service = new LotsService({} as never);
     const client = new FakeLotsClient();
     client.lots = [
       {
@@ -99,14 +99,14 @@ describe("LotsService", () => {
       },
     ];
 
-    const picks = await service.consumeLotsForSaleWithClient(client as unknown, "c1", "v1", 3);
+    const picks = await service.consumeLotsForSaleWithClient(client as never, "c1", "v1", 3);
     expect(picks).toHaveLength(2);
     expect(client.lots[0].quantity).toBe(0);
     expect(client.lots[1].quantity).toBe(0);
   });
 
   it("blocks expired lots when setting is enabled", async () => {
-    const service = new LotsService({} as unknown);
+    const service = new LotsService({} as never);
     const client = new FakeLotsClient();
     client.settings = { pickingStrategy: "FEFO", blockExpiredLotSale: true };
     client.lots = [
@@ -121,7 +121,7 @@ describe("LotsService", () => {
       },
     ];
 
-    await expect(service.allocateLotsWithClient(client as unknown, "c1", "v1", 1)).rejects.toBeInstanceOf(
+    await expect(service.allocateLotsWithClient(client as never, "c1", "v1", 1)).rejects.toBeInstanceOf(
       BadRequestException,
     );
   });

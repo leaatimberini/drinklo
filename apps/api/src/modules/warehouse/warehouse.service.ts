@@ -229,18 +229,24 @@ export class WarehouseService {
     `;
     const raw = await this.chExecute(sql);
     const data = JSON.parse(raw);
-    const rows = data.data ?? [];
+    type RfmRow = {
+      customer_email: string;
+      recency_days: number;
+      frequency: number;
+      monetary: number;
+    };
+    const rows = Array.isArray(data?.data) ? (data.data as RfmRow[]) : [];
     if (rows.length === 0) return [];
-    const recencies = rows.map((r: unknown) => r.recency_days).sort((a: number, b: number) => a - b);
-    const frequencies = rows.map((r: unknown) => r.frequency).sort((a: number, b: number) => a - b);
-    const monetaries = rows.map((r: unknown) => r.monetary).sort((a: number, b: number) => a - b);
+    const recencies = rows.map((r) => r.recency_days).sort((a, b) => a - b);
+    const frequencies = rows.map((r) => r.frequency).sort((a, b) => a - b);
+    const monetaries = rows.map((r) => r.monetary).sort((a, b) => a - b);
     const pick = (arr: number[], p: number) => arr[Math.floor((arr.length - 1) * p)] ?? arr[0];
     const thresholds = {
       recency: pick(recencies, 0.5),
       frequency: pick(frequencies, 0.5),
       monetary: pick(monetaries, 0.5),
     };
-    return rows.map((row: unknown) => ({
+    return rows.map((row) => ({
       ...row,
       segment:
         row.recency_days <= thresholds.recency && row.frequency >= thresholds.frequency && row.monetary >= thresholds.monetary

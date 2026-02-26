@@ -3,13 +3,13 @@
 class FakeClient {
   stock = { quantity: 1, reservedQuantity: 0 };
   stockReservation = {
-    create: jest.fn(async ({ data }: unknown) => ({ id: `r-${data.orderId}` })),
+    create: jest.fn(async ({ data }: { data: { orderId: string } }) => ({ id: `r-${data.orderId}` })),
   };
   stockMovement = {
     create: jest.fn(async () => ({})),
   };
   async $executeRaw(strings: TemplateStringsArray, ...values: unknown[]) {
-    const qty = values[0];
+    const qty = typeof values[0] === "number" ? values[0] : 0;
     if (this.stock.quantity - this.stock.reservedQuantity >= qty) {
       this.stock.reservedQuantity += qty;
       return 1;
@@ -26,11 +26,11 @@ describe("StockReservationService", () => {
       confirmReservationLotsWithClient: jest.fn(async () => undefined),
       releaseReservationLotsWithClient: jest.fn(async () => undefined),
     };
-    const svc = new StockReservationService({} as unknown, lots as unknown);
-    const client = new FakeClient() as unknown;
+    const svc = new StockReservationService({} as never, lots as never);
+    const client = new FakeClient();
 
     const reserve = (orderId: string) =>
-      svc.reserveWithClient(client, "c1", orderId, [{ variantId: "v1", quantity: 1 }], new Date());
+      svc.reserveWithClient(client as never, "c1", orderId, [{ variantId: "v1", quantity: 1 }], new Date());
 
     const results = await Promise.allSettled([reserve("o1"), reserve("o2")]);
     const fulfilled = results.filter((r) => r.status === "fulfilled").length;

@@ -4,7 +4,7 @@ describe("EventsService.getFeatureUsage", () => {
   it("returns aggregated feature usage rows", async () => {
     jest.useFakeTimers();
 
-    const prisma: unknown = {
+    const prisma = {
       $queryRaw: jest.fn().mockResolvedValue([
         { feature: "pos", action: "view", count: 3n },
         { feature: "bot", action: "command", count: 2n },
@@ -16,8 +16,8 @@ describe("EventsService.getFeatureUsage", () => {
       },
     };
 
-    const service = new EventsService(prisma);
-    const res: unknown = await service.getFeatureUsage({
+    const service = new EventsService(prisma as never);
+    const res = await service.getFeatureUsage({
       companyId: "c1",
       from: "2026-02-12T00:00:00.000Z",
       to: "2026-02-12T01:00:00.000Z",
@@ -34,7 +34,7 @@ describe("EventsService.getFeatureUsage", () => {
 
   it("rejects invalid time range", async () => {
     jest.useFakeTimers();
-    const prisma: unknown = {
+    const prisma = {
       $queryRaw: jest.fn(),
       eventLog: {
         count: jest.fn(),
@@ -42,8 +42,8 @@ describe("EventsService.getFeatureUsage", () => {
         create: jest.fn(),
       },
     };
-    const service = new EventsService(prisma);
-    const res: unknown = await service.getFeatureUsage({
+    const service = new EventsService(prisma as never);
+    const res = await service.getFeatureUsage({
       companyId: "c1",
       from: "bad",
       to: "also-bad",

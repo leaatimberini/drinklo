@@ -76,7 +76,7 @@ describe("SearchService", () => {
       ...overrides,
     };
 
-    return { service: new SearchService(prisma as unknown), prisma };
+    return { service: new SearchService(prisma as never as never), prisma };
   }
 
   it("indexes documents on full reindex", async () => {

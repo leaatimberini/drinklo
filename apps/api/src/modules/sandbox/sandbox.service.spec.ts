@@ -1,34 +1,76 @@
 import { SandboxService } from "./sandbox.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { StockReservationService } from "../stock-reservations/stock-reservation.service";
+
+type SandboxReservationsMock = { confirm: jest.Mock };
+type SandboxPrismaCtor = {
+  $transaction: jest.Mock;
+  companySettings: { findUnique: jest.Mock };
+};
+
+type DemoTxMock = {
+  [K in
+    | "stockReservationLot"
+    | "stockReservation"
+    | "orderStatusEvent"
+    | "payment"
+    | "orderItem"
+    | "order"
+    | "invoice"
+    | "stockMovement"
+    | "stockItem"
+    | "stockLocation"
+    | "shippingZone"
+    | "priceRule"
+    | "priceList"
+    | "automationSendLog"
+    | "flowMetric"
+    | "action"
+    | "flow"
+    | "campaign"
+    | "trigger"
+    | "segment"
+    | "emailEventLog"
+    | "productAttribute"
+    | "productCategory"
+    | "productVariant"
+    | "product"
+    | "category"
+    | "address"
+    | "customer"
+    | "companySettings"]: Record<string, jest.Mock>;
+};
 
 describe("SandboxService", () => {
   it("deterministic mocks return stable responses", () => {
-    const prisma: unknown = {};
-    const reservations: unknown = {};
-    const service = new SandboxService(prisma, reservations);
+    const prisma = {} as PrismaService;
+    const reservations = {} as StockReservationService;
+    const service = new SandboxService(prisma as never, reservations);
 
     expect(service.deterministicPreference("order-1")).toEqual(service.deterministicPreference("order-1"));
     expect(service.deterministicShipmentOptions("C1000")).toEqual(service.deterministicShipmentOptions("C1000"));
-    expect(
-      service.deterministicArcaInvoice({
-        orderRef: "order-1",
-        pointOfSale: 1,
-        type: "B",
-        total: 1000,
-        currency: "ARS",
-      }),
-    ).toEqual(
-      service.deterministicArcaInvoice({
-        orderRef: "order-1",
-        pointOfSale: 1,
-        type: "B",
-        total: 1000,
-        currency: "ARS",
-      }),
-    );
+    const invoiceA = service.deterministicArcaInvoice({
+      orderRef: "order-1",
+      pointOfSale: 1,
+      type: "B",
+      total: 1000,
+      currency: "ARS",
+    });
+    const invoiceB = service.deterministicArcaInvoice({
+      orderRef: "order-1",
+      pointOfSale: 1,
+      type: "B",
+      total: 1000,
+      currency: "ARS",
+    });
+    expect({ ...invoiceA, caeDue: invoiceA.caeDue.toISOString() }).toEqual({
+      ...invoiceB,
+      caeDue: invoiceB.caeDue.toISOString(),
+    });
   });
 
   it("resetCompany scopes deletions by companyId", async () => {
-    const tx = {
+    const tx: DemoTxMock = {
       stockReservationLot: { deleteMany: jest.fn() },
       stockReservation: { deleteMany: jest.fn() },
       orderStatusEvent: { deleteMany: jest.fn(), create: jest.fn() },
@@ -72,17 +114,17 @@ describe("SandboxService", () => {
           .mockResolvedValueOnce({ id: "cust2", name: "Cliente Demo Dos", email: "cliente2@demo.local", phone: "222" }),
       },
       companySettings: { update: jest.fn() },
-    } as unknown;
+    };
 
-    const prisma: unknown = {
-      $transaction: jest.fn(async (cb: unknown) => cb(tx)),
+    const prisma: SandboxPrismaCtor = {
+      $transaction: jest.fn(async (cb: (trx: DemoTxMock) => Promise<unknown>) => cb(tx)),
       companySettings: {
         findUnique: jest.fn().mockResolvedValue({ sandboxMode: true, sandboxResetAt: new Date() }),
       },
     };
-    const reservations: unknown = { confirm: jest.fn() };
+    const reservations: SandboxReservationsMock = { confirm: jest.fn() };
 
-    const service = new SandboxService(prisma, reservations);
+    const service = new SandboxService(prisma as never as PrismaService, reservations as StockReservationService);
     await service.resetCompany("company-a");
 
     expect(tx.product.deleteMany).toHaveBeenCalledWith({ where: { companyId: "company-a" } });
@@ -95,13 +137,14 @@ describe("SandboxService", () => {
   });
 
   it("blocks demo reset for non-sandbox companies", async () => {
-    const prisma: unknown = {
+    const prisma: SandboxPrismaCtor = {
       companySettings: {
         findUnique: jest.fn().mockResolvedValue({ sandboxMode: false }),
       },
       $transaction: jest.fn(),
     };
-    const service = new SandboxService(prisma, { confirm: jest.fn() } as unknown);
+    const reservations: SandboxReservationsMock = { confirm: jest.fn() };
+    const service = new SandboxService(prisma as never as PrismaService, reservations as StockReservationService);
 
     await expect(service.resetDemoSnapshot("company-real")).rejects.toThrow(
       "demo_mode_reset_disabled_for_non_sandbox_company",

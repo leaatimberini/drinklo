@@ -1,7 +1,7 @@
 import { MercadoPagoWebhookController } from "./mercadopago.webhook.controller";
 
 describe("MercadoPagoWebhookController (recurring billing)", () => {
-  const prisma: unknown = {
+  const prisma = {
     webhookLog: {
       create: jest.fn(),
       update: jest.fn(),
@@ -36,11 +36,11 @@ describe("MercadoPagoWebhookController (recurring billing)", () => {
   it("deduplicates repeated preapproval webhooks", async () => {
     const controller = new MercadoPagoWebhookController(
       prisma,
-      payments as unknown,
-      recurringBilling as unknown,
-      secrets as unknown,
-      metrics as unknown,
-      fraud as unknown,
+      payments as never,
+      recurringBilling as never,
+      secrets as never,
+      metrics as never,
+      fraud as never,
     );
     prisma.company.findFirst.mockResolvedValue({ id: "c1" });
     prisma.webhookLog.create.mockResolvedValueOnce({ id: "w1" }).mockRejectedValueOnce(new Error("duplicate"));

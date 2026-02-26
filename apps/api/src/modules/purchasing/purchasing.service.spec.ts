@@ -13,7 +13,7 @@ type State = {
 };
 
 function makeService(state: State) {
-  const tx: unknown = {
+  const tx = {
     goodsReceipt: {
       create: jest.fn(async () => ({ id: "gr-1" })),
     },
@@ -47,6 +47,11 @@ function makeService(state: State) {
     stockMovement: {
       create: jest.fn(async () => ({})),
     },
+    batchLot: {
+      findFirst: jest.fn(async () => null),
+      create: jest.fn(async () => ({ id: "lot-1" })),
+      update: jest.fn(async () => ({})),
+    },
     companySettings: {
       findFirst: jest.fn(async () => ({ inventoryCostMethod: state.method })),
     },
@@ -72,7 +77,7 @@ function makeService(state: State) {
     },
   };
 
-  const prisma: unknown = {
+  const prisma = {
     supplier: {
       findFirst: jest.fn(),
     },
@@ -85,7 +90,7 @@ function makeService(state: State) {
     $transaction: jest.fn(async (fn: unknown) => fn(tx)),
   };
 
-  return { service: new PurchasingService(prisma), tx, prisma };
+  return { service: new PurchasingService(prisma as never), tx, prisma };
 }
 
 describe("PurchasingService", () => {

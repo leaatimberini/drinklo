@@ -4,11 +4,11 @@ import { SodAccessReviewsService } from "./sod-access-reviews.service";
 function makeConfig(values?: Record<string, unknown>) {
   return {
     get: (key: string) => values?.[key],
-  } as unknown;
+  };
 }
 
-function makePrisma(overrides?: Partial<unknown>) {
-  const prisma: unknown = {
+function makePrisma(overrides?: Record<string, unknown>) {
+  const prismaBase = {
     sodPolicy: {
       count: jest.fn().mockResolvedValue(2),
       createMany: jest.fn(),
@@ -78,8 +78,11 @@ function makePrisma(overrides?: Partial<unknown>) {
         },
       ]),
     },
-    $transaction: jest.fn(async (cb: unknown) => cb(prisma)),
+  };
+  const prisma = {
+    ...prismaBase,
     ...overrides,
+    $transaction: jest.fn(async (cb: unknown) => (cb as (tx: typeof prismaBase) => Promise<unknown>)(prismaBase)),
   };
   return prisma;
 }
@@ -87,7 +90,7 @@ function makePrisma(overrides?: Partial<unknown>) {
 describe("SodAccessReviewsService", () => {
   it("denies conflicting SoD actions and records violation", async () => {
     const prisma = makePrisma();
-    const service = new SodAccessReviewsService(prisma, makeConfig());
+    const service = new SodAccessReviewsService(prisma as never, makeConfig() as never);
 
     const result = await service.evaluateAndRecord({
       companyId: "co1",
@@ -107,7 +110,7 @@ describe("SodAccessReviewsService", () => {
     const prisma = makePrisma({
       sodPolicy: { ...makePrisma().sodPolicy, count: jest.fn().mockResolvedValue(0), createMany: jest.fn().mockResolvedValue({ count: 2 }) },
     });
-    const service = new SodAccessReviewsService(prisma, makeConfig());
+    const service = new SodAccessReviewsService(prisma as never, makeConfig() as never);
 
     const campaign = await service.createAccessReviewCampaign(
       "co1",

@@ -71,13 +71,13 @@ function basePrisma() {
     company: {
       findMany: jest.fn().mockResolvedValue([]),
     },
-  } as unknown;
+  };
 }
 
 describe("DataGovernanceService", () => {
   it("runs purge and updates summary", async () => {
     const prisma = basePrisma();
-    const service = new DataGovernanceService(prisma);
+    const service = new DataGovernanceService(prisma as never);
 
     const result = await service.runPurge("co1", "u1", "manual");
 
@@ -101,7 +101,7 @@ describe("DataGovernanceService", () => {
       },
     ]);
 
-    const service = new DataGovernanceService(prisma);
+    const service = new DataGovernanceService(prisma as never);
     const result = await service.runPurge("co1", "u1", "manual");
 
     expect(result.summary.ORDERS.skippedByHold).toBeGreaterThan(0);
@@ -131,7 +131,7 @@ describe("DataGovernanceService", () => {
       },
     ]);
 
-    const service = new DataGovernanceService(prisma);
+    const service = new DataGovernanceService(prisma as never);
     const result = await service.runPurge("co1", "u1", "manual");
 
     expect(result.summary.EVENTS.skippedByHold).toBe(1);

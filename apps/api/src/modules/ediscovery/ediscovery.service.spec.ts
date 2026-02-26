@@ -19,14 +19,14 @@ function makePrisma() {
     userBranch: { findMany: jest.fn().mockResolvedValue([]) },
     accessReviewCampaign: { findMany: jest.fn().mockResolvedValue([]) },
     legalHold: { findMany: jest.fn().mockResolvedValue([{ id: "h1", customerId: "c1", userId: null, status: "ACTIVE", entityScopes: ["ORDERS"], evidenceHash: "eh1", customer: null, user: null, createdBy: null, releasedBy: null }]) },
-  } as unknown;
+  };
 }
 
 function makeAudit() {
   return {
     signEvidencePack: jest.fn((pack: unknown) => sha256(stableStringify(pack))),
     verifyChain: jest.fn().mockReturnValue({ ok: true, count: 1, tailHash: "c1" }),
-  } as unknown;
+  };
 }
 
 describe("EdiscoveryService", () => {
@@ -42,11 +42,11 @@ describe("EdiscoveryService", () => {
   it("fails verification when data is tampered", async () => {
     const service = new EdiscoveryService(makePrisma(), makeAudit());
     const pack = await service.exportForensicPack("co1", { entities: ["orders"] });
-    (pack.data as unknown).orders.items[0].id = "tampered";
+    (pack.data as never).orders.items[0].id = "tampered";
 
     const verified = service.verifyForensicPack(pack);
     expect(verified.ok).toBe(false);
-    expect((verified as unknown).reason).toBe("manifest_hash_mismatch");
+    expect((verified as never).reason).toBe("manifest_hash_mismatch");
   });
 });
 

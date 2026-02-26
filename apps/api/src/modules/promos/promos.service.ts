@@ -22,6 +22,22 @@ type CouponInput = {
   customerEmail?: string;
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getString(value: unknown, fallback = "") {
+  return typeof value === "string" ? value : fallback;
+}
+
+function getOptionalString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function getNumber(value: unknown, fallback = 0) {
+  return typeof value === "number" ? value : fallback;
+}
+
 @Injectable()
 export class PromosService {
   constructor(private readonly prisma: PrismaService) {}
@@ -35,22 +51,23 @@ export class PromosService {
   }
 
   async createCoupon(companyId: string, data: unknown) {
+    const input = isRecord(data) ? data : {};
     return this.prisma.coupon.create({
       data: {
         companyId,
-        code: data.code,
-        type: data.type,
-        amount: new Prisma.Decimal(data.amount),
-        currency: data.currency,
-        startsAt: data.startsAt ? new Date(data.startsAt) : null,
-        endsAt: data.endsAt ? new Date(data.endsAt) : null,
-        usageLimit: data.usageLimit ?? null,
-        perCustomerLimit: data.perCustomerLimit ?? null,
-        minSubtotal: data.minSubtotal != null ? new Prisma.Decimal(data.minSubtotal) : null,
-        maxDiscount: data.maxDiscount != null ? new Prisma.Decimal(data.maxDiscount) : null,
-        priceListId: data.priceListId ?? null,
-        categoryId: data.categoryId ?? null,
-        customerId: data.customerId ?? null,
+        code: getString(input.code),
+        type: input.type as CouponType,
+        amount: new Prisma.Decimal(getNumber(input.amount)),
+        currency: getString(input.currency, "ARS"),
+        startsAt: input.startsAt ? new Date(String(input.startsAt)) : null,
+        endsAt: input.endsAt ? new Date(String(input.endsAt)) : null,
+        usageLimit: typeof input.usageLimit === "number" ? input.usageLimit : null,
+        perCustomerLimit: typeof input.perCustomerLimit === "number" ? input.perCustomerLimit : null,
+        minSubtotal: input.minSubtotal != null ? new Prisma.Decimal(getNumber(input.minSubtotal)) : null,
+        maxDiscount: input.maxDiscount != null ? new Prisma.Decimal(getNumber(input.maxDiscount)) : null,
+        priceListId: getOptionalString(input.priceListId),
+        categoryId: getOptionalString(input.categoryId),
+        customerId: getOptionalString(input.customerId),
       },
     });
   }
@@ -60,16 +77,17 @@ export class PromosService {
   }
 
   async createGiftCard(companyId: string, data: unknown, createdById?: string) {
+    const input = isRecord(data) ? data : {};
     return this.prisma.$transaction(async (tx) => {
       const card = await tx.giftCard.create({
         data: {
           companyId,
-          code: data.code,
-          initialAmount: new Prisma.Decimal(data.amount),
-          balance: new Prisma.Decimal(data.amount),
-          currency: data.currency,
-          issuedToEmail: data.issuedToEmail ?? null,
-          expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+          code: getString(input.code),
+          initialAmount: new Prisma.Decimal(getNumber(input.amount)),
+          balance: new Prisma.Decimal(getNumber(input.amount)),
+          currency: getString(input.currency, "ARS"),
+          issuedToEmail: getOptionalString(input.issuedToEmail),
+          expiresAt: input.expiresAt ? new Date(String(input.expiresAt)) : null,
           status: GiftCardStatus.ACTIVE,
         },
       });
@@ -78,7 +96,7 @@ export class PromosService {
           companyId,
           giftCardId: card.id,
           type: "ISSUE",
-          amount: new Prisma.Decimal(data.amount),
+          amount: new Prisma.Decimal(getNumber(input.amount)),
           createdById,
         },
       });
@@ -103,12 +121,13 @@ export class PromosService {
   }
 
   async createLoyaltyTier(companyId: string, data: unknown) {
+    const input = isRecord(data) ? data : {};
     return this.prisma.loyaltyTier.create({
       data: {
         companyId,
-        name: data.name,
-        minPoints: data.minPoints,
-        multiplier: data.multiplier ?? 1,
+        name: getString(input.name),
+        minPoints: getNumber(input.minPoints),
+        multiplier: typeof input.multiplier === "number" ? input.multiplier : 1,
       },
     });
   }
@@ -118,13 +137,14 @@ export class PromosService {
   }
 
   async createLoyaltyRule(companyId: string, data: unknown) {
+    const input = isRecord(data) ? data : {};
     return this.prisma.loyaltyRule.create({
       data: {
         companyId,
-        type: data.type,
-        config: data.config,
-        productId: data.productId ?? null,
-        categoryId: data.categoryId ?? null,
+        type: input.type as LoyaltyRuleType,
+        config: (input.config ?? {}) as Prisma.InputJsonValue,
+        productId: getOptionalString(input.productId),
+        categoryId: getOptionalString(input.categoryId),
       },
     });
   }

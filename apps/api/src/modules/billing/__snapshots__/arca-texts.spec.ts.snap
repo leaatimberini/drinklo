@@ -1,20 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
 exports[`ARCA texts keeps key ARCA wording in docs 1`] = `
-Array [
+[
   "# ARCA (ex AFIP)",
   "La Agencia de Recaudacion y Control Aduanero (ARCA) reemplaza a la ex AFIP. ARCA asume la continuidad de funciones y servicios fiscales, por lo que los Web Services (WSAA/WSFEv1) continuan operando bajo la nueva denominacion institucional.",
   "- WSAA (autenticacion)",
   "- WSFEv1 (facturacion electronica)",
-  "- `afipCertIssuer`: entidad emisora del certificado X.509 (ARCA AC)",
+  "- \`afipCertIssuer\`: entidad emisora del certificado X.509 (ARCA AC)",
   "- Decreto 953/2024: creacion de ARCA y disolucion de AFIP.",
   "- Documentacion oficial de WSFEv1 (Factura Electronica) en ARCA.",
   "# ARCA (ex AFIP) Billing (Optional)",
-  "- `NO_FISCAL`: skip ARCA (ex AFIP)",
-  "- `AFIP`: enable WSAA + WSFEv1 flow (ARCA services)",
-  "- `AfipLog`: request/response + errors for audit and retries (ARCA).",
+  "- \`NO_FISCAL\`: skip ARCA (ex AFIP)",
+  "- \`AFIP\`: enable WSAA + WSFEv1 flow (ARCA services)",
+  "- \`AfipLog\`: request/response + errors for audit and retries (ARCA).",
   "## WSAA (ARCA)",
   "- Call WSAA endpoint based on environment (HOMO/PROD).",
   "## WSFEv1 (ARCA)",
-  "- `CompanySettings.afipCertIssuer`: entidad emisora del certificado (ARCA AC).",
-  "- WSAA client: `apps/api/src/modules/billing/afip/wsaa.client.ts`",
+  "- \`CompanySettings.afipCertIssuer\`: entidad emisora del certificado (ARCA AC).",
+  "- WSAA client: \`apps/api/src/modules/billing/afip/wsaa.client.ts\`",
 ]
 `;

@@ -7,8 +7,9 @@ export function stableStringify(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map((v) => stableStringify(v)).join(",")} ]`.replace(", ]", "]");
   }
-  const keys = Object.keys(value).sort();
-  const entries = keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`);
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  const entries = keys.map((k) => `${JSON.stringify(k)}:${stableStringify(record[k])}`);
   return `{${entries.join(",")}}`;
 }
 

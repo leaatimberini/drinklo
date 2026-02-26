@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 import type { EmailEventDto, UpsertEmailDomainDto } from "./dto/domain-email.dto";
 
@@ -67,7 +68,7 @@ export class DomainEmailService {
         type: dto.type,
         recipient: dto.recipient ?? null,
         messageId: dto.messageId ?? null,
-        payload,
+        payload: (payload ?? {}) as Prisma.InputJsonValue,
       },
     });
   }

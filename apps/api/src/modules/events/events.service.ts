@@ -79,6 +79,7 @@ export class EventsService {
         });
       }
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "sink failed";
       for (const event of batch) {
         await this.prisma.eventLog.create({
           data: {
@@ -90,7 +91,7 @@ export class EventsService {
             occurredAt: new Date(event.occurredAt ?? new Date().toISOString()),
             payload: event.payload ?? {},
             status: "failed",
-            error: error?.message ?? "sink failed",
+            error: errorMessage,
           },
         });
       }

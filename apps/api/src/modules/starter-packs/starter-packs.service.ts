@@ -1,4 +1,5 @@
 ﻿import { Injectable } from "@nestjs/common";
+import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 
 const BEVERAGE_CATEGORIES = [
@@ -169,13 +170,13 @@ export class StarterPacksService {
 
     for (const tpl of BASE_DASHBOARDS) {
       await this.prisma.dashboardTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as unknown },
+        data: { companyId, name: tpl.name, config: tpl.config as Prisma.InputJsonValue },
       });
     }
 
     for (const tpl of BASE_REPORTS) {
       await this.prisma.reportTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as unknown },
+        data: { companyId, name: tpl.name, config: tpl.config as Prisma.InputJsonValue },
       });
     }
   }
@@ -219,13 +220,13 @@ export class StarterPacksService {
 
     for (const tpl of pack.dashboards) {
       await this.prisma.dashboardTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as unknown },
+        data: { companyId, name: tpl.name, config: tpl.config as Prisma.InputJsonValue },
       });
     }
 
     for (const tpl of pack.reports) {
       await this.prisma.reportTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as unknown },
+        data: { companyId, name: tpl.name, config: tpl.config as Prisma.InputJsonValue },
       });
     }
 

@@ -1,7 +1,7 @@
 import { PlansService } from "./plans.service";
 
 describe("PlansService", () => {
-  const prismaMock: unknown = {
+  const prismaMock = {
     planEntitlement: {
       upsert: jest.fn(),
       findMany: jest.fn(),
@@ -34,7 +34,7 @@ describe("PlansService", () => {
   it("returns catalog sorted by tier", async () => {
     prismaMock.planEntitlement.upsert.mockResolvedValue(null);
     prismaMock.planEntitlement.findMany.mockResolvedValue([{ tier: "C1" }, { tier: "C2" }, { tier: "C3" }]);
-    const service = new PlansService(prismaMock);
+    const service = new PlansService(prismaMock as never);
 
     const result = await service.getPlanCatalog();
 
@@ -59,7 +59,7 @@ describe("PlansService", () => {
       status: "ACTIVE_PAID",
       currentPeriodEnd: new Date("2026-03-01T00:00:00.000Z"),
     });
-    const service = new PlansService(prismaMock);
+    const service = new PlansService(prismaMock as never);
 
     const result = await service.setNextTier("c1", "C2");
 

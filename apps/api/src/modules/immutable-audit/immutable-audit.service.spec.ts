@@ -42,7 +42,7 @@ function makePrisma() {
 describe("ImmutableAuditService", () => {
   it("builds valid hash chain", async () => {
     const { prisma, store } = makePrisma();
-    const service = new ImmutableAuditService(prisma as unknown);
+    const service = new ImmutableAuditService(prisma as never as never);
 
     await service.append({
       companyId: "c1",
@@ -67,13 +67,13 @@ describe("ImmutableAuditService", () => {
       payload: { qty: 2 },
     });
 
-    const verification = service.verifyChain(store as unknown);
+    const verification = service.verifyChain(store as never);
     expect(verification.ok).toBe(true);
   });
 
   it("detects tampering in chain", async () => {
     const { prisma, store } = makePrisma();
-    const service = new ImmutableAuditService(prisma as unknown);
+    const service = new ImmutableAuditService(prisma as never as never);
 
     await service.append({
       companyId: "c1",
@@ -99,7 +99,7 @@ describe("ImmutableAuditService", () => {
     });
 
     store[1].payload.discount = 99;
-    const verification = service.verifyChain(store as unknown);
+    const verification = service.verifyChain(store as never);
     expect(verification.ok).toBe(false);
     expect(verification.reason).toBe("payload_hash_mismatch");
   });
@@ -107,7 +107,7 @@ describe("ImmutableAuditService", () => {
   it("exports signed evidence pack", async () => {
     process.env.AUDIT_EVIDENCE_SECRET = "audit-secret";
     const { prisma } = makePrisma();
-    const service = new ImmutableAuditService(prisma as unknown);
+    const service = new ImmutableAuditService(prisma as never as never);
 
     await service.append({
       companyId: "c1",
@@ -123,7 +123,8 @@ describe("ImmutableAuditService", () => {
 
     const pack = await service.exportEvidencePack("c1", {});
     expect(pack.signature).toBeTruthy();
-    const { signature, ...unsigned } = pack;
+    const { signature, ...unsigned } = pack as { signature: string; signatureAlgorithm?: string };
+    delete unsigned.signatureAlgorithm;
     const expected = service.signEvidencePack(unsigned);
     expect(signature).toBe(expected);
   });

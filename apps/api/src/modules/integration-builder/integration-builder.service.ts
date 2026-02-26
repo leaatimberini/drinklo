@@ -532,7 +532,8 @@ export class IntegrationBuilderService implements OnModuleDestroy {
         body: JSON.stringify(payload),
       });
     } catch (error: unknown) {
-      this.logger.warn(`control-plane integration-builder report failed: ${error?.message ?? "unknown"}`);
+      const message = error instanceof Error ? error.message : "unknown";
+      this.logger.warn(`control-plane integration-builder report failed: ${message}`);
     }
   }
 }

@@ -2,7 +2,12 @@
 import { RecommendationsService } from "./recommendations.service";
 
 describe("RecommendationsService", () => {
-  const prismaMock: unknown = {
+  const products = [
+    { id: "p1", name: "Agua", isAlcoholic: false, variants: [{ id: "v1", sku: "A1", cost: new Prisma.Decimal(400) }] },
+    { id: "p2", name: "Vino", isAlcoholic: true, variants: [{ id: "v2", sku: "V1", cost: new Prisma.Decimal(700) }] },
+  ];
+
+  const prismaMock = {
     company: { findFirst: jest.fn().mockResolvedValue({ id: "c1" }) },
     companySettings: { findFirst: jest.fn().mockResolvedValue({ ageGateMode: "18" }) },
     priceList: { findFirst: jest.fn().mockResolvedValue({ id: "pl1" }) },
@@ -38,15 +43,25 @@ describe("RecommendationsService", () => {
       ]),
     },
     product: {
-      findMany: jest.fn().mockResolvedValue([
-        { id: "p1", name: "Agua", isAlcoholic: false, variants: [{ id: "v1", sku: "A1", cost: new Prisma.Decimal(400) }] },
-        { id: "p2", name: "Vino", isAlcoholic: true, variants: [{ id: "v2", sku: "V1", cost: new Prisma.Decimal(700) }] },
-      ]),
+      findMany: jest.fn(async (args: unknown) => {
+        const where = typeof args === "object" && args !== null && "where" in args ? (args as { where?: unknown }).where : undefined;
+        const productWhere =
+          typeof where === "object" && where !== null ? (where as { isAlcoholic?: boolean; id?: { in?: string[] } }) : {};
+        let result = [...products];
+        if (productWhere.isAlcoholic === false) {
+          result = result.filter((product) => !product.isAlcoholic);
+        }
+        if (productWhere.id?.in?.length) {
+          const ids = new Set(productWhere.id.in);
+          result = result.filter((product) => ids.has(product.id));
+        }
+        return result;
+      }),
     },
   };
 
   it("respects opt-out", async () => {
-    const service = new RecommendationsService(prismaMock);
+    const service = new RecommendationsService(prismaMock as never);
     const res = await service.getRecommendations({
       companyId: "c1",
       blocks: ["reorder"],
@@ -59,7 +74,7 @@ describe("RecommendationsService", () => {
   });
 
   it("filters alcoholic when age not verified", async () => {
-    const service = new RecommendationsService(prismaMock);
+    const service = new RecommendationsService(prismaMock as never);
     const res = await service.getRecommendations({
       companyId: "c1",
       blocks: ["reorder"],

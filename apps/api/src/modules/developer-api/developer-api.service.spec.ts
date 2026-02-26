@@ -1,4 +1,4 @@
-import { ForbiddenException, TooManyRequestsException, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, HttpException, UnauthorizedException } from "@nestjs/common";
 import { DeveloperApiService } from "./developer-api.service";
 
 function buildService(overrides?: unknown) {
@@ -29,7 +29,7 @@ function buildService(overrides?: unknown) {
   return {
     prisma,
     audit,
-    service: new DeveloperApiService(prisma as unknown, audit as unknown),
+    service: new DeveloperApiService(prisma as never as never, audit as never),
   };
 }
 
@@ -125,15 +125,23 @@ describe("DeveloperApiService", () => {
       ip: "10.10.10.10",
     });
 
-    await expect(
-      service.validateAndConsume({
+    await service
+      .validateAndConsume({
         rawKey: `${key.keyPrefix}.${secret}`,
         route: "/developer/v1/products",
         method: "GET",
         requiredScopes: ["read:products"],
         ip: "10.10.10.10",
-      }),
-    ).rejects.toBeInstanceOf(TooManyRequestsException);
+      })
+      .then(
+        () => {
+          throw new Error("expected rate limit error");
+        },
+        (error: unknown) => {
+          expect(error).toBeInstanceOf(HttpException);
+          expect((error as HttpException).getStatus()).toBe(429);
+        },
+      );
 
     expect(prisma.developerApiUsage.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ rateLimited: true, statusCode: 429 }) }),

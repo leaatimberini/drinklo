@@ -1,15 +1,15 @@
 import { LicensingService } from "./licensing.service";
 import type { LicensePayload } from "./license.types";
 
-const makeService = (license: unknown = null) => {
+const makeService = (license: Record<string, unknown> | null = null) => {
   const prisma = {
     licenseKey: {
       findUnique: jest.fn().mockResolvedValue(license),
       upsert: jest.fn().mockResolvedValue({}),
     },
-  } as unknown;
+  };
 
-  return { service: new LicensingService(prisma), prisma };
+  return { service: new LicensingService(prisma as never), prisma };
 };
 
 describe("LicensingService", () => {
@@ -57,7 +57,7 @@ describe("LicensingService", () => {
       features: ["afip"],
     };
     const { service } = makeService(license);
-    const allowed = await service.isFeatureEnabled("c1", "andreani" as unknown);
+    const allowed = await service.isFeatureEnabled("c1", "andreani" as never);
     expect(allowed).toBe(false);
   });
 
@@ -70,7 +70,7 @@ describe("LicensingService", () => {
       features: ["afip"],
     };
     const { service } = makeService(almostExpired);
-    const soft = await service.getEnforcement("c1", "andreani" as unknown);
+    const soft = await service.getEnforcement("c1", "andreani" as never);
     expect(soft.stage).toBe("soft_limit");
     expect(soft.basicSalesAllowed).toBe(true);
     expect(soft.premiumBlocked).toBe(true);
@@ -80,7 +80,7 @@ describe("LicensingService", () => {
       expiresAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
     };
     const { service: service2 } = makeService(longExpired);
-    const hard = await service2.getEnforcement("c1", "andreani" as unknown);
+    const hard = await service2.getEnforcement("c1", "andreani" as never);
     expect(hard.stage).toBe("hard_limit");
     expect(hard.basicSalesAllowed).toBe(true);
     expect(hard.premiumBlocked).toBe(true);

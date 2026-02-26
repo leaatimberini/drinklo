@@ -13,7 +13,7 @@ describe("UsersService", () => {
   let service: UsersService;
 
   beforeEach(() => {
-    service = new UsersService(prismaMock as unknown);
+    service = new UsersService(prismaMock as never as never);
     prismaMock.user.findMany.mockReset();
     prismaMock.user.findFirst.mockReset();
     prismaMock.user.create.mockReset();

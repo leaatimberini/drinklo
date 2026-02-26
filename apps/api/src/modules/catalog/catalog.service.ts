@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 import { PluginsService } from "../plugins/plugins.service";
 import type { CatalogQueryDto } from "./dto/catalog-query.dto";
@@ -57,7 +58,7 @@ export class CatalogService {
     const cached = this.getCached<unknown>(`products:${key}`);
     if (cached) return cached;
 
-    const where: unknown = {
+    const where: Prisma.ProductWhereInput = {
       deletedAt: null,
     };
 
@@ -114,6 +115,11 @@ export class CatalogService {
   }
 
   async syncCart(payload: unknown) {
-    return { ok: true, received: payload?.items?.length ?? 0 };
+    const items =
+      typeof payload === "object" && payload !== null && "items" in payload
+        ? (payload as { items?: unknown }).items
+        : undefined;
+    const received = Array.isArray(items) ? items.length : 0;
+    return { ok: true, received };
   }
 }

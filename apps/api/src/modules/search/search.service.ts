@@ -4,10 +4,36 @@ import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 import { MeiliSearch } from "meilisearch";
 import { Queue, Worker } from "bullmq";
+import type { ConnectionOptions } from "bullmq";
 import IORedis from "ioredis";
 
 const DEFAULT_SEARCH_LIMIT = 20;
 const INDEX_NAME_PREFIX = "catalog";
+type SearchBoosters = { stockWeight?: number; marginWeight?: number };
+type SearchSynonyms = Record<string, string[]>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toSynonyms(value: unknown): SearchSynonyms {
+  if (!isRecord(value)) return {};
+  const out: SearchSynonyms = {};
+  for (const [key, raw] of Object.entries(value)) {
+    if (Array.isArray(raw)) {
+      out[key] = raw.filter((item): item is string => typeof item === "string");
+    }
+  }
+  return out;
+}
+
+function toBoosters(value: unknown): SearchBoosters {
+  if (!isRecord(value)) return {};
+  return {
+    stockWeight: typeof value.stockWeight === "number" ? value.stockWeight : undefined,
+    marginWeight: typeof value.marginWeight === "number" ? value.marginWeight : undefined,
+  };
+}
 
 @Injectable()
 export class SearchService implements OnModuleInit, OnModuleDestroy {
@@ -22,7 +48,8 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
     if (!redisUrl) return;
 
     this.connection = new IORedis(redisUrl);
-    this.queue = new Queue("search-index", { connection: this.connection });
+    const connection = this.connection as unknown as ConnectionOptions;
+    this.queue = new Queue("search-index", { connection });
     this.worker = new Worker(
       "search-index",
       async (job) => {
@@ -34,7 +61,7 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
           await this.fullReindex(companyId);
         }
       },
-      { connection: this.connection },
+      { connection },
     );
   }
 
@@ -97,7 +124,7 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
   async applySettings(companyId: string, config: { synonyms?: unknown; boosters?: unknown }) {
     const client = this.getClient();
     const index = client.index(this.indexName(companyId));
-    const synonyms = config.synonyms ?? {};
+    const synonyms = toSynonyms(config.synonyms);
 
     await index.updateSettings({
       searchableAttributes: ["name", "sku", "barcode", "categoryNames", "brand"],
@@ -278,8 +305,9 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
     data: Awaited<ReturnType<SearchService["fetchIndexData"]>>,
     config: { boosters?: unknown },
   ) {
-    const stockWeight = Number(config.boosters?.stockWeight ?? 1);
-    const marginWeight = Number(config.boosters?.marginWeight ?? 1);
+    const boosters = toBoosters(config.boosters);
+    const stockWeight = Number(boosters.stockWeight ?? 1);
+    const marginWeight = Number(boosters.marginWeight ?? 1);
 
     const brandSet = new Set<string>();
     const docs: Array<Record<string, unknown>> = [];
@@ -424,7 +452,10 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
       ],
     });
 
-    const suggestions = (res.hits ?? []).map((hit: unknown) => hit.name).filter(Boolean).slice(0, 5);
+    const suggestions = (res.hits ?? [])
+      .map((hit) => (isRecord(hit) && typeof hit.name === "string" ? hit.name : null))
+      .filter((hit): hit is string => Boolean(hit))
+      .slice(0, 5);
     const didYouMean = res.hits?.length === 0 && suggestions.length > 0 ? suggestions[0] : null;
 
     return {

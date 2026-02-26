@@ -10,9 +10,9 @@ function fakeJwt(payload: unknown) {
 function makeContext(req: unknown): ExecutionContext {
   return {
     switchToHttp: () => ({ getRequest: () => req }),
-    getClass: () => ({} as unknown),
-    getHandler: () => ({} as unknown),
-  } as unknown;
+    getClass: () => ({} as never),
+    getHandler: () => ({} as never),
+  };
 }
 
 describe("SubscriptionGuard", () => {
@@ -32,10 +32,10 @@ describe("SubscriptionGuard", () => {
       developerApiKey: {
         findFirst: jest.fn(async () => ({ companyId: "company-1" })),
       },
-    } as unknown;
+    };
     const audit = {
       append: jest.fn(async () => ({ id: "audit-1" })),
-    } as unknown;
+    };
     const guard = new SubscriptionGuard(prisma, audit);
     return { guard, prisma, audit };
   }

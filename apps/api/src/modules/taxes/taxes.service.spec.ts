@@ -35,7 +35,7 @@ function makePrismaMock(overrides?: Partial<unknown>) {
     },
     $transaction: jest.fn(),
     ...overrides,
-  } as unknown;
+  };
 }
 
 describe("TaxesService", () => {
@@ -56,7 +56,7 @@ describe("TaxesService", () => {
         deletedAt: null,
       },
     ]);
-    const service = new TaxesService(prisma);
+    const service = new TaxesService(prisma as never);
 
     const result = await service.simulate("co1", {
       items: [{ quantity: 1, unitPrice: 100 }],
@@ -107,7 +107,7 @@ describe("TaxesService", () => {
         deletedAt: null,
       },
     ]);
-    const service = new TaxesService(prisma);
+    const service = new TaxesService(prisma as never);
 
     const result = await service.simulate("co1", {
       items: [{ quantity: 1, unitPrice: 121 }],
@@ -181,7 +181,7 @@ describe("TaxesService", () => {
         deletedAt: null,
       },
     ]);
-    const service = new TaxesService(prisma);
+    const service = new TaxesService(prisma as never);
 
     const result = await service.simulate("co1", {
       currency: "ARS",
@@ -233,7 +233,7 @@ describe("TaxesService", () => {
         deletedAt: null,
       },
     ]);
-    const service = new TaxesService(prisma);
+    const service = new TaxesService(prisma as never);
 
     const result = await service.simulate("co1", {
       items: [{ quantity: 1, unitPrice: 100 }],

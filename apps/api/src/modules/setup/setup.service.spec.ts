@@ -47,7 +47,7 @@ describe("SetupService", () => {
   let service: SetupService;
 
   beforeEach(() => {
-    service = new SetupService(prismaMock as unknown);
+    service = new SetupService(prismaMock as never as never);
     prismaMock.company.count.mockReset();
   });
 
@@ -59,7 +59,7 @@ describe("SetupService", () => {
 
   it("allows initialize when no company exists", async () => {
     prismaMock.company.count.mockResolvedValue(0);
-    prismaMock.$transaction.mockImplementation(async (cb: unknown) => {
+    prismaMock.$transaction.mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) => {
       const tx = {
         planEntitlement: { upsert: jest.fn().mockResolvedValue(null) },
         company: { create: jest.fn().mockResolvedValue({ id: "c1" }) },

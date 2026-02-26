@@ -19,15 +19,16 @@ function stableStringify(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map((item) => stableStringify(item)).join(",")}]`;
   }
-  const keys = Object.keys(value).sort();
-  const entries = keys.map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`);
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  const entries = keys.map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`);
   return `{${entries.join(",")}}`;
 }
 
 function verifySignature(manifest: PluginManifest, secret: string) {
   if (!manifest.signature) return false;
   const payload = { ...manifest };
-  delete (payload as unknown).signature;
+  delete payload.signature;
   const expected = crypto.createHmac("sha256", secret).update(stableStringify(payload)).digest("hex");
   if (expected.length !== manifest.signature.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(manifest.signature));
@@ -152,7 +153,8 @@ export class PluginsService {
         decorations.push({ plugin: plugin.manifest.name, data: result });
       }
     }
-    return { ...product, plugins: decorations };
+    const base = typeof product === "object" && product !== null ? (product as Record<string, unknown>) : {};
+    return { ...base, plugins: decorations };
   }
 
   async applyPricingRules(companyId: string, items: Array<{ productId: string; variantId?: string | null; quantity: number; unitPrice: number }>) {

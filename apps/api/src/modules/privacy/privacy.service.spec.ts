@@ -3,7 +3,10 @@ import { PrivacyService } from "./privacy.service";
 describe("PrivacyService", () => {
   it("anonymizes customer and logs request", async () => {
     const prisma = {
-      customer: { findFirst: jest.fn().mockResolvedValue({ id: "c1" }) },
+      customer: {
+        findFirst: jest.fn().mockResolvedValue({ id: "c1" }),
+        update: jest.fn().mockResolvedValue({ id: "c1" }),
+      },
       address: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
       privacyRequest: { create: jest.fn().mockResolvedValue({ id: "p1" }) },
       $transaction: async (fn: unknown) => fn(prisma),
@@ -11,7 +14,7 @@ describe("PrivacyService", () => {
         findUnique: jest.fn().mockResolvedValue({ retentionLogsDays: 90 }),
         update: jest.fn().mockResolvedValue({ retentionLogsDays: 30 }),
       },
-    } as unknown;
+    };
 
     const governance = {
       getEffectivePolicies: jest.fn().mockResolvedValue({
@@ -23,9 +26,9 @@ describe("PrivacyService", () => {
         ],
       }),
       upsertPolicies: jest.fn().mockResolvedValue([]),
-    } as unknown;
+    };
 
-    const service = new PrivacyService(prisma, governance);
+    const service = new PrivacyService(prisma as never, governance);
     await service.anonymizeCustomer("co", "c1", "u1", "note");
     expect(prisma.privacyRequest.create).toHaveBeenCalled();
   });

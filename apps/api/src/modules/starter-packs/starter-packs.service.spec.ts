@@ -10,9 +10,9 @@ describe("StarterPacksService", () => {
       attributeDefinition: {
         upsert: jest.fn().mockResolvedValue({ id: "a1" }),
       },
-    } as unknown;
+    };
 
-    const service = new StarterPacksService(prisma);
+    const service = new StarterPacksService(prisma as never);
     await service.applyCatalog("co1");
     expect(prisma.category.create).toHaveBeenCalled();
     expect(prisma.attributeDefinition.upsert).toHaveBeenCalled();
@@ -26,9 +26,9 @@ describe("StarterPacksService", () => {
       },
       dashboardTemplate: { create: jest.fn().mockResolvedValue({ id: "d1" }) },
       reportTemplate: { create: jest.fn().mockResolvedValue({ id: "r1" }) },
-    } as unknown;
+    };
 
-    const service = new StarterPacksService(prisma);
+    const service = new StarterPacksService(prisma as never);
     await service.applyTemplates("co1");
     expect(prisma.emailTemplate.create).toHaveBeenCalled();
     expect(prisma.dashboardTemplate.create).toHaveBeenCalled();
