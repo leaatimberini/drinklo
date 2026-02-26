@@ -16,7 +16,7 @@ function parseLabels(segment: string) {
     const [rawKey, rawValue] = part.split("=");
     if (!rawKey || !rawValue) continue;
     const key = rawKey.trim();
-    const value = rawValue.trim().replace(/^\"|\"$/g, "");
+    const value = rawValue.trim().replace(/^"|"$/g, "");
     labels[key] = value;
   }
   return labels;

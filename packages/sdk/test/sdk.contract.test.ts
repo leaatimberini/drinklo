@@ -3,6 +3,8 @@ import http from "node:http";
 import test from "node:test";
 import { ErpSdkClient } from "../src/client";
 
+type CreatedOrderResponse = { id: string; status: string };
+
 test("contract: sdk matches mock developer api", async () => {
   const received: Array<{ method: string; path: string; headers: http.IncomingHttpHeaders; body: unknown }> = [];
 
@@ -63,16 +65,16 @@ test("contract: sdk matches mock developer api", async () => {
     const categories = await client.listCategories();
     await client.listPriceLists();
     await client.listStockAvailability();
-    const created = await client.createOrder({
+    const created = (await client.createOrder({
       customerName: "Demo",
       customerEmail: "demo@example.com",
       shippingMode: "PICKUP",
       items: [{ productId: "p1", quantity: 1 }],
-    });
+    })) as CreatedOrderResponse;
 
     assert.equal(products.total, 1);
     assert.equal(categories[0].name, "Bebidas");
-    assert.equal((created as any).status, "CREATED");
+    assert.equal(created.status, "CREATED");
 
     assert.ok(received.length >= 5);
     for (const req of received) {

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Telegraf, Markup } from "telegraf";
+import { Telegraf, Markup, type Context } from "telegraf";
 import { emitEvent } from "./events";
 
 const token = process.env.BOT_TOKEN;
@@ -18,17 +18,31 @@ const eventToken = process.env.EVENT_INGEST_TOKEN;
 const bot = new Telegraf(token);
 const rateMap = new Map<string, { count: number; reset: number }>();
 
-function log(event: Record<string, any>) {
+type BotContext = Context;
+type CopilotProposal = { id: string; actionType: string };
+type CopilotChatResponse = { message?: string; proposals?: CopilotProposal[] };
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function log(event: Record<string, unknown>) {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(event));
 }
 
-function isAllowed(ctx: any) {
+function isAllowed(ctx: BotContext) {
   const chatId = String(ctx.chat?.id ?? "");
   return allowlist.length > 0 && allowlist.includes(chatId);
 }
 
-async function trackCommand(command: string, ctx: any, status: string, payload?: any, adminId?: string) {
+async function trackCommand(
+  command: string,
+  ctx: BotContext,
+  status: string,
+  payload?: unknown,
+  adminId?: string,
+) {
   await emitEvent(
     apiUrl,
     "BotCommand",
@@ -68,7 +82,14 @@ async function getAdminToken() {
   return { token: data.accessToken, adminId: data.user.id };
 }
 
-async function audit(command: string, chatId: string, status: string, result?: any, adminId?: string, token?: string) {
+async function audit(
+  command: string,
+  chatId: string,
+  status: string,
+  result?: unknown,
+  adminId?: string,
+  token?: string,
+) {
   if (!token) return;
   try {
     await fetch(`${apiUrl}/admin/bot-audit`, {
@@ -108,7 +129,7 @@ bot.use(async (ctx, next) => {
       durationMs: Date.now() - start,
       status: "ok",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     log({
       level: "error",
       msg: "bot_update",
@@ -118,7 +139,7 @@ bot.use(async (ctx, next) => {
       route: ctx.updateType,
       durationMs: Date.now() - start,
       status: "error",
-      error: error?.message ?? String(error),
+      error: errorMessage(error),
     });
     throw error;
   }
@@ -406,10 +427,10 @@ bot.command("copiloto", async (ctx) => {
     return ctx.reply(payload.message ?? "Error en copiloto");
   }
 
-  const data = await res.json();
+  const data: CopilotChatResponse = await res.json();
   const buttons = (data.proposals ?? [])
     .slice(0, 4)
-    .map((proposal: any) =>
+    .map((proposal) =>
       [Markup.button.callback(`Aprobar ${proposal.actionType}`, `copilot:approve:${proposal.id}`)]);
 
   if (buttons.length > 0) {

@@ -24,6 +24,49 @@ type Incident = {
   startedAt: string;
 };
 
+type BillingWarning = string;
+
+type BillingPlan = {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+};
+
+type BillingInvoice = {
+  id: string;
+  status: string;
+  amount: number;
+  currency: string;
+  dueAt: string;
+};
+
+type BillingHistoryItem = {
+  id: string;
+  effectiveAt: string;
+  fromPlanId: string | null;
+  toPlanId: string | null;
+  prorationAmount: number | null;
+};
+
+type BillingPortalAccount = {
+  status?: string | null;
+  nextBillingAt?: string | null;
+  trialEndsAt?: string | null;
+  monthlyOrders?: number | null;
+  monthlyGmvArs?: number | null;
+  warnings?: BillingWarning[];
+  pricingPreview?: { totalArs?: number | null } | null;
+  plan?: { id?: string | null; name?: string | null } | null;
+};
+
+type BillingPortalData = {
+  account?: BillingPortalAccount | null;
+  plans?: BillingPlan[];
+  invoices?: BillingInvoice[];
+  history?: BillingHistoryItem[];
+};
+
 export default function PortalPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const controlPlaneUrl = process.env.NEXT_PUBLIC_CONTROL_PLANE_URL ?? "http://localhost:3005";
@@ -40,7 +83,7 @@ export default function PortalPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [billingInstanceId, setBillingInstanceId] = useState("");
-  const [billingData, setBillingData] = useState<any | null>(null);
+  const [billingData, setBillingData] = useState<BillingPortalData | null>(null);
   const [targetPlanId, setTargetPlanId] = useState("");
 
   useEffect(() => {
@@ -113,7 +156,7 @@ export default function PortalPage() {
       headers: { "x-portal-token": portalToken },
     });
     if (res.ok) {
-      const data = await res.json();
+      const data: BillingPortalData = await res.json();
       setBillingData(data);
       if (!targetPlanId && data.account?.plan?.id) {
         setTargetPlanId(data.account.plan.id);
@@ -205,7 +248,7 @@ export default function PortalPage() {
               <label>
                 Cambiar plan
                 <select value={targetPlanId} onChange={(e) => setTargetPlanId(e.target.value)}>
-                  {(billingData.plans ?? []).map((plan: any) => (
+                  {(billingData.plans ?? []).map((plan) => (
                     <option key={plan.id} value={plan.id}>
                       {plan.name} - {plan.price} {plan.currency}
                     </option>
@@ -217,13 +260,13 @@ export default function PortalPage() {
               </button>
             </div>
             <h3>Facturas</h3>
-            {(billingData.invoices ?? []).map((inv: any) => (
+            {(billingData.invoices ?? []).map((inv) => (
               <div key={inv.id} style={{ borderBottom: "1px solid #ddd", padding: "8px 0" }}>
                 {inv.status} - {inv.amount} {inv.currency} - venc. {new Date(inv.dueAt).toLocaleDateString()}
               </div>
             ))}
             <h3>Historial de cambios</h3>
-            {(billingData.history ?? []).map((change: any) => (
+            {(billingData.history ?? []).map((change) => (
               <div key={change.id} style={{ borderBottom: "1px solid #ddd", padding: "8px 0" }}>
                 {new Date(change.effectiveAt).toLocaleString()} - {change.fromPlanId} a {change.toPlanId} (prorrateo {change.prorationAmount})
               </div>

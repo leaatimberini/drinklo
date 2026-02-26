@@ -23,6 +23,16 @@ function isRetryableStatus(status: number): boolean {
   return status === 429 || status >= 500;
 }
 
+function getErrorMessage(details: unknown, status: number): string {
+  if (typeof details === "object" && details !== null && "message" in details) {
+    const maybeMessage = (details as { message?: unknown }).message;
+    if (typeof maybeMessage === "string") {
+      return maybeMessage;
+    }
+  }
+  return `Request failed with status ${status}`;
+}
+
 export class ErpSdkClient {
   private readonly baseUrl: string;
   private readonly apiKey: string;
@@ -88,9 +98,7 @@ export class ErpSdkClient {
 
           const payload: SdkErrorPayload = {
             status: response.status,
-            message: typeof details === "object" && details !== null && "message" in details
-              ? String((details as any).message)
-              : `Request failed with status ${response.status}`,
+            message: getErrorMessage(details, response.status),
             details,
           };
 

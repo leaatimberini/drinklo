@@ -30,17 +30,23 @@ export type EventEnvelope = {
   source: "storefront" | "admin" | "api" | "bot" | "agent";
   companyId?: string | null;
   subjectId?: string | null;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 };
 
-export function validateEvent(event: any) {
-  if (!event || typeof event !== "object") {
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return Boolean(value) && typeof value === "object";
+}
+
+export function validateEvent(event: unknown) {
+  if (!isRecord(event)) {
     return { ok: false, error: "event must be object" };
   }
   if (!event.id || typeof event.id !== "string") {
     return { ok: false, error: "id required" };
   }
-  if (!event.name || !EventNames.includes(event.name)) {
+  if (typeof event.name !== "string" || !(EventNames as readonly string[]).includes(event.name)) {
     return { ok: false, error: "invalid name" };
   }
   if (!event.schemaVersion || typeof event.schemaVersion !== "number") {
@@ -52,7 +58,7 @@ export function validateEvent(event: any) {
   if (!event.source || typeof event.source !== "string") {
     return { ok: false, error: "source required" };
   }
-  if (!event.payload || typeof event.payload !== "object") {
+  if (!isRecord(event.payload)) {
     return { ok: false, error: "payload required" };
   }
   return { ok: true };

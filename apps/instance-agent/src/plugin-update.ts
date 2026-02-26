@@ -20,6 +20,10 @@ const AGENT_SECRET = process.env.AGENT_SECRET ?? "";
 
 let inProgress = false;
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function buildCmd(cmd: string, payload: { name: string; version?: string | null; action: string }) {
   return cmd
     .replaceAll("{{name}}", payload.name)
@@ -89,9 +93,9 @@ async function applyJob(job: { job_id: string; plugin: { name: string; version?:
 
     const durationMs = Date.now() - start;
     await report(job.job_id, "succeeded", "done", undefined, durationMs);
-  } catch (err: any) {
+  } catch (err: unknown) {
     const durationMs = Date.now() - start;
-    await report(job.job_id, "failed", "error", err?.message ?? "failed", durationMs);
+    await report(job.job_id, "failed", "error", errorMessage(err), durationMs);
   }
 }
 

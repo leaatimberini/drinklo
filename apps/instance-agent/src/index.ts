@@ -55,6 +55,10 @@ const exec = promisify(execCb);
 const startTime = Date.now();
 let featureUsageCursor: Date | null = null;
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function parseHostPort(url: string, defaultPort: number) {
   try {
     const parsed = new URL(url);
@@ -341,7 +345,7 @@ async function collectHeartbeat(): Promise<HeartbeatPayload> {
   let events_total_1h: number | undefined;
   let events_failed_1h: number | undefined;
   let events_avg_lag_ms: number | undefined;
-  let feature_usage: any | undefined;
+  let feature_usage: unknown;
   const regionalHealth = await probeRegionalHealth();
   if (EVENTS_STATS_URL && OPS_TOKEN) {
     try {
@@ -481,8 +485,8 @@ app.get("/diagnostic", async (_req, res) => {
   try {
     const data = await fetchJson(OPS_URL, OPS_TOKEN);
     res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ ok: false, error: err?.message ?? "error" });
+  } catch (err: unknown) {
+    res.status(500).json({ ok: false, error: errorMessage(err) });
   }
 });
 
@@ -491,8 +495,8 @@ app.get("/metrics", async (_req, res) => {
     const metrics = await fetchText(METRICS_URL);
     res.setHeader("Content-Type", "text/plain; version=0.0.4");
     res.send(metrics);
-  } catch (err: any) {
-    res.status(502).send(`metrics unavailable: ${err?.message ?? "error"}`);
+  } catch (err: unknown) {
+    res.status(502).send(`metrics unavailable: ${errorMessage(err)}`);
   }
 });
 

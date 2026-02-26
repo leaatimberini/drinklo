@@ -1,7 +1,7 @@
 export type IntegrationOrder = {
   externalId: string;
   status: string;
-  raw: any;
+  raw: unknown;
 };
 
 export type IntegrationAck = {
@@ -14,7 +14,7 @@ export type IntegrationStatus = {
   externalId: string;
   status: string;
   trackingCode?: string;
-  raw?: any;
+  raw?: unknown;
 };
 
 export type CatalogSyncPayload = {

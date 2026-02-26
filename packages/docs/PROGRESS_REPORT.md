@@ -41,6 +41,19 @@ Incluye:
 ### Calidad mínima agregada
 - Test de `env schema` en API para asegurar que falle si falta `DATABASE_URL`.
 
+### Fixes posteriores (gate/CI)
+- Corrección de lint preexistente en:
+  - `packages/shared/src/event-model.ts` (tipado `unknown`/guard, sin cambio funcional)
+  - `apps/customer-portal/app/page.tsx` (tipos explícitos para billing portal data)
+- Ajuste de CI en `.github/workflows/ci.yml`:
+  - `actions/setup-node` usa `24.x`
+  - cache `pnpm` con `cache-dependency-path: pnpm-lock.yaml`
+  - `pnpm/action-setup` fijado a `9.15.0`
+- Validación ejecutada:
+  - `pnpm -C packages/shared lint` ✅
+  - `pnpm -C apps/customer-portal lint` ✅
+  - `pnpm lint` ❌ (aparecen más fallas preexistentes fuera del alcance inicial, principalmente en `apps/storefront`)
+
 ---
 
 ## EN
@@ -83,3 +96,16 @@ It includes:
 
 ### Minimum quality coverage
 - API `env schema` test ensuring failure when `DATABASE_URL` is missing.
+
+### Follow-up fixes (gate/CI)
+- Fixed pre-existing lint failures in:
+  - `packages/shared/src/event-model.ts` (`unknown` typing + guard, no behavior change)
+  - `apps/customer-portal/app/page.tsx` (explicit billing portal response types)
+- Updated CI in `.github/workflows/ci.yml`:
+  - `actions/setup-node` uses `24.x`
+  - stable pnpm cache with `cache-dependency-path: pnpm-lock.yaml`
+  - `pnpm/action-setup` pinned to `9.15.0`
+- Validation run:
+  - `pnpm -C packages/shared lint` ✅
+  - `pnpm -C apps/customer-portal lint` ✅
+  - `pnpm lint` ❌ (additional pre-existing lint issues surfaced outside the initial scope, mainly in `apps/storefront`)

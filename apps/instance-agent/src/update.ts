@@ -60,6 +60,10 @@ const VERSION = process.env.INSTANCE_VERSION ?? undefined;
 
 let updateInProgress = false;
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 async function postSigned(path: string, payload: Record<string, unknown>) {
   const body = JSON.stringify(payload);
   const signature = signPayload(body, AGENT_SECRET);
@@ -193,8 +197,8 @@ async function rollback(jobId: string, reason: string) {
       });
     }
     await report(jobId, "rolled_back", "rollback");
-  } catch (err: any) {
-    await report(jobId, "failed", "rollback", err?.message ?? "rollback failed");
+  } catch (err: unknown) {
+    await report(jobId, "failed", "rollback", errorMessage(err));
   }
 }
 
@@ -271,11 +275,11 @@ async function applyUpdate(job: UpdateJob) {
     await checkHealth();
 
     await report(jobId, "succeeded", "done");
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (autoRollback) {
-      await rollback(jobId, err?.message ?? "update failed");
+      await rollback(jobId, errorMessage(err));
     } else {
-      await report(jobId, "failed", "done", err?.message ?? "update failed");
+      await report(jobId, "failed", "done", errorMessage(err));
     }
   }
 }

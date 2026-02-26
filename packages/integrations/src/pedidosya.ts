@@ -40,7 +40,7 @@ export class PedidosYaIntegration implements IntegrationAdapter {
     },
   };
 
-  webhookReceiver(payload: any) {
+  webhookReceiver(payload: unknown) {
     // TODO: verify signature and map to internal order
     return payload;
   }

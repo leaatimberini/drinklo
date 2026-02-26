@@ -9,6 +9,7 @@ Levantar el stack local en Windows/Linux/macOS con **un comando** (`pnpm bootstr
 - Prisma en `packages/db`
 
 ### Requisitos
+- **Node 24 requerido** (mínimo `>= 24`)
 - Node.js `>= 24`
 - `pnpm`
 - Docker Desktop / Docker Engine corriendo
@@ -65,6 +66,7 @@ Bring up the local stack on Windows/Linux/macOS with **one command** (`pnpm boot
 - Prisma in `packages/db`
 
 ### Requirements
+- **Node 24 required** (minimum `>= 24`)
 - Node.js `>= 24`
 - `pnpm`
 - Docker Desktop / Docker Engine running
