@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { trackMarketingEvent } from "./lib/analytics";
 
 type Props = {
@@ -15,6 +15,15 @@ type Props = {
   };
 };
 
+type SignupLegalDoc = {
+  type: "TOS" | "PRIVACY";
+  version: string;
+  locale: string;
+  title: string;
+  effectiveAt: string;
+  content: string;
+};
+
 export function SignupForm({ trialCode, utm }: Props) {
   const [form, setForm] = useState({
     email: "",
@@ -23,12 +32,25 @@ export function SignupForm({ trialCode, utm }: Props) {
     companyName: "",
     domain: "",
     consentMarketing: false,
+    acceptTos: false,
+    acceptPrivacy: false,
   });
+  const [legalDocs, setLegalDocs] = useState<SignupLegalDoc[]>([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const modeLabel = useMemo(() => (trialCode ? `Trial con código ${trialCode}` : "Captura de lead"), [trialCode]);
+  useEffect(() => {
+    fetch("/api/legal-docs?locale=es")
+      .then((res) => res.json())
+      .then((payload) => {
+        if (Array.isArray(payload.documents)) setLegalDocs(payload.documents as SignupLegalDoc[]);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const modeLabel = useMemo(() => (trialCode ? `Trial code ${trialCode}` : "Lead capture"), [trialCode]);
+  const canSubmit = !trialCode || (form.acceptTos && form.acceptPrivacy);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,6 +65,7 @@ export function SignupForm({ trialCode, utm }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        locale: "es",
         trial: trialCode || undefined,
         ...utm,
       }),
@@ -50,18 +73,18 @@ export function SignupForm({ trialCode, utm }: Props) {
 
     setLoading(false);
     if (!res) {
-      setError("No se pudo conectar con el backend.");
+      setError("Could not reach backend.");
       return;
     }
-    const payload = await res.json().catch(() => ({}));
+    const payload = (await res.json().catch(() => ({}))) as Record<string, unknown> & { error?: string };
     if (!res.ok) {
-      setError(payload.error ?? "No se pudo procesar la solicitud");
+      setError(payload.error ?? "Could not process request");
       trackMarketingEvent("lead_submit_error", { status: res.status, error: payload.error ?? "unknown" });
       return;
     }
     setResult(payload);
     trackMarketingEvent("lead_submit_success", {
-      mode: payload.mode ?? (trialCode ? "trial_signup" : "lead_only"),
+      mode: (payload.mode as string | undefined) ?? (trialCode ? "trial_signup" : "lead_only"),
       trialCode: trialCode ?? null,
     });
   }
@@ -71,69 +94,87 @@ export function SignupForm({ trialCode, utm }: Props) {
       <div>
         <div className="badge">{modeLabel}</div>
         <h2 className="section-title" style={{ marginTop: 10 }}>
-          {trialCode ? "Probar 30 días" : "Hablemos de tu operación"}
+          {trialCode ? "Start your 30-day trial" : "Tell us about your beverage operation"}
         </h2>
         <div className="muted">
           {trialCode
-            ? "Completa tus datos para activar el trial de la campaña."
-            : "Dejanos tus datos y te contactamos con demo y propuesta según tu tipo de negocio."}
+            ? "Complete your data to activate the campaign trial."
+            : "Share your details and we will contact you with a demo and proposal by business type."}
         </div>
       </div>
 
       <label className="field">
         Email
-        <input
-          required
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          placeholder="dueño@negocio.com"
-        />
+        <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="owner@shop.com" />
       </label>
 
       <div className="grid-3">
         <label className="field">
-          Tipo de negocio
+          Business type
           <select value={form.businessType} onChange={(e) => setForm({ ...form, businessType: e.target.value })}>
-            <option value="kiosco">Kiosco / Retail</option>
-            <option value="distribuidora">Distribuidora</option>
-            <option value="bar">Bar / Gastronomía</option>
+            <option value="kiosco">Kiosk / Retail</option>
+            <option value="distribuidora">Distributor</option>
+            <option value="bar">Bar / Hospitality</option>
           </select>
         </label>
         <label className="field">
-          Ciudad
+          City
           <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="CABA" required />
         </label>
         <label className="field">
-          Empresa (opcional)
+          Company (optional)
           <input value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} />
         </label>
       </div>
 
       <label className="field">
-        Dominio (opcional)
-        <input value={form.domain} onChange={(e) => setForm({ ...form, domain: e.target.value })} placeholder="miempresa.com" />
+        Domain (optional)
+        <input value={form.domain} onChange={(e) => setForm({ ...form, domain: e.target.value })} placeholder="company.com" />
       </label>
 
+      {trialCode ? (
+        <div className="card" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
+          <strong>Required legal acceptance for trial</strong>
+          <div className="muted" style={{ marginTop: 6 }}>
+            Trial requires accepting TOS and Privacy. Marketing consent remains separate.
+          </div>
+          {legalDocs.map((doc) => {
+            const field: "acceptTos" | "acceptPrivacy" = doc.type === "TOS" ? "acceptTos" : "acceptPrivacy";
+            return (
+              <label key={`${doc.type}:${doc.version}`} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 10 }}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form[field])}
+                  onChange={(e) => setForm({ ...form, [field]: e.target.checked })}
+                />
+                <span>
+                  I accept {doc.title} ({doc.version})
+                  <span className="muted" style={{ display: "block" }}>
+                    Effective {new Date(doc.effectiveAt).toLocaleDateString()} - {doc.content}
+                  </span>
+                </span>
+              </label>
+            );
+          })}
+          {legalDocs.length === 0 ? <div className="muted" style={{ marginTop: 10 }}>Loading legal documents...</div> : null}
+        </div>
+      ) : null}
+
       <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <input
-          type="checkbox"
-          checked={form.consentMarketing}
-          onChange={(e) => setForm({ ...form, consentMarketing: e.target.checked })}
-        />
-        Consentimiento marketing (separado del alta/trial)
+        <input type="checkbox" checked={form.consentMarketing} onChange={(e) => setForm({ ...form, consentMarketing: e.target.checked })} />
+        Marketing consent (separate from trial signup)
       </label>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <button className="btn primary" type="submit" disabled={loading}>
-          {loading ? "Enviando..." : trialCode ? "Activar trial" : "Enviar lead"}
+        <button className="btn primary" type="submit" disabled={loading || !canSubmit}>
+          {loading ? "Sending..." : trialCode ? "Activate trial" : "Send lead"}
         </button>
       </div>
 
       {error ? <div style={{ color: "var(--danger)" }}>{error}</div> : null}
       {result ? (
         <div className="card" style={{ borderColor: "rgba(77,226,197,0.35)" }}>
-          <strong>Solicitud procesada</strong>
+          <strong>Request processed</strong>
           <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto" }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       ) : null}

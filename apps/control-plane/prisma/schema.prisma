@@ -87,6 +87,7 @@ model Installation {
   feedbackSurveySends FeedbackSurveySend[]
   feedbackIssues      FeedbackIssue[]
   statusPageIncidents StatusPageIncident[]
+  legalAcceptances    LegalAcceptance[]
 
   @@index([clientName])
   @@index([domain])
@@ -244,6 +245,62 @@ model ComplianceEvidence {
   @@index([installationId, capturedAt])
   @@index([evidenceType, capturedAt])
   @@index([payloadHash])
+}
+
+enum LegalDocumentType {
+  TOS
+  DPA
+  SLA
+  PRIVACY
+}
+
+model LegalDocument {
+  id         String            @id @default(uuid())
+  type       LegalDocumentType
+  version    String
+  locale     String            @default("es")
+  title      String
+  content    String
+  contentHash String
+  effectiveAt DateTime
+  createdBy  String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  acceptances LegalAcceptance[]
+
+  @@unique([type, version, locale])
+  @@index([type, locale, effectiveAt])
+  @@index([effectiveAt])
+}
+
+model LegalAcceptance {
+  id             String            @id @default(uuid())
+  installationId String?
+  billingAccountId String?
+  companyId      String?
+  userId         String?
+  documentId     String?
+  docType        LegalDocumentType
+  version        String
+  locale         String?
+  acceptedAt     DateTime          @default(now())
+  ipHash         String?
+  userAgentHash  String?
+  source         String            @default("clickwrap")
+  evidenceHash   String?
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+
+  installation Installation? @relation(fields: [installationId], references: [id])
+  billingAccount BillingAccount? @relation(fields: [billingAccountId], references: [id])
+  document      LegalDocument? @relation(fields: [documentId], references: [id])
+
+  @@index([installationId, acceptedAt])
+  @@index([billingAccountId, acceptedAt])
+  @@index([companyId, acceptedAt])
+  @@index([userId, acceptedAt])
+  @@index([docType, version, acceptedAt])
 }
 
 model EdgeInvalidation {
@@ -837,6 +894,7 @@ model BillingAccount {
   planChanges  BillingPlanChange[]
   partnerConversions Conversion[]
   feedbackSurveySends FeedbackSurveySend[]
+  legalAcceptances LegalAcceptance[]
 
   @@index([installationId])
   @@index([planId])

@@ -10,6 +10,8 @@ import {
   parseList,
 } from "../../lib/trial-campaigns";
 import { recordTrialLifecycleEvent } from "../../lib/trial-funnel-analytics";
+import { upsertCrmDealFromTrialSignup } from "../../lib/crm";
+import { recordLegalAcceptances, validateSignupClickwrap } from "../../lib/legal-clickwrap";
 
 function buildInstanceId(input: { companyName?: string | null; domain?: string | null }) {
   const base =
@@ -59,8 +61,21 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
+  const userAgent = req.headers.get("user-agent");
   const code = normalizeTrialCode(String(body.trial ?? body.code ?? ""));
   if (!code) return NextResponse.json({ error: "trial code required" }, { status: 400 });
+  const signupLegal = await validateSignupClickwrap(
+    prisma as any,
+    {
+      acceptTos: body.acceptTos === true,
+      acceptPrivacy: body.acceptPrivacy === true,
+      locale: body.locale ? String(body.locale) : "es",
+    },
+    new Date(),
+  ).catch((error: Error) => error);
+  if (signupLegal instanceof Error) {
+    return NextResponse.json({ error: signupLegal.message }, { status: 400 });
+  }
 
   const campaign = await prisma.trialCampaign.findUnique({ where: { code } });
   if (!campaign) return NextResponse.json({ error: "campaign not found" }, { status: 404 });
@@ -275,6 +290,44 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // Internal CRM automation: every successful trial redemption creates/updates a deal in TRIAL stage.
+  await upsertCrmDealFromTrialSignup(prisma as any, {
+    campaignId: campaign.id,
+    redemptionId: redemption.id,
+    installationId: installation.id,
+    instanceId,
+    companyId: body.companyId ? String(body.companyId) : null,
+    billingAccountId: billingAccount?.id ?? null,
+    leadAttributionId: leadAttribution.id,
+    email,
+    businessType: body.businessType ? String(body.businessType) : null,
+    city: body.city ? String(body.city) : null,
+    companyName,
+  }).catch(() => undefined);
+
+  await recordLegalAcceptances(prisma as any, {
+    documents: signupLegal.documents.map((doc) => ({
+      id: doc.id,
+      type: doc.type,
+      version: doc.version,
+      locale: doc.locale,
+      contentHash: doc.contentHash,
+    })),
+    installationId: installation.id,
+    billingAccountId: billingAccount?.id ?? null,
+    companyId: body.companyId ? String(body.companyId) : null,
+    userId: email ?? null,
+    ip,
+    userAgent,
+    source: "trial_signup",
+    actor: "public-signup",
+    metadata: {
+      trialCode: campaign.code,
+      redemptionId: redemption.id,
+      status: decision.status,
+    },
+  }).catch(() => undefined);
+
   if (billingAccount && decision.status === "REDEEMED") {
     await recordTrialLifecycleEvent(prisma as any, {
       eventType: "TrialStarted",
@@ -297,6 +350,12 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     status: decision.status,
+    legalAcceptances: signupLegal.documents.map((doc) => ({
+      type: doc.type,
+      version: doc.version,
+      locale: doc.locale,
+      effectiveAt: doc.effectiveAt,
+    })),
     campaign: {
       code: campaign.code,
       tier: campaign.tier,

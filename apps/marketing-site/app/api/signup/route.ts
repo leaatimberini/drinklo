@@ -58,6 +58,9 @@ export async function POST(req: NextRequest) {
       referral: payload.referral,
       landing: body.landing ?? undefined,
       fingerprint: body.fingerprint ?? undefined,
+      acceptTos: body.acceptTos === true,
+      acceptPrivacy: body.acceptPrivacy === true,
+      locale: body.locale ?? "es",
     }),
   }).catch(() => null);
   if (!signupRes) {
@@ -66,4 +69,3 @@ export async function POST(req: NextRequest) {
   const signupBody = await signupRes.json().catch(() => ({}));
   return NextResponse.json({ ...signupBody, mode: "trial_signup" }, { status: signupRes.status });
 }
-
