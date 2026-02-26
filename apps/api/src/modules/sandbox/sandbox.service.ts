@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@erp/db";
 import { PrismaService } from "../prisma/prisma.service";
 import { StockReservationService } from "../stock-reservations/stock-reservation.service";
@@ -32,6 +32,16 @@ export class SandboxService {
     };
   }
 
+  async getDemoStatus(companyId: string) {
+    const status = await this.getStatus(companyId);
+    return {
+      ...status,
+      demoMode: status.sandboxMode,
+      resetAction: "admin/sandbox/demo-reset",
+      snapshot: "demo-bebidas-v1",
+    };
+  }
+
   async setMode(companyId: string, sandboxMode: boolean) {
     return this.prisma.companySettings.update({
       where: { companyId },
@@ -51,7 +61,22 @@ export class SandboxService {
     return Boolean(settings?.sandboxMode);
   }
 
+  private async ensureDemoResetAllowed(companyId: string) {
+    const settings = await this.prisma.companySettings.findUnique({
+      where: { companyId },
+      select: { sandboxMode: true },
+    });
+    if (!settings?.sandboxMode) {
+      throw new ForbiddenException("demo_mode_reset_disabled_for_non_sandbox_company");
+    }
+  }
+
   async resetCompany(companyId: string) {
+    return this.resetDemoSnapshot(companyId);
+  }
+
+  async resetDemoSnapshot(companyId: string) {
+    await this.ensureDemoResetAllowed(companyId);
     await this.prisma.$transaction(async (tx: any) => {
       await tx.stockReservationLot.deleteMany({ where: { companyId } });
       await tx.stockReservation.deleteMany({ where: { companyId } });
@@ -68,6 +93,15 @@ export class SandboxService {
 
       await tx.priceRule.deleteMany({ where: { companyId } });
       await tx.priceList.deleteMany({ where: { companyId } });
+
+      await tx.automationSendLog?.deleteMany?.({ where: { companyId } });
+      await tx.flowMetric?.deleteMany?.({ where: { companyId } });
+      await tx.action?.deleteMany?.({ where: { flow: { companyId } } });
+      await tx.flow?.deleteMany?.({ where: { companyId } });
+      await tx.campaign?.deleteMany?.({ where: { companyId } });
+      await tx.trigger?.deleteMany?.({ where: { companyId } });
+      await tx.segment?.deleteMany?.({ where: { companyId } });
+      await tx.emailEventLog?.deleteMany?.({ where: { companyId } });
 
       await tx.productAttribute.deleteMany({ where: { companyId } });
       await tx.productCategory.deleteMany({ where: { companyId } });
@@ -98,6 +132,7 @@ export class SandboxService {
         { name: "Sandbox Agua 1L", sku: "SBX-AGUA-1000", barcode: "7790000000002", price: 1200, stock: 40 },
         { name: "Sandbox Cerveza 473ml", sku: "SBX-CERV-473", barcode: "7790000000003", price: 2200, stock: 15 },
       ];
+      const seededVariants: Array<{ productId: string; variantId: string; name: string; unitPrice: number }> = [];
 
       for (const item of products) {
         const product = await tx.product.create({
@@ -150,7 +185,143 @@ export class SandboxService {
             reason: "sandbox_reset_seed",
           },
         });
+
+        seededVariants.push({
+          productId: product.id,
+          variantId: variant.id,
+          name: item.name,
+          unitPrice: item.price,
+        });
       }
+
+      const customerA = await tx.customer.create({
+        data: {
+          companyId,
+          name: "Cliente Demo Uno",
+          email: "cliente1@demo.local",
+          phone: "1111111111",
+        },
+      });
+      await tx.address.create({
+        data: {
+          companyId,
+          customerId: customerA.id,
+          line1: "Calle Demo 123",
+          city: "CABA",
+          postalCode: "C1000",
+          country: "AR",
+        },
+      });
+      const customerB = await tx.customer.create({
+        data: {
+          companyId,
+          name: "Cliente Demo Dos",
+          email: "cliente2@demo.local",
+          phone: "2222222222",
+        },
+      });
+      await tx.address.create({
+        data: {
+          companyId,
+          customerId: customerB.id,
+          line1: "Av Demo 456",
+          city: "Rosario",
+          postalCode: "S2000",
+          country: "AR",
+        },
+      });
+
+      const order1Subtotal = decimal((seededVariants[0]?.unitPrice ?? 1800) + (seededVariants[1]?.unitPrice ?? 1200) * 2);
+      const order1 = await tx.order.create({
+        data: {
+          companyId,
+          customerName: customerA.name,
+          customerEmail: customerA.email,
+          customerPhone: customerA.phone,
+          shippingMode: "DELIVERY",
+          shippingProvider: "OWN",
+          shippingCost: decimal(900),
+          subtotal: order1Subtotal,
+          discountTotal: decimal(0),
+          giftCardAmount: decimal(0),
+          status: "PAID",
+          addressLine1: "Calle Demo 123",
+          city: "CABA",
+          postalCode: "C1000",
+          country: "AR",
+        },
+      });
+      await tx.orderItem.create({
+        data: {
+          orderId: order1.id,
+          productId: seededVariants[0]?.productId,
+          variantId: seededVariants[0]?.variantId,
+          name: seededVariants[0]?.name ?? "Sandbox Cola 500ml",
+          sku: "SBX-COLA-500",
+          quantity: 1,
+          unitPrice: decimal(seededVariants[0]?.unitPrice ?? 1800),
+        },
+      });
+      await tx.orderItem.create({
+        data: {
+          orderId: order1.id,
+          productId: seededVariants[1]?.productId,
+          variantId: seededVariants[1]?.variantId,
+          name: seededVariants[1]?.name ?? "Sandbox Agua 1L",
+          sku: "SBX-AGUA-1000",
+          quantity: 2,
+          unitPrice: decimal(seededVariants[1]?.unitPrice ?? 1200),
+        },
+      });
+      await tx.payment.create({
+        data: {
+          orderId: order1.id,
+          provider: "MERCADOPAGO",
+          paymentId: `sbx-pay-${order1.id}`,
+          status: "APPROVED",
+          amount: decimal(Number(order1Subtotal) + 900),
+          currency: "ARS",
+          raw: { mode: "demo_snapshot" },
+        },
+      });
+      await tx.orderStatusEvent.create({ data: { orderId: order1.id, status: "CREATED", message: "Demo snapshot order created" } });
+      await tx.orderStatusEvent.create({ data: { orderId: order1.id, status: "PAID", message: "Demo snapshot paid order" } });
+
+      const order2Subtotal = decimal(seededVariants[2]?.unitPrice ?? 2200);
+      const order2 = await tx.order.create({
+        data: {
+          companyId,
+          customerName: customerB.name,
+          customerEmail: customerB.email,
+          customerPhone: customerB.phone,
+          shippingMode: "PICKUP",
+          shippingCost: decimal(0),
+          subtotal: order2Subtotal,
+          discountTotal: decimal(0),
+          giftCardAmount: decimal(0),
+          status: "CREATED",
+        },
+      });
+      await tx.orderItem.create({
+        data: {
+          orderId: order2.id,
+          productId: seededVariants[2]?.productId,
+          variantId: seededVariants[2]?.variantId,
+          name: seededVariants[2]?.name ?? "Sandbox Cerveza 473ml",
+          sku: "SBX-CERV-473",
+          quantity: 1,
+          unitPrice: decimal(seededVariants[2]?.unitPrice ?? 2200),
+        },
+      });
+      await tx.orderStatusEvent.create({ data: { orderId: order2.id, status: "CREATED", message: "Demo snapshot pickup order" } });
+
+      await tx.campaign.createMany?.({
+        data: [
+          { companyId, name: "Demo Bienvenida Trial", status: "ACTIVE" },
+          { companyId, name: "Demo Recuperacion Carrito", status: "DRAFT" },
+          { companyId, name: "Demo Promocion Mayorista", status: "PAUSED" },
+        ],
+      });
 
       await tx.shippingZone.create({
         data: {
@@ -173,7 +344,12 @@ export class SandboxService {
       });
     });
 
-    return this.getStatus(companyId);
+    const status = await this.getDemoStatus(companyId);
+    return {
+      ...status,
+      snapshotApplied: "demo-bebidas-v1",
+      resetIncludes: ["catalog", "customers", "orders", "campaigns"],
+    };
   }
 
   deterministicShipmentOptions(postalCode?: string) {

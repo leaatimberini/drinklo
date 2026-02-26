@@ -31,24 +31,46 @@ describe("SandboxService", () => {
     const tx = {
       stockReservationLot: { deleteMany: jest.fn() },
       stockReservation: { deleteMany: jest.fn() },
-      orderStatusEvent: { deleteMany: jest.fn() },
-      payment: { deleteMany: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
-      orderItem: { deleteMany: jest.fn() },
-      order: { deleteMany: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
+      orderStatusEvent: { deleteMany: jest.fn(), create: jest.fn() },
+      payment: { deleteMany: jest.fn(), findFirst: jest.fn(), update: jest.fn(), create: jest.fn() },
+      orderItem: { deleteMany: jest.fn(), create: jest.fn() },
+      order: {
+        deleteMany: jest.fn(),
+        findFirst: jest.fn(),
+        update: jest.fn(),
+        create: jest
+          .fn()
+          .mockResolvedValueOnce({ id: "o1" })
+          .mockResolvedValueOnce({ id: "o2" }),
+      },
       invoice: { deleteMany: jest.fn(), create: jest.fn() },
       stockMovement: { deleteMany: jest.fn(), create: jest.fn() },
-      stockItem: { deleteMany: jest.fn(), create: jest.fn() },
+      stockItem: { deleteMany: jest.fn(), create: jest.fn().mockResolvedValue({ id: "si1" }) },
       stockLocation: { deleteMany: jest.fn(), create: jest.fn().mockResolvedValue({ id: "loc1" }) },
       shippingZone: { deleteMany: jest.fn(), create: jest.fn() },
       priceRule: { deleteMany: jest.fn(), create: jest.fn() },
       priceList: { deleteMany: jest.fn(), create: jest.fn().mockResolvedValue({ id: "pl1" }) },
+      automationSendLog: { deleteMany: jest.fn() },
+      flowMetric: { deleteMany: jest.fn() },
+      action: { deleteMany: jest.fn() },
+      flow: { deleteMany: jest.fn() },
+      campaign: { deleteMany: jest.fn(), createMany: jest.fn() },
+      trigger: { deleteMany: jest.fn() },
+      segment: { deleteMany: jest.fn() },
+      emailEventLog: { deleteMany: jest.fn() },
       productAttribute: { deleteMany: jest.fn() },
       productCategory: { deleteMany: jest.fn(), create: jest.fn() },
       productVariant: { deleteMany: jest.fn(), create: jest.fn().mockResolvedValue({ id: "v1" }) },
       product: { deleteMany: jest.fn(), create: jest.fn().mockResolvedValue({ id: "p1" }) },
       category: { deleteMany: jest.fn(), create: jest.fn().mockResolvedValue({ id: "c1" }) },
-      address: { deleteMany: jest.fn() },
-      customer: { deleteMany: jest.fn() },
+      address: { deleteMany: jest.fn(), create: jest.fn() },
+      customer: {
+        deleteMany: jest.fn(),
+        create: jest
+          .fn()
+          .mockResolvedValueOnce({ id: "cust1", name: "Cliente Demo Uno", email: "cliente1@demo.local", phone: "111" })
+          .mockResolvedValueOnce({ id: "cust2", name: "Cliente Demo Dos", email: "cliente2@demo.local", phone: "222" }),
+      },
       companySettings: { update: jest.fn() },
     } as any;
 
@@ -68,5 +90,22 @@ describe("SandboxService", () => {
     expect(tx.companySettings.update).toHaveBeenCalledWith(
       expect.objectContaining({ where: { companyId: "company-a" } }),
     );
+    expect(tx.campaign.createMany).toHaveBeenCalled();
+    expect(tx.order.create).toHaveBeenCalledTimes(2);
+  });
+
+  it("blocks demo reset for non-sandbox companies", async () => {
+    const prisma: any = {
+      companySettings: {
+        findUnique: jest.fn().mockResolvedValue({ sandboxMode: false }),
+      },
+      $transaction: jest.fn(),
+    };
+    const service = new SandboxService(prisma, { confirm: jest.fn() } as any);
+
+    await expect(service.resetDemoSnapshot("company-real")).rejects.toThrow(
+      "demo_mode_reset_disabled_for_non_sandbox_company",
+    );
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });

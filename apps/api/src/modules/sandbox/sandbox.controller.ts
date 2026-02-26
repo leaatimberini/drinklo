@@ -31,6 +31,18 @@ export class SandboxController {
     return this.sandbox.resetCompany(req.user.companyId);
   }
 
+  @Get("demo-status")
+  @Permissions("settings:write")
+  demoStatus(@Req() req: any) {
+    return this.sandbox.getDemoStatus(req.user.companyId);
+  }
+
+  @Post("demo-reset")
+  @Permissions("settings:write")
+  demoReset(@Req() req: any) {
+    return this.sandbox.resetDemoSnapshot(req.user.companyId);
+  }
+
   @Post("simulate-payment/:orderId")
   @Permissions("settings:write")
   simulatePayment(@Req() req: any, @Param("orderId") orderId: string) {
