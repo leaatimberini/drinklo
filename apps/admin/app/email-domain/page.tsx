@@ -97,7 +97,7 @@ export default function EmailDomainPage() {
         <h2 style={{ marginTop: 0 }}>Proveedor</h2>
         <label style={{ display: "block", marginBottom: 12 }}>
           Tipo
-          <select value={providerType} onChange={(e) => setForm({ ...form, providerType: e.target.value as any })}>
+          <select value={providerType} onChange={(e) => setForm({ ...form, providerType: e.target.value as unknown })}>
             <option value="SMTP">SMTP</option>
             <option value="API">API</option>
           </select>
@@ -116,7 +116,7 @@ export default function EmailDomainPage() {
         <h2 style={{ marginTop: 0 }}>DNS</h2>
         {providerType === "SMTP" ? (
           <p style={{ color: "var(--color-muted)" }}>
-            Para SMTP, configura SPF con el host de tu proveedor y DKIM/DMARC según las instrucciones del servicio.
+            Para SMTP, configura SPF con el host de tu proveedor y DKIM/DMARC segï¿½n las instrucciones del servicio.
           </p>
         ) : (
           <p style={{ color: "var(--color-muted)" }}>
@@ -150,7 +150,7 @@ export default function EmailDomainPage() {
           <li>Enviar email de prueba y revisar rebotes.</li>
         </ol>
         <button onClick={save}>Guardar</button>
-        <button onClick={confirm} style={{ marginLeft: 8 }}>Confirmar verificación</button>
+        <button onClick={confirm} style={{ marginLeft: 8 }}>Confirmar verificaciï¿½n</button>
         {message && <p style={{ marginTop: 8 }}>{message}</p>}
       </section>
 

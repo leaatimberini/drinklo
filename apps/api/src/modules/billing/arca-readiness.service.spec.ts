@@ -1,7 +1,7 @@
 import { ArcaReadinessService, validateCuit } from "./arca-readiness.service";
 
 describe("ArcaReadinessService", () => {
-  const prismaMock: any = {
+  const prismaMock: unknown = {
     company: { findUnique: jest.fn(), findFirst: jest.fn() },
     companySettings: { findUnique: jest.fn() },
     secret: { findUnique: jest.fn() },
@@ -13,7 +13,7 @@ describe("ArcaReadinessService", () => {
   const storageMock = { put: jest.fn(), signedUrl: jest.fn() };
 
   class TestService extends ArcaReadinessService {
-    certResult: any = {
+    certResult: unknown = {
       ok: true,
       source: "pem",
       certPresent: true,
@@ -28,29 +28,29 @@ describe("ArcaReadinessService", () => {
       expiresInDays: 200,
       errors: [],
     };
-    wsaaToken: any = { token: "tok", sign: "sig", generatedAt: new Date("2026-02-26T10:00:00.000Z") };
-    wsfeResults: Array<any> = [];
+    wsaaToken: unknown = { token: "tok", sign: "sig", generatedAt: new Date("2026-02-26T10:00:00.000Z") };
+    wsfeResults: Array<unknown> = [];
 
     protected override inspectCertificateMaterial() {
       return this.certResult;
     }
     protected override createWsaa() {
-      return { getToken: jest.fn().mockResolvedValue(this.wsaaToken) } as any;
+      return { getToken: jest.fn().mockResolvedValue(this.wsaaToken) } as unknown;
     }
     protected override createWsfe() {
       let idx = 0;
       return {
-        requestCae: jest.fn().mockImplementation(async (payload: any) => {
+        requestCae: jest.fn().mockImplementation(async (payload: unknown) => {
           const row = this.wsfeResults[idx++] ?? { cae: `CAE-${payload.type}-${payload.number}`, caeDue: new Date("2026-03-10T00:00:00.000Z"), result: "A", raw: payload };
           if (row instanceof Error) throw row;
           return row;
         }),
-      } as any;
+      } as unknown;
     }
   }
 
   function buildService() {
-    return new TestService(prismaMock as any, secretsMock as any, auditMock as any, pdfMock as any, storageMock as any);
+    return new TestService(prismaMock as unknown, secretsMock as unknown, auditMock as unknown, pdfMock as unknown, storageMock as unknown);
   }
 
   beforeEach(() => {
@@ -133,7 +133,7 @@ describe("ArcaReadinessService", () => {
       new Error("wsfe_case_failure"),
     ];
 
-    const result: any = await service.runDryRun("c1", "u1", { invoiceTypes: ["B", "C"], amountArs: 500.25, pointOfSale: 4 });
+    const result: unknown = await service.runDryRun("c1", "u1", { invoiceTypes: ["B", "C"], amountArs: 500.25, pointOfSale: 4 });
 
     expect(result.mode).toBe("HOMO");
     expect(result.ok).toBe(false);

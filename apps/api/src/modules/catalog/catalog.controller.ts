@@ -32,7 +32,7 @@ export class CatalogController {
   }
 
   @Post("cart/sync")
-  syncCart(@Body() body: any) {
+  syncCart(@Body() body: unknown) {
     return this.catalog.syncCart(body);
   }
 }

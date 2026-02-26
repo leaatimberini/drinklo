@@ -17,14 +17,14 @@ export class ReconciliationController {
   @Get("report")
   @Permissions("inventory:read")
   @SodAction("RECONCILIATION_RUN")
-  report(@Req() req: any, @Query() query: ReconciliationQueryDto) {
+  report(@Req() req: unknown, @Query() query: ReconciliationQueryDto) {
     return this.reconciliation.report(req.user.companyId, query.date, query.tz);
   }
 
   @Get("export")
   @Permissions("inventory:read")
   @SodAction("RECONCILIATION_RUN")
-  async export(@Req() req: any, @Query() query: ReconciliationQueryDto, @Res() res: Response) {
+  async export(@Req() req: unknown, @Query() query: ReconciliationQueryDto, @Res() res: Response) {
     const csv = await this.reconciliation.exportCsv(req.user.companyId, query.date, query.tz);
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename=reconciliation-${query.date ?? "today"}.csv`);

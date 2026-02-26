@@ -9,9 +9,9 @@ const prismaMock = {
 
 describe("PluginsService", () => {
   it("applies pricing hooks only when scope allowed", async () => {
-    const service = new PluginsService(prismaMock as any);
-    (service as any).loaded = true;
-    (service as any).plugins = [
+    const service = new PluginsService(prismaMock as unknown);
+    (service as unknown).loaded = true;
+    (service as unknown).plugins = [
       {
         manifest: {
           name: "promo-rule",
@@ -20,7 +20,7 @@ describe("PluginsService", () => {
         },
         module: {
           hooks: {
-            "pricing.unitPrice": ({ item }: any) => ({ unitPrice: item.unitPrice * 0.5 }),
+            "pricing.unitPrice": ({ item }: unknown) => ({ unitPrice: item.unitPrice * 0.5 }),
           },
         },
         root: "",
@@ -38,9 +38,9 @@ describe("PluginsService", () => {
   });
 
   it("skips pricing hooks when permission is not allowed", async () => {
-    const service = new PluginsService(prismaMock as any);
-    (service as any).loaded = true;
-    (service as any).plugins = [
+    const service = new PluginsService(prismaMock as unknown);
+    (service as unknown).loaded = true;
+    (service as unknown).plugins = [
       {
         manifest: {
           name: "promo-rule",
@@ -49,7 +49,7 @@ describe("PluginsService", () => {
         },
         module: {
           hooks: {
-            "pricing.unitPrice": ({ item }: any) => ({ unitPrice: item.unitPrice * 0.5 }),
+            "pricing.unitPrice": ({ item }: unknown) => ({ unitPrice: item.unitPrice * 0.5 }),
           },
         },
         root: "",
@@ -67,9 +67,9 @@ describe("PluginsService", () => {
   });
 
   it("does not return UI slots when plugin disabled", async () => {
-    const service = new PluginsService(prismaMock as any);
-    (service as any).loaded = true;
-    (service as any).plugins = [
+    const service = new PluginsService(prismaMock as unknown);
+    (service as unknown).loaded = true;
+    (service as unknown).plugins = [
       {
         manifest: {
           name: "product-label",

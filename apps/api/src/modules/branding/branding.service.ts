@@ -28,7 +28,7 @@ export class BrandingService {
     }
 
     const payload = ALLOWED_FIELDS.reduce((acc, key) => {
-      acc[key] = (company.settings as any)[key] ?? null;
+      acc[key] = (company.settings as unknown)[key] ?? null;
       return acc;
     }, {} as BrandingPayload);
 

@@ -17,7 +17,7 @@ describe("warehouse ETL mapping", () => {
         ],
       },
     ];
-    const rows = mapOrdersToWarehouse(orders as any);
+    const rows = mapOrdersToWarehouse(orders as unknown);
     expect(rows).toHaveLength(1);
     expect(rows[0].item_total).toBe(1250);
     expect(rows[0].shipping_cost).toBe(100);

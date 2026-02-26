@@ -32,7 +32,7 @@ export default function DeveloperApiPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [availableScopes, setAvailableScopes] = useState<string[]>([]);
   const [keys, setKeys] = useState<KeyItem[]>([]);
-  const [usage, setUsage] = useState<any | null>(null);
+  const [usage, setUsage] = useState<unknown | null>(null);
   const [webhooks, setWebhooks] = useState<WebhookItem[]>([]);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ export default function DeveloperApiPage() {
       setKeys(keyData ?? []);
       setUsage(usageData ?? null);
       setWebhooks(webhookData ?? []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo cargar");
     }
   }
@@ -103,7 +103,7 @@ export default function DeveloperApiPage() {
       setCreatedKey(result.key);
       setMessage("API key creada.");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo crear la key");
     }
   }
@@ -121,7 +121,7 @@ export default function DeveloperApiPage() {
       });
       setMessage("Key actualizada.");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo actualizar");
     }
   }
@@ -133,7 +133,7 @@ export default function DeveloperApiPage() {
       await fetchJson(`/admin/developer-api/keys/${id}/revoke`, { method: "POST" });
       setMessage("Key revocada.");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo revocar");
     }
   }
@@ -153,7 +153,7 @@ export default function DeveloperApiPage() {
       });
       setMessage("Webhook creado.");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo crear webhook");
     }
   }
@@ -165,7 +165,7 @@ export default function DeveloperApiPage() {
       await fetchJson(`/admin/developer-api/webhooks/${id}/revoke`, { method: "POST" });
       setMessage("Webhook revocado.");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo revocar webhook");
     }
   }
@@ -285,7 +285,7 @@ export default function DeveloperApiPage() {
         <h2>Uso</h2>
         <p>Requests recientes: {usage?.recent?.length ?? 0} | Rate limit hits: {usage?.rateLimitHits ?? 0}</p>
         <div style={{ display: "grid", gap: 8 }}>
-          {topRoutes.map((row: any, idx: number) => (
+          {topRoutes.map((row: unknown, idx: number) => (
             <div key={`${row.route}-${idx}`} style={{ border: "1px solid var(--card-border)", borderRadius: 8, padding: 8 }}>
               {row.method} {row.route} - {row.requests}
             </div>

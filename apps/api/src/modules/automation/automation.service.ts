@@ -4,7 +4,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { EmailTemplatesService } from "../email-templates/email-templates.service";
 
 type FlowSettings = {
-  conditions?: any[];
+  conditions?: unknown[];
   guardrails?: {
     frequencyCapPerDay?: number;
     quietHours?: { start: string; end: string };
@@ -59,7 +59,7 @@ export class AutomationService {
     return this.prisma.segment.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
   }
 
-  createSegment(companyId: string, data: { name: string; description?: string; definition: any }) {
+  createSegment(companyId: string, data: { name: string; description?: string; definition: unknown }) {
     return this.prisma.segment.create({ data: { companyId, ...data } });
   }
 
@@ -75,11 +75,11 @@ export class AutomationService {
     return this.prisma.trigger.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
   }
 
-  async createTrigger(companyId: string, data: { type: TriggerType; config: any }) {
+  async createTrigger(companyId: string, data: { type: TriggerType; config: unknown }) {
     return this.prisma.trigger.create({ data: { companyId, ...data } });
   }
 
-  async updateTrigger(companyId: string, id: string, data: { type?: TriggerType; config?: any }) {
+  async updateTrigger(companyId: string, id: string, data: { type?: TriggerType; config?: unknown }) {
     const trigger = await this.prisma.trigger.findUnique({ where: { id } });
     if (!trigger || trigger.companyId !== companyId) throw new NotFoundException("Trigger not found");
     return this.prisma.trigger.update({
@@ -144,7 +144,7 @@ export class AutomationService {
     });
   }
 
-  async addAction(companyId: string, flowId: string, data: { type: ActionType; config: any; delayMinutes?: number; position?: number }) {
+  async addAction(companyId: string, flowId: string, data: { type: ActionType; config: unknown; delayMinutes?: number; position?: number }) {
     const flow = await this.prisma.flow.findUnique({ where: { id: flowId } });
     if (!flow || flow.companyId !== companyId) throw new NotFoundException("Flow not found");
     return this.prisma.action.create({
@@ -158,7 +158,7 @@ export class AutomationService {
     });
   }
 
-  async updateAction(companyId: string, actionId: string, data: { config?: any; delayMinutes?: number; position?: number }) {
+  async updateAction(companyId: string, actionId: string, data: { config?: unknown; delayMinutes?: number; position?: number }) {
     const action = await this.prisma.action.findUnique({ where: { id: actionId }, include: { flow: true } });
     if (!action || action.flow.companyId !== companyId) throw new NotFoundException("Action not found");
     return this.prisma.action.update({
@@ -191,7 +191,7 @@ export class AutomationService {
       where: { flowId_date: { flowId, date: day } },
       create: { flowId, companyId, date: day, sent: field === "sent" ? 1 : 0, opened: field === "opened" ? 1 : 0, converted: field === "converted" ? 1 : 0 },
       update: { [field]: { increment: 1 } },
-    } as any);
+    } as unknown);
   }
 
   async recordMetric(companyId: string, flowId: string, type: "open" | "conversion", date?: Date) {
@@ -246,11 +246,11 @@ export class AutomationService {
     return count >= cap;
   }
 
-  private getSettings(flow: { settings: any }): FlowSettings {
+  private getSettings(flow: { settings: unknown }): FlowSettings {
     return { ...DEFAULT_SETTINGS, ...(flow.settings ?? {}) };
   }
 
-  async runFlowTest(companyId: string, flowId: string, input: { recipient: string; customerId?: string; channel?: string; payload?: any }) {
+  async runFlowTest(companyId: string, flowId: string, input: { recipient: string; customerId?: string; channel?: string; payload?: unknown }) {
     const flow = await this.prisma.flow.findUnique({
       where: { id: flowId },
       include: { actions: true, trigger: true, company: { include: { settings: true } } },
@@ -278,7 +278,7 @@ export class AutomationService {
       }
     }
 
-    const results: Array<{ actionId: string; type: ActionType; status: string; detail?: any }> = [];
+    const results: Array<{ actionId: string; type: ActionType; status: string; detail?: unknown }> = [];
     const sortedActions = [...flow.actions].sort((a, b) => a.position - b.position);
     for (const action of sortedActions) {
       const channel = (input.channel ?? action.type).toString().toLowerCase();

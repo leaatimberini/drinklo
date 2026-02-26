@@ -25,14 +25,14 @@ export class MercadoPagoBillingSubscriptionsController {
   @Get("status")
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  status(@Req() req: any) {
+  status(@Req() req: unknown) {
     return this.recurring.getStatus(req.user.companyId);
   }
 
   @Post("preapproval")
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  upsert(@Req() req: any, @Body() body: UpsertBillingPreapprovalDto) {
+  upsert(@Req() req: unknown, @Body() body: UpsertBillingPreapprovalDto) {
     return this.recurring.createOrUpdatePreapproval(req.user.companyId, {
       allowDuringTrial: Boolean(body.allowDuringTrial),
       activate: Boolean(body.activate),

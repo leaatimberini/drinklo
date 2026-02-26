@@ -1,7 +1,7 @@
 import { BillingPlanChangesService } from "./billing-plan-changes.service";
 
 describe("BillingPlanChangesService", () => {
-  const prismaMock: any = {
+  const prismaMock: unknown = {
     $transaction: jest.fn(),
     subscription: {
       update: jest.fn(),
@@ -12,7 +12,7 @@ describe("BillingPlanChangesService", () => {
       create: jest.fn(),
     },
   };
-  const plansMock: any = {
+  const plansMock: unknown = {
     getPlanCatalog: jest.fn(),
     getSubscription: jest.fn(),
     getCurrentUsage: jest.fn(),
@@ -38,7 +38,7 @@ describe("BillingPlanChangesService", () => {
   afterEach(() => jest.useRealTimers());
 
   function buildService() {
-    return new BillingPlanChangesService(prismaMock, plansMock, auditMock as any, recurringMock as any);
+    return new BillingPlanChangesService(prismaMock, plansMock, auditMock as unknown, recurringMock as unknown);
   }
 
   function catalog() {
@@ -63,7 +63,7 @@ describe("BillingPlanChangesService", () => {
     };
     plansMock.getPlanCatalog.mockResolvedValue(catalog());
     plansMock.getSubscription.mockResolvedValue(sub);
-    prismaMock.$transaction.mockImplementation(async (cb: any) =>
+    prismaMock.$transaction.mockImplementation(async (cb: unknown) =>
       cb({
         subscription: {
           update: jest.fn().mockResolvedValue({ ...sub, currentTier: "C2" }),
@@ -78,7 +78,7 @@ describe("BillingPlanChangesService", () => {
       }),
     );
 
-    const result = (await service.upgrade("c1", "C2", "u1", false, new Date("2026-03-10T12:00:00.000Z"))) as any;
+    const result = (await service.upgrade("c1", "C2", "u1", false, new Date("2026-03-10T12:00:00.000Z"))) as unknown;
 
     expect(result.immediate).toBe(true);
     expect(result.subscription.currentTier).toBe("C2");

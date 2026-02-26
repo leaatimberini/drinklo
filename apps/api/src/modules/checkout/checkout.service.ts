@@ -226,7 +226,7 @@ export class CheckoutService {
       });
 
       await this.reservations.reserveWithClient(
-        tx as any,
+        tx as unknown,
         company.id,
         created.id,
         reservationItems,

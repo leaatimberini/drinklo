@@ -44,7 +44,7 @@ const sampleEventTemplate = {
 
 export default function IntegrationBuilderPage() {
   const [token, setToken] = useState("");
-  const [connectors, setConnectors] = useState<any[]>([]);
+  const [connectors, setConnectors] = useState<unknown[]>([]);
   const [editorJson, setEditorJson] = useState(JSON.stringify([connectorTemplate], null, 2));
   const [sampleEventJson, setSampleEventJson] = useState(JSON.stringify(sampleEventTemplate, null, 2));
   const [previewResult, setPreviewResult] = useState("");
@@ -70,7 +70,7 @@ export default function IntegrationBuilderPage() {
       },
     });
     const text = await res.text();
-    let json: any = null;
+    let json: unknown = null;
     try {
       json = text ? JSON.parse(text) : null;
     } catch {
@@ -91,7 +91,7 @@ export default function IntegrationBuilderPage() {
       }
       setEditorJson(
         JSON.stringify(
-          rows.map((r: any) => ({
+          rows.map((r: unknown) => ({
             id: r.id,
             name: r.name,
             sourceEvent: r.sourceEvent,
@@ -112,7 +112,7 @@ export default function IntegrationBuilderPage() {
         ),
       );
       setMessage("Conectores cargados");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error: ${error.message}`);
     }
   }
@@ -127,7 +127,7 @@ export default function IntegrationBuilderPage() {
       });
       setConnectors(rows);
       setMessage("Conectores guardados");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error guardando: ${error.message}`);
     }
   }
@@ -143,7 +143,7 @@ export default function IntegrationBuilderPage() {
       });
       setPreviewResult(JSON.stringify(result, null, 2));
       setMessage("Preview OK");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error preview: ${error.message}`);
     }
   }
@@ -158,7 +158,7 @@ export default function IntegrationBuilderPage() {
         body: JSON.stringify({ payload, verified: true }),
       });
       setMessage(`Secret guardado: ${JSON.stringify(result)}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error secret: ${error.message}`);
     }
   }
@@ -173,7 +173,7 @@ export default function IntegrationBuilderPage() {
       ]);
       setLogsResult(JSON.stringify(logs, null, 2));
       setMetricsResult(JSON.stringify(metrics, null, 2));
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error logs/métricas: ${error.message}`);
     }
   }
@@ -186,7 +186,7 @@ export default function IntegrationBuilderPage() {
         method: "POST",
       });
       setMessage(`DLQ requeue: ${JSON.stringify(result)}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error DLQ: ${error.message}`);
     }
   }

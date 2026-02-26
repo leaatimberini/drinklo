@@ -336,7 +336,7 @@ export class DeveloperApiService {
   }
 
   async listProducts(companyId: string, q?: string, page = 1, pageSize = 50) {
-    const where: any = { companyId, deletedAt: null };
+    const where: unknown = { companyId, deletedAt: null };
     if (q) {
       where.OR = [
         { name: { contains: q, mode: "insensitive" } },
@@ -452,7 +452,7 @@ export class DeveloperApiService {
     });
   }
 
-  async dispatchWebhookEvent(companyId: string, eventType: "OrderCreated" | "PaymentApproved" | "StockLow", payload: any) {
+  async dispatchWebhookEvent(companyId: string, eventType: "OrderCreated" | "PaymentApproved" | "StockLow", payload: unknown) {
     const endpoints = await this.prisma.developerWebhookEndpoint.findMany({
       where: {
         companyId,
@@ -497,7 +497,7 @@ export class DeveloperApiService {
             deliveredAt: new Date(),
           },
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         await this.prisma.developerWebhookDelivery.create({
           data: {
             companyId,

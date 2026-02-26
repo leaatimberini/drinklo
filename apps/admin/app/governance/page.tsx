@@ -26,9 +26,9 @@ export default function GovernancePage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [policies, setPolicies] = useState<PolicyRow[]>([]);
-  const [effective, setEffective] = useState<any>(null);
+  const [effective, setEffective] = useState<unknown>(null);
   const [holds, setHolds] = useState<HoldRow[]>([]);
-  const [runs, setRuns] = useState<any[]>([]);
+  const [runs, setRuns] = useState<unknown[]>([]);
   const [holdForm, setHoldForm] = useState({ customerId: "", periodFrom: "", periodTo: "", reason: "" });
 
   const grouped = useMemo(() => {
@@ -72,7 +72,7 @@ export default function GovernancePage() {
       setEffective(e);
       setHolds(h);
       setRuns(r);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al cargar");
     }
   }
@@ -94,7 +94,7 @@ export default function GovernancePage() {
       });
       setMessage("Politicas guardadas");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al guardar politicas");
     }
   }
@@ -115,7 +115,7 @@ export default function GovernancePage() {
       setMessage("Legal hold creado");
       setHoldForm({ customerId: "", periodFrom: "", periodTo: "", reason: "" });
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al crear legal hold");
     }
   }
@@ -130,7 +130,7 @@ export default function GovernancePage() {
       });
       setMessage("Legal hold liberado");
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al liberar legal hold");
     }
   }
@@ -142,7 +142,7 @@ export default function GovernancePage() {
       const res = await fetchJson("/admin/governance/purge/run", { method: "POST" });
       setMessage(`Purge ejecutado: ${res.runId}`);
       await loadAll();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al ejecutar purge");
     }
   }

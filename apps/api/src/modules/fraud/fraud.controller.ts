@@ -15,31 +15,31 @@ export class FraudController {
 
   @Get("rules")
   @Roles("admin", "manager", "support")
-  rules(@Req() req: any) {
+  rules(@Req() req: unknown) {
     return this.fraud.listRules(req.user.companyId);
   }
 
   @Patch("rules/:code")
   @Roles("admin", "support")
-  updateRule(@Req() req: any, @Param("code") code: string, @Body() body: UpdateFraudRuleDto) {
+  updateRule(@Req() req: unknown, @Param("code") code: string, @Body() body: UpdateFraudRuleDto) {
     return this.fraud.updateRule(req.user.companyId, code, body);
   }
 
   @Get("queue")
   @Roles("admin", "manager", "support")
-  queue(@Req() req: any, @Query() query: FraudQueueQueryDto) {
+  queue(@Req() req: unknown, @Query() query: FraudQueueQueryDto) {
     return this.fraud.queue(req.user.companyId, query.status ?? "OPEN", query.limit ?? 50);
   }
 
   @Post("review/:id")
   @Roles("admin", "support")
-  review(@Req() req: any, @Param("id") id: string, @Body() body: ReviewFraudAssessmentDto) {
+  review(@Req() req: unknown, @Param("id") id: string, @Body() body: ReviewFraudAssessmentDto) {
     return this.fraud.review(req.user.companyId, id, body.status, req.user.sub, body.note);
   }
 
   @Post("evaluate/order/:orderId")
   @Roles("admin", "manager", "support")
-  evaluateOrder(@Req() req: any, @Param("orderId") orderId: string, @Body() body: EvaluateOrderFraudDto) {
+  evaluateOrder(@Req() req: unknown, @Param("orderId") orderId: string, @Body() body: EvaluateOrderFraudDto) {
     return this.fraud.assessOrder(req.user.companyId, orderId, {
       source: "manual",
       ip: body.ip,

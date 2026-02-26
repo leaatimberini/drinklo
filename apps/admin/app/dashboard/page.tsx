@@ -8,10 +8,10 @@ export default function DashboardPage() {
   const eventToken = process.env.NEXT_PUBLIC_EVENT_TOKEN;
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [data, setData] = useState<any | null>(null);
+  const [data, setData] = useState<unknown | null>(null);
   const [loading, setLoading] = useState(false);
-  const [fx, setFx] = useState<any[]>([]);
-  const [slots, setSlots] = useState<any[]>([]);
+  const [fx, setFx] = useState<unknown[]>([]);
+  const [slots, setSlots] = useState<unknown[]>([]);
 
   const rangeLabel = useMemo(() => {
     if (!from || !to) return "Ultimos 7 dias";
@@ -119,7 +119,7 @@ export default function DashboardPage() {
           <div style={{ marginTop: 24 }}>
             <h3>Top productos</h3>
             <div style={{ display: "grid", gap: 8 }}>
-              {data.topProducts.map((item: any) => (
+              {data.topProducts.map((item: unknown) => (
                 <div key={item.productId} style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)" }}>
                   {item.name} - ${item.revenue} ({item.qty})
                 </div>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
           <div style={{ marginTop: 24 }}>
             <h3>Stock critico</h3>
             <div style={{ display: "grid", gap: 8 }}>
-              {data.lowStock.map((item: any) => (
+              {data.lowStock.map((item: unknown) => (
                 <div key={item.variantId} style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)" }}>
                   {item.sku} - {item.quantity}
                 </div>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
         <section style={{ marginTop: 24 }}>
           <h2>Plugins</h2>
           <div style={{ display: "grid", gap: 12 }}>
-            {slots.map((slot: any, index: number) => (
+            {slots.map((slot: unknown, index: number) => (
               <div key={`${slot.plugin}-${index}`} style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: "var(--radius-md)" }}>
                 <strong>{slot.title}</strong>
                 <p style={{ marginTop: 8 }}>{slot.body}</p>

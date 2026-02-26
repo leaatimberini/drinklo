@@ -2,8 +2,8 @@ import { SandboxService } from "./sandbox.service";
 
 describe("SandboxService", () => {
   it("deterministic mocks return stable responses", () => {
-    const prisma: any = {};
-    const reservations: any = {};
+    const prisma: unknown = {};
+    const reservations: unknown = {};
     const service = new SandboxService(prisma, reservations);
 
     expect(service.deterministicPreference("order-1")).toEqual(service.deterministicPreference("order-1"));
@@ -72,15 +72,15 @@ describe("SandboxService", () => {
           .mockResolvedValueOnce({ id: "cust2", name: "Cliente Demo Dos", email: "cliente2@demo.local", phone: "222" }),
       },
       companySettings: { update: jest.fn() },
-    } as any;
+    } as unknown;
 
-    const prisma: any = {
-      $transaction: jest.fn(async (cb: any) => cb(tx)),
+    const prisma: unknown = {
+      $transaction: jest.fn(async (cb: unknown) => cb(tx)),
       companySettings: {
         findUnique: jest.fn().mockResolvedValue({ sandboxMode: true, sandboxResetAt: new Date() }),
       },
     };
-    const reservations: any = { confirm: jest.fn() };
+    const reservations: unknown = { confirm: jest.fn() };
 
     const service = new SandboxService(prisma, reservations);
     await service.resetCompany("company-a");
@@ -95,13 +95,13 @@ describe("SandboxService", () => {
   });
 
   it("blocks demo reset for non-sandbox companies", async () => {
-    const prisma: any = {
+    const prisma: unknown = {
       companySettings: {
         findUnique: jest.fn().mockResolvedValue({ sandboxMode: false }),
       },
       $transaction: jest.fn(),
     };
-    const service = new SandboxService(prisma, { confirm: jest.fn() } as any);
+    const service = new SandboxService(prisma, { confirm: jest.fn() } as unknown);
 
     await expect(service.resetDemoSnapshot("company-real")).rejects.toThrow(
       "demo_mode_reset_disabled_for_non_sandbox_company",

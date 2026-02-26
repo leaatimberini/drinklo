@@ -17,7 +17,7 @@ type CopilotActionPreview = {
   actionType: AiCopilotActionType;
   requiredPermission: string;
   title: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
 };
 
 @Injectable()
@@ -34,7 +34,7 @@ export class AiCopilotService {
     const effectiveMode = String(mode ?? "admin");
     const incidentMode = this.isIncidentMode(effectiveMode, prompt);
     const messages: string[] = [];
-    const proposals: any[] = [];
+    const proposals: unknown[] = [];
     const ragCitations: Array<{ docId: string; section: string; sourceType: string; scope: string; score: number }> = [];
     const ragChunks = await this.resolveRagContext(user, prompt, incidentMode);
 
@@ -114,7 +114,7 @@ export class AiCopilotService {
           actionType: preview.actionType,
           requiredPermission: preview.requiredPermission,
           promptRedacted: String(redactedPrompt),
-          preview: preview as any,
+          preview: preview as unknown,
         },
       });
       proposals.push(proposal);
@@ -159,7 +159,7 @@ export class AiCopilotService {
         promptRedacted: String(redactedPrompt),
         response: redactDeep(response),
         status: "ok",
-        dlp: promptDlp as any,
+        dlp: promptDlp as unknown,
       },
     });
 
@@ -200,7 +200,7 @@ export class AiCopilotService {
       },
     });
 
-    const execution = await this.executeProposal(user, proposal as any);
+    const execution = await this.executeProposal(user, proposal as unknown);
     const updated = await this.prisma.aiCopilotProposal.update({
       where: { id: proposal.id },
       data: {
@@ -232,7 +232,7 @@ export class AiCopilotService {
     return { proposal: updated, execution };
   }
 
-  private async executeProposal(user: CopilotUser, proposal: { actionType: AiCopilotActionType; preview: any }) {
+  private async executeProposal(user: CopilotUser, proposal: { actionType: AiCopilotActionType; preview: unknown }) {
     const details = proposal.preview?.details ?? {};
 
     if (proposal.actionType === "CREATE_COUPON") {
@@ -243,7 +243,7 @@ export class AiCopilotService {
         data: {
           companyId: user.companyId,
           code,
-          type: type as any,
+          type: type as unknown,
           amount: new Prisma.Decimal(amount),
           currency: "ARS",
           active: true,
@@ -471,7 +471,7 @@ export class AiCopilotService {
     if (Array.isArray(snapshot.errors) && snapshot.errors.length > 0) {
       const topErrors = snapshot.errors.slice(0, 10);
       const text = topErrors
-        .map((err: any, idx: number) => `${idx + 1}. route=${err.route ?? "-"} req=${err.requestId ?? "-"} msg=${err.message ?? "-"}`)
+        .map((err: unknown, idx: number) => `${idx + 1}. route=${err.route ?? "-"} req=${err.requestId ?? "-"} msg=${err.message ?? "-"}`)
         .join("\n");
       chunks.push({
         docId: `KB_INSTANCE_${user.companyId}_OPS_ERRORS`,
@@ -487,7 +487,7 @@ export class AiCopilotService {
     if (Array.isArray(snapshot.jobFailures) && snapshot.jobFailures.length > 0) {
       const text = snapshot.jobFailures
         .slice(0, 10)
-        .map((job: any, idx: number) => `${idx + 1}. queue=${job.queue ?? "-"} name=${job.name ?? "-"} reason=${job.reason ?? "-"}`)
+        .map((job: unknown, idx: number) => `${idx + 1}. queue=${job.queue ?? "-"} name=${job.name ?? "-"} reason=${job.reason ?? "-"}`)
         .join("\n");
       chunks.push({
         docId: `KB_INSTANCE_${user.companyId}_JOB_FAILURES`,
@@ -500,7 +500,7 @@ export class AiCopilotService {
       });
     }
 
-    const alertFindMany = (this.prisma as any).alert?.findMany;
+    const alertFindMany = (this.prisma as unknown).alert?.findMany;
     if (typeof alertFindMany === "function") {
       const alerts = await alertFindMany({
         where: { companyId: user.companyId },
@@ -511,7 +511,7 @@ export class AiCopilotService {
         chunks.push({
           docId: `KB_INSTANCE_${user.companyId}_ALERTS`,
           section: "Recent Alerts",
-          content: alerts.map((a: any, idx: number) => `${idx + 1}. ${a.level ?? "info"}: ${a.message ?? ""}`).join("\n"),
+          content: alerts.map((a: unknown, idx: number) => `${idx + 1}. ${a.level ?? "info"}: ${a.message ?? ""}`).join("\n"),
           sourceType: "instance_kb",
           scope: "kb.instance.incidents",
           companyId: user.companyId,
@@ -568,7 +568,7 @@ export class AiCopilotService {
   }
 
   private extractSku(prompt: string) {
-    const match = prompt.match(/sku\s*[:=\-]?\s*([A-Za-z0-9\-_]+)/i);
+    const match = prompt.match(/sku\s*[:=-]?\s*([A-Za-z0-9_-]+)/i);
     return match?.[1] ?? "";
   }
 
@@ -605,8 +605,8 @@ export class AiCopilotService {
     `;
     const row = rows[0];
     return {
-      total: Number((row?.total as any) ?? 0),
-      tickets: Number((row?.tickets as any) ?? 0),
+      total: Number((row?.total as unknown) ?? 0),
+      tickets: Number((row?.tickets as unknown) ?? 0),
     };
   }
 

@@ -1,7 +1,7 @@
 import { MercadoPagoWebhookController } from "./mercadopago.webhook.controller";
 
 describe("MercadoPagoWebhookController (recurring billing)", () => {
-  const prisma: any = {
+  const prisma: unknown = {
     webhookLog: {
       create: jest.fn(),
       update: jest.fn(),
@@ -24,23 +24,23 @@ describe("MercadoPagoWebhookController (recurring billing)", () => {
   const fraud = { recordWebhookSignal: jest.fn() };
 
   beforeEach(() => {
-    Object.values(prisma.webhookLog).forEach((fn: any) => fn.mockReset());
-    Object.values(prisma.company).forEach((fn: any) => fn.mockReset());
-    Object.values(payments).forEach((fn: any) => fn.mockReset());
-    Object.values(recurringBilling).forEach((fn: any) => fn.mockReset());
-    Object.values(secrets).forEach((fn: any) => fn.mockReset());
-    Object.values(metrics).forEach((fn: any) => fn.mockReset());
-    Object.values(fraud).forEach((fn: any) => fn.mockReset());
+    Object.values(prisma.webhookLog).forEach((fn: unknown) => fn.mockReset());
+    Object.values(prisma.company).forEach((fn: unknown) => fn.mockReset());
+    Object.values(payments).forEach((fn: unknown) => fn.mockReset());
+    Object.values(recurringBilling).forEach((fn: unknown) => fn.mockReset());
+    Object.values(secrets).forEach((fn: unknown) => fn.mockReset());
+    Object.values(metrics).forEach((fn: unknown) => fn.mockReset());
+    Object.values(fraud).forEach((fn: unknown) => fn.mockReset());
   });
 
   it("deduplicates repeated preapproval webhooks", async () => {
     const controller = new MercadoPagoWebhookController(
       prisma,
-      payments as any,
-      recurringBilling as any,
-      secrets as any,
-      metrics as any,
-      fraud as any,
+      payments as unknown,
+      recurringBilling as unknown,
+      secrets as unknown,
+      metrics as unknown,
+      fraud as unknown,
     );
     prisma.company.findFirst.mockResolvedValue({ id: "c1" });
     prisma.webhookLog.create.mockResolvedValueOnce({ id: "w1" }).mockRejectedValueOnce(new Error("duplicate"));

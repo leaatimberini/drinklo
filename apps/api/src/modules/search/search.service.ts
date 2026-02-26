@@ -76,7 +76,7 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async updateConfig(companyId: string, data: { synonyms?: Record<string, string[]>; boosters?: any }) {
+  async updateConfig(companyId: string, data: { synonyms?: Record<string, string[]>; boosters?: unknown }) {
     const config = await this.prisma.searchConfig.upsert({
       where: { companyId },
       update: {
@@ -94,7 +94,7 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
     return config;
   }
 
-  async applySettings(companyId: string, config: { synonyms?: any; boosters?: any }) {
+  async applySettings(companyId: string, config: { synonyms?: unknown; boosters?: unknown }) {
     const client = this.getClient();
     const index = client.index(this.indexName(companyId));
     const synonyms = config.synonyms ?? {};
@@ -276,13 +276,13 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
   private buildDocuments(
     companyId: string,
     data: Awaited<ReturnType<SearchService["fetchIndexData"]>>,
-    config: { boosters?: any },
+    config: { boosters?: unknown },
   ) {
     const stockWeight = Number(config.boosters?.stockWeight ?? 1);
     const marginWeight = Number(config.boosters?.marginWeight ?? 1);
 
     const brandSet = new Set<string>();
-    const docs: Array<Record<string, any>> = [];
+    const docs: Array<Record<string, unknown>> = [];
 
     for (const product of data.products) {
       const categoryIds = product.productCats.map((c) => c.categoryId);
@@ -424,7 +424,7 @@ export class SearchService implements OnModuleInit, OnModuleDestroy {
       ],
     });
 
-    const suggestions = (res.hits ?? []).map((hit: any) => hit.name).filter(Boolean).slice(0, 5);
+    const suggestions = (res.hits ?? []).map((hit: unknown) => hit.name).filter(Boolean).slice(0, 5);
     const didYouMean = res.hits?.length === 0 && suggestions.length > 0 ? suggestions[0] : null;
 
     return {

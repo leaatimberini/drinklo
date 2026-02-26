@@ -1,7 +1,7 @@
 import { ForbiddenException, TooManyRequestsException, UnauthorizedException } from "@nestjs/common";
 import { DeveloperApiService } from "./developer-api.service";
 
-function buildService(overrides?: any) {
+function buildService(overrides?: unknown) {
   const prisma = {
     developerApiKey: {
       findFirst: jest.fn(),
@@ -29,7 +29,7 @@ function buildService(overrides?: any) {
   return {
     prisma,
     audit,
-    service: new DeveloperApiService(prisma as any, audit as any),
+    service: new DeveloperApiService(prisma as unknown, audit as unknown),
   };
 }
 

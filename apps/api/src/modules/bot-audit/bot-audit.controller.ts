@@ -14,7 +14,7 @@ export class BotAuditController {
 
   @Post()
   @Roles("admin")
-  record(@Req() req: any, @Body() body: any) {
+  record(@Req() req: unknown, @Body() body: unknown) {
     return this.audit.record({ ...body, companyId: req.user.companyId });
   }
 }

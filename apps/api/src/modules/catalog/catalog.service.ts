@@ -9,7 +9,7 @@ type CacheEntry<T> = { value: T; expiresAt: number };
 
 @Injectable()
 export class CatalogService {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -35,7 +35,7 @@ export class CatalogService {
   }
 
   async listCategories() {
-    const cached = this.getCached<any>("categories");
+    const cached = this.getCached<unknown>("categories");
     if (cached) return cached;
 
     const items = await this.prisma.category.findMany({
@@ -54,10 +54,10 @@ export class CatalogService {
     const categoryId = query.categoryId;
 
     const key = JSON.stringify({ q, categoryId, page, pageSize });
-    const cached = this.getCached<any>(`products:${key}`);
+    const cached = this.getCached<unknown>(`products:${key}`);
     if (cached) return cached;
 
-    const where: any = {
+    const where: unknown = {
       deletedAt: null,
     };
 
@@ -95,7 +95,7 @@ export class CatalogService {
   }
 
   async getProduct(id: string) {
-    const cached = this.getCached<any>(`product:${id}`);
+    const cached = this.getCached<unknown>(`product:${id}`);
     if (cached) return cached;
 
     const product = await this.prisma.product.findFirst({
@@ -113,7 +113,7 @@ export class CatalogService {
     return decorated;
   }
 
-  async syncCart(payload: any) {
+  async syncCart(payload: unknown) {
     return { ok: true, received: payload?.items?.length ?? 0 };
   }
 }

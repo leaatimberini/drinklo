@@ -23,7 +23,7 @@ describe("SearchService", () => {
     process.env.MEILI_HOST = "http://localhost:7700";
   });
 
-  function buildService(overrides: Partial<any> = {}) {
+  function buildService(overrides: Partial<unknown> = {}) {
     const prisma = {
       company: { findFirst: jest.fn().mockResolvedValue({ id: "c1" }) },
       searchConfig: {
@@ -76,7 +76,7 @@ describe("SearchService", () => {
       ...overrides,
     };
 
-    return { service: new SearchService(prisma as any), prisma };
+    return { service: new SearchService(prisma as unknown), prisma };
   }
 
   it("indexes documents on full reindex", async () => {
@@ -93,7 +93,7 @@ describe("SearchService", () => {
       updatedAt: new Date(),
       variants: [{ id: "v2" }],
     };
-    const { service, prisma } = buildService({
+    const { service } = buildService({
       product: {
         findMany: jest
           .fn()

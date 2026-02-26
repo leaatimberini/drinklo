@@ -26,7 +26,7 @@ export class ImportExportController {
   @Permissions("products:write")
   @UseInterceptors(FileInterceptor("file"))
   async analyzeImport(
-    @Req() req: any,
+    @Req() req: unknown,
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() body: ImportAnalyzeRequestDto,
   ) {
@@ -75,7 +75,7 @@ export class ImportExportController {
   @Permissions("products:write")
   @UseInterceptors(FileInterceptor("file"))
   async importFile(
-    @Req() req: any,
+    @Req() req: unknown,
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() body: ImportRequestDto,
   ) {
@@ -133,7 +133,7 @@ export class ImportExportController {
 
   @Get("assist/templates")
   @Permissions("products:read")
-  async listTemplates(@Req() req: any, @Query("type") type?: string, @Query("icp") icp?: string) {
+  async listTemplates(@Req() req: unknown, @Query("type") type?: string, @Query("icp") icp?: string) {
     const importType = type && this.service.getSupportedTypes().includes(type as ImportType) ? (type as ImportType) : undefined;
     return {
       items: this.assistedImport.listTemplates(req.user.companyId, importType, icp),
@@ -142,7 +142,7 @@ export class ImportExportController {
 
   @Post("assist/templates")
   @Permissions("products:write")
-  async saveTemplate(@Req() req: any, @Body() body: SaveImportMappingTemplateDto) {
+  async saveTemplate(@Req() req: unknown, @Body() body: SaveImportMappingTemplateDto) {
     const type = body.type as ImportType;
     if (!this.service.getSupportedTypes().includes(type)) {
       throw new BadRequestException("Unsupported import type");
@@ -164,13 +164,13 @@ export class ImportExportController {
 
   @Delete("assist/templates/:id")
   @Permissions("products:write")
-  async deleteTemplate(@Req() req: any, @Param("id") id: string) {
+  async deleteTemplate(@Req() req: unknown, @Param("id") id: string) {
     return { ok: this.assistedImport.deleteTemplate(req.user.companyId, id) };
   }
 
   @Get("export")
   @Permissions("products:read")
-  async exportFile(@Req() req: any, @Query() query: ExportRequestDto, @Res() res: Response) {
+  async exportFile(@Req() req: unknown, @Query() query: ExportRequestDto, @Res() res: Response) {
     const type = query.type as ImportType;
     if (!this.service.getSupportedTypes().includes(type)) {
       throw new BadRequestException("Unsupported export type");

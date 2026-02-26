@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from "class-validator";
 
 export class ArcaReadinessDryRunDto {

@@ -9,7 +9,7 @@ export class EdgeCacheController {
   constructor(private readonly edgeCache: EdgeCacheService) {}
 
   @Post("vitals")
-  async reportVitals(@Body() body: WebVitalDto, @Req() req: any, @Ip() ip: string) {
+  async reportVitals(@Body() body: WebVitalDto, @Req() req: unknown, @Ip() ip: string) {
     await this.edgeCache.reportWebVital({
       name: body.name,
       value: body.value,

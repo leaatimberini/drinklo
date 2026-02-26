@@ -19,7 +19,7 @@ function parseJson<T>(raw: string | null, fallback: T): T {
 function getInstanceId() {
   if (typeof window === "undefined") return null;
   return (
-    (window as any).__ERP_INSTANCE_ID ??
+    (window as unknown).__ERP_INSTANCE_ID ??
     window.localStorage.getItem("erp_instance_id") ??
     process.env.NEXT_PUBLIC_INSTANCE_ID ??
     null
@@ -28,17 +28,17 @@ function getInstanceId() {
 
 function getRole() {
   if (typeof window === "undefined") return "admin";
-  return String((window as any).__ERP_ROLE ?? window.localStorage.getItem("erp_role") ?? "admin");
+  return String((window as unknown).__ERP_ROLE ?? window.localStorage.getItem("erp_role") ?? "admin");
 }
 
 function getIcp() {
   if (typeof window === "undefined") return null;
-  return String((window as any).__ERP_ICP ?? window.localStorage.getItem("erp_icp") ?? "");
+  return String((window as unknown).__ERP_ICP ?? window.localStorage.getItem("erp_icp") ?? "");
 }
 
 function getTrialDaysRemaining() {
   if (typeof window === "undefined") return null;
-  const value = (window as any).__ERP_TRIAL_DAYS_REMAINING ?? window.localStorage.getItem("erp_trial_days_remaining");
+  const value = (window as unknown).__ERP_TRIAL_DAYS_REMAINING ?? window.localStorage.getItem("erp_trial_days_remaining");
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }

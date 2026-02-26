@@ -10,7 +10,7 @@ const makeService = () => {
     emailEventLog: {
       create: jest.fn().mockResolvedValue({ id: "e1" }),
     },
-  } as any;
+  } as unknown;
 
   return { service: new DomainEmailService(prisma), prisma };
 };
@@ -18,7 +18,7 @@ const makeService = () => {
 describe("DomainEmailService", () => {
   it("upserts domain", async () => {
     const { service, prisma } = makeService();
-    await service.upsert("c1", { providerType: "SMTP", domain: "example.com" } as any);
+    await service.upsert("c1", { providerType: "SMTP", domain: "example.com" } as unknown);
     expect(prisma.emailDomain.upsert).toHaveBeenCalled();
   });
 
@@ -30,7 +30,7 @@ describe("DomainEmailService", () => {
 
   it("records event", async () => {
     const { service, prisma } = makeService();
-    await service.recordEvent("c1", { type: "bounce" } as any, { raw: true });
+    await service.recordEvent("c1", { type: "bounce" } as unknown, { raw: true });
     expect(prisma.emailEventLog.create).toHaveBeenCalled();
   });
 });

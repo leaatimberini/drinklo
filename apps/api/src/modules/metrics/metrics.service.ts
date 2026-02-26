@@ -116,7 +116,7 @@ export class MetricsService {
   }
 
   private async updateDbPoolMetrics() {
-    const prismaAny = this.prisma as any;
+    const prismaAny = this.prisma as unknown;
     if (!prismaAny?.$metrics?.json) {
       return;
     }

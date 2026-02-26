@@ -7,8 +7,8 @@ type Proposal = {
   actionType: string;
   status: string;
   requiredPermission: string;
-  preview: any;
-  executionResult?: any;
+  preview: unknown;
+  executionResult?: unknown;
   createdAt: string;
 };
 
@@ -64,7 +64,7 @@ export default function CopilotPage() {
       setAnswer(String(data.message ?? ""));
       setCitations(Array.isArray(data.citations) ? data.citations : []);
       await refreshProposals();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error inesperado");
     } finally {
       setIsLoading(false);
@@ -116,7 +116,7 @@ export default function CopilotPage() {
 
       <label style={{ display: "block", marginBottom: 12 }}>
         Modo
-        <select value={mode} onChange={(e) => setMode(e.target.value as any)} style={{ display: "block", marginTop: 6 }}>
+        <select value={mode} onChange={(e) => setMode(e.target.value as unknown)} style={{ display: "block", marginTop: 6 }}>
           <option value="admin">admin</option>
           <option value="incident">incident</option>
         </select>

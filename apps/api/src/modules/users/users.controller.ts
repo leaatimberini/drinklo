@@ -15,31 +15,31 @@ export class UsersController {
 
   @Get()
   @Permissions("users:read")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.users.list(req.user.companyId);
   }
 
   @Get(":id")
   @Permissions("users:read")
-  get(@Req() req: any, @Param("id") id: string) {
+  get(@Req() req: unknown, @Param("id") id: string) {
     return this.users.get(req.user.companyId, id);
   }
 
   @Post()
   @Permissions("users:write")
-  create(@Req() req: any, @Body() body: CreateUserDto) {
+  create(@Req() req: unknown, @Body() body: CreateUserDto) {
     return this.users.create(req.user.companyId, body, req.user.sub);
   }
 
   @Patch(":id")
   @Permissions("users:write")
-  update(@Req() req: any, @Param("id") id: string, @Body() body: UpdateUserDto) {
+  update(@Req() req: unknown, @Param("id") id: string, @Body() body: UpdateUserDto) {
     return this.users.update(req.user.companyId, id, body, req.user.sub);
   }
 
   @Delete(":id")
   @Permissions("users:write")
-  remove(@Req() req: any, @Param("id") id: string) {
+  remove(@Req() req: unknown, @Param("id") id: string) {
     return this.users.remove(req.user.companyId, id, req.user.sub);
   }
 }

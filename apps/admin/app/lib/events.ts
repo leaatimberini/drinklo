@@ -12,7 +12,7 @@ function buildId() {
 export async function emitEvent(
   apiUrl: string,
   name: EventName,
-  payload: Record<string, any>,
+  payload: Record<string, unknown>,
   options?: { companyId?: string | null; subjectId?: string | null; token?: string },
 ) {
   const event: EventEnvelope = {

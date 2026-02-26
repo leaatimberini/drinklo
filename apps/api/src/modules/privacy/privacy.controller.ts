@@ -18,7 +18,7 @@ export class PrivacyController {
   @Get("customers/:id/export")
   @Permissions("customers:read")
   async exportCustomer(
-    @Req() req: any,
+    @Req() req: unknown,
     @Param("id") id: string,
     @Query("format") format: string | undefined,
     @Res() res: Response,
@@ -67,19 +67,19 @@ export class PrivacyController {
 
   @Post("customers/:id/anonymize")
   @Permissions("customers:write")
-  anonymize(@Req() req: any, @Param("id") id: string, @Body() body: AnonymizeRequestDto) {
+  anonymize(@Req() req: unknown, @Param("id") id: string, @Body() body: AnonymizeRequestDto) {
     return this.privacy.anonymizeCustomer(req.user.companyId, id, req.user.sub, body.notes);
   }
 
   @Get("policies")
   @Permissions("settings:write")
-  policies(@Req() req: any) {
+  policies(@Req() req: unknown) {
     return this.privacy.getRetentionPolicy(req.user.companyId);
   }
 
   @Patch("policies")
   @Permissions("settings:write")
-  updatePolicies(@Req() req: any, @Body() body: RetentionPolicyDto) {
+  updatePolicies(@Req() req: unknown, @Body() body: RetentionPolicyDto) {
     return this.privacy.updateRetentionPolicy(req.user.companyId, body);
   }
 }

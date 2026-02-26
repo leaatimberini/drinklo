@@ -10,7 +10,7 @@ export class CreateSegmentDto {
   description?: string;
 
   @IsObject()
-  definition!: Record<string, any>;
+  definition!: Record<string, unknown>;
 }
 
 export class CreateCampaignDto {
@@ -31,7 +31,7 @@ export class CreateTriggerDto {
   type!: TriggerType;
 
   @IsObject()
-  config!: Record<string, any>;
+  config!: Record<string, unknown>;
 }
 
 export class CreateFlowDto {
@@ -51,7 +51,7 @@ export class CreateFlowDto {
 
   @IsOptional()
   @IsObject()
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 }
 
 export class UpdateFlowDto {
@@ -73,7 +73,7 @@ export class UpdateFlowDto {
 
   @IsOptional()
   @IsObject()
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 }
 
 export class CreateActionDto {
@@ -81,7 +81,7 @@ export class CreateActionDto {
   type!: ActionType;
 
   @IsObject()
-  config!: Record<string, any>;
+  config!: Record<string, unknown>;
 
   @IsOptional()
   @IsInt()
@@ -97,7 +97,7 @@ export class CreateActionDto {
 export class UpdateActionDto {
   @IsOptional()
   @IsObject()
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 
   @IsOptional()
   @IsInt()
@@ -136,7 +136,7 @@ export class RunFlowDto {
 
   @IsOptional()
   @IsObject()
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
 }
 
 export class RecordMetricDto {
@@ -155,5 +155,5 @@ export class UpdateTriggerDto {
 
   @IsOptional()
   @IsObject()
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }

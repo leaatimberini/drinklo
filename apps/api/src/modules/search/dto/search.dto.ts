@@ -1,5 +1,5 @@
 ﻿import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsArray, IsNumber, IsObject, IsOptional, IsString, Min } from "class-validator";
+import { IsNumber, IsObject, IsOptional, IsString, Min } from "class-validator";
 
 export class SearchQueryDto {
   @ApiPropertyOptional()

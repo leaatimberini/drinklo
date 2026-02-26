@@ -15,37 +15,37 @@ export class LotsController {
 
   @Get("config")
   @Permissions("inventory:read")
-  config(@Req() req: any) {
+  config(@Req() req: unknown) {
     return this.lots.getConfig(req.user.companyId);
   }
 
   @Patch("config")
   @Permissions("inventory:write")
-  updateConfig(@Req() req: any, @Body() body: UpdateFefoConfigDto) {
+  updateConfig(@Req() req: unknown, @Body() body: UpdateFefoConfigDto) {
     return this.lots.updateConfig(req.user.companyId, body.pickingStrategy, body.blockExpiredLotSale ?? false);
   }
 
   @Get("alerts")
   @Permissions("inventory:read")
-  alerts(@Req() req: any, @Query() query: LotAlertsQueryDto) {
+  alerts(@Req() req: unknown, @Query() query: LotAlertsQueryDto) {
     return this.lots.expiryAlerts(req.user.companyId, query.days ?? 30);
   }
 
   @Get("alerts/windows")
   @Permissions("inventory:read")
-  windows(@Req() req: any) {
+  windows(@Req() req: unknown) {
     return this.lots.expiryAlertsWindows(req.user.companyId);
   }
 
   @Get("rotation")
   @Permissions("inventory:read")
-  rotation(@Req() req: any, @Query() query: RotationSuggestionsQueryDto) {
+  rotation(@Req() req: unknown, @Query() query: RotationSuggestionsQueryDto) {
     return this.lots.rotationSuggestions(req.user.companyId, query.limit ?? 20);
   }
 
   @Get("product/:productId")
   @Permissions("inventory:read")
-  product(@Req() req: any, @Param("productId") productId: string) {
+  product(@Req() req: unknown, @Param("productId") productId: string) {
     return this.lots.productNearExpiry(req.user.companyId, productId);
   }
 }

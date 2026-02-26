@@ -1,7 +1,7 @@
 import { SubscriptionLifecycleService } from "./subscription-lifecycle.service";
 
 describe("SubscriptionLifecycleService", () => {
-  const prismaMock: any = {
+  const prismaMock: unknown = {
     subscription: {
       findMany: jest.fn(),
       updateMany: jest.fn(),
@@ -19,8 +19,8 @@ describe("SubscriptionLifecycleService", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date("2026-03-27T13:45:00.000Z"));
-    for (const delegate of Object.values(prismaMock) as any[]) {
-      for (const fn of Object.values(delegate) as any[]) {
+    for (const delegate of Object.values(prismaMock) as unknown[]) {
+      for (const fn of Object.values(delegate) as unknown[]) {
         if (typeof fn?.mockReset === "function") fn.mockReset();
       }
     }
@@ -35,8 +35,8 @@ describe("SubscriptionLifecycleService", () => {
   });
 
   it("transitions TRIAL_ACTIVE to GRACE with fake clock and is idempotent", async () => {
-    const service = new SubscriptionLifecycleService(prismaMock, auditMock as any, botAuditMock as any);
-    jest.spyOn(service as any, "notifyTransition").mockResolvedValue(1);
+    const service = new SubscriptionLifecycleService(prismaMock, auditMock as unknown, botAuditMock as unknown);
+    jest.spyOn(service as unknown, "notifyTransition").mockResolvedValue(1);
 
     const candidate = {
       id: "sub1",
@@ -75,8 +75,8 @@ describe("SubscriptionLifecycleService", () => {
   });
 
   it("handles ACTIVE_PAID -> PAST_DUE -> GRACE transitions with fake clock", async () => {
-    const service = new SubscriptionLifecycleService(prismaMock, auditMock as any, botAuditMock as any);
-    jest.spyOn(service as any, "notifyTransition").mockResolvedValue(1);
+    const service = new SubscriptionLifecycleService(prismaMock, auditMock as unknown, botAuditMock as unknown);
+    jest.spyOn(service as unknown, "notifyTransition").mockResolvedValue(1);
 
     const activePaid = {
       id: "sub2",
@@ -95,7 +95,7 @@ describe("SubscriptionLifecycleService", () => {
     };
     const pastDue = { ...activePaid, status: "PAST_DUE", lastPaymentAt: null };
 
-    prismaMock.subscription.findMany.mockImplementation(async ({ where }: any) => {
+    prismaMock.subscription.findMany.mockImplementation(async ({ where }: unknown) => {
       if (where?.status === "ACTIVE_PAID") return [activePaid];
       if (where?.status === "PAST_DUE") return [pastDue];
       return [];

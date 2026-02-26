@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 export default function EmailTemplatesPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<unknown[]>([]);
   const [type, setType] = useState("order_confirmation");
-  const [objective, setObjective] = useState("Confirmación de pedido");
-  const [selected, setSelected] = useState<any | null>(null);
+  const [objective, setObjective] = useState("Confirmaciï¿½n de pedido");
+  const [selected, setSelected] = useState<unknown | null>(null);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [testEmail, setTestEmail] = useState("");

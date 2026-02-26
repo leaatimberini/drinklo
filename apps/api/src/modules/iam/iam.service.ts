@@ -186,7 +186,7 @@ export class IamService {
     return user;
   }
 
-  async scimCreateUserByToken(token: string, payload: any) {
+  async scimCreateUserByToken(token: string, payload: unknown) {
     const cfg = await this.prisma.companyIamConfig.findFirst({ where: { scimEnabled: true, scimBearerToken: token } });
     if (!cfg) {
       throw new UnauthorizedException("Invalid SCIM token");
@@ -230,7 +230,7 @@ export class IamService {
     return user;
   }
 
-  async scimDisableUserByToken(token: string, userId: string, payload: any) {
+  async scimDisableUserByToken(token: string, userId: string, payload: unknown) {
     const cfg = await this.prisma.companyIamConfig.findFirst({ where: { scimEnabled: true, scimBearerToken: token } });
     if (!cfg) {
       throw new UnauthorizedException("Invalid SCIM token");
@@ -260,7 +260,7 @@ export class IamService {
     return { ok: true };
   }
 
-  summarizeStatus(config: any) {
+  summarizeStatus(config: unknown) {
     const mfaRoles = (config?.mfaRequiredRoles ?? []).filter((role: string) => role in RolePermissions);
     return {
       ssoEnabled: Boolean(config?.ssoEnabled),

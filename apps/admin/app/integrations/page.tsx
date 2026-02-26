@@ -7,7 +7,7 @@ type HealthResult = {
   status: "OK" | "WARN" | "FAIL";
   message?: string;
   checkedAt: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 };
 
 type HealthLog = {
@@ -45,7 +45,7 @@ export default function IntegrationsPage() {
       }
       const data = (await res.json()) as HealthResult[];
       setResults(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al consultar health");
     }
   }
@@ -63,7 +63,7 @@ export default function IntegrationsPage() {
       }
       const data = (await res.json()) as HealthLog[];
       setLogs(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al cargar logs");
     }
   }
@@ -87,7 +87,7 @@ export default function IntegrationsPage() {
           : "Webhook test ejecutado (no se detectó duplicado)",
       );
       await loadLogs();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error en webhook test");
     }
   }

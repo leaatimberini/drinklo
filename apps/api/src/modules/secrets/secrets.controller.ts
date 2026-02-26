@@ -15,13 +15,13 @@ export class SecretsController {
 
   @Get()
   @Permissions("settings:write")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.secrets.list(req.user.companyId);
   }
 
   @Post("rotate")
   @Permissions("settings:write")
-  rotate(@Req() req: any, @Body() body: RotateSecretDto) {
+  rotate(@Req() req: unknown, @Body() body: RotateSecretDto) {
     return this.secrets.rotateSecret({
       companyId: req.user.companyId,
       provider: body.provider,
@@ -34,7 +34,7 @@ export class SecretsController {
 
   @Post("verify")
   @Permissions("settings:write")
-  verify(@Req() req: any, @Body() body: VerifySecretDto) {
+  verify(@Req() req: unknown, @Body() body: VerifySecretDto) {
     return this.secrets.markVerified(req.user.companyId, body.provider, req.user.sub);
   }
 }

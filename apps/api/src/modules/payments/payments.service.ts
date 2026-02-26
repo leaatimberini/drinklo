@@ -48,11 +48,11 @@ export class PaymentsService {
       where: { orderId, provider: "MERCADOPAGO" },
     });
 
-    if (existing?.preferenceId && (existing.raw as any)?.init_point) {
+    if (existing?.preferenceId && (existing.raw as unknown)?.init_point) {
       const initPoint =
         process.env.PAYMENT_SANDBOX === "true"
-          ? (existing.raw as any)?.sandbox_init_point ?? (existing.raw as any).init_point
-          : (existing.raw as any).init_point;
+          ? (existing.raw as unknown)?.sandbox_init_point ?? (existing.raw as unknown).init_point
+          : (existing.raw as unknown).init_point;
       return { preferenceId: existing.preferenceId, initPoint };
     }
 
@@ -79,7 +79,7 @@ export class PaymentsService {
           data: {
             preferenceId: deterministic.id,
             status: PaymentStatus.PENDING,
-            raw: payload as any,
+            raw: payload as unknown,
           },
         });
       } else {
@@ -91,7 +91,7 @@ export class PaymentsService {
             status: PaymentStatus.PENDING,
             amount: new Prisma.Decimal(payableAmount),
             currency,
-            raw: payload as any,
+            raw: payload as unknown,
           },
         });
       }
@@ -118,7 +118,7 @@ export class PaymentsService {
     if (existing) {
       await this.prisma.payment.update({
         where: { id: existing.id },
-        data: { preferenceId: preference.id, raw: preference as any },
+        data: { preferenceId: preference.id, raw: preference as unknown },
       });
     } else {
       await this.prisma.payment.create({
@@ -129,19 +129,19 @@ export class PaymentsService {
           status: PaymentStatus.PENDING,
           amount: new Prisma.Decimal(payableAmount),
           currency,
-          raw: preference as any,
+          raw: preference as unknown,
         },
       });
     }
 
     const initPoint =
       process.env.PAYMENT_SANDBOX === "true"
-        ? (preference as any).sandbox_init_point ?? preference.init_point
+        ? (preference as unknown).sandbox_init_point ?? preference.init_point
         : preference.init_point;
     return { preferenceId: preference.id, initPoint };
   }
 
-  async updatePaymentStatus(orderId: string, status: PaymentStatus, raw: any, paymentId?: string) {
+  async updatePaymentStatus(orderId: string, status: PaymentStatus, raw: unknown, paymentId?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       select: { companyId: true },

@@ -52,10 +52,10 @@ export class MercadoPagoWebhookController {
 
   @Post()
   async handle(
-    @Body() body: any,
+    @Body() body: unknown,
     @Headers("x-signature") signature?: string,
     @Headers("x-request-id") requestId?: string,
-    @Query() query?: Record<string, any>,
+    @Query() query?: Record<string, unknown>,
   ) {
     const queryId = query?.["data.id"] ?? query?.id;
     const eventId = queryId ?? body?.id ?? body?.data?.id ?? body?.resource ?? crypto.randomUUID();
@@ -72,7 +72,7 @@ export class MercadoPagoWebhookController {
         },
       });
       this.metrics.recordWebhook("mercadopago", "received");
-    } catch (error) {
+    } catch {
       // Idempotency: if event already exists, skip processing
       await this.prisma.webhookLog
         .updateMany({
@@ -139,7 +139,7 @@ export class MercadoPagoWebhookController {
         });
         this.metrics.recordWebhook("mercadopago", handled.handled ? "processed" : "ignored");
         return { ok: true, recurring: true, handled: handled.handled };
-      } catch (error: any) {
+      } catch (error: unknown) {
         await this.prisma.webhookLog.update({
           where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
           data: { status: "error", error: redactDeep(error?.message ?? String(error)), processedAt: new Date() },
@@ -186,7 +186,7 @@ export class MercadoPagoWebhookController {
         throw new Error("No external_reference");
       }
       const statusRaw = String(payment.status ?? "pending").toUpperCase();
-      const statusMap: Record<string, any> = {
+      const statusMap: Record<string, unknown> = {
         APPROVED: "APPROVED",
         IN_PROCESS: "IN_PROCESS",
         PENDING: "PENDING",
@@ -209,7 +209,7 @@ export class MercadoPagoWebhookController {
       }
 
       return { ok: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.prisma.webhookLog.update({
         where: { provider_eventId: { provider: "mercadopago", eventId: String(eventId) } },
         data: { status: "error", error: redactDeep(error?.message ?? String(error)), processedAt: new Date() },

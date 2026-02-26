@@ -67,7 +67,7 @@ export class FxService {
     const today = new Date();
     const date = today.toISOString().slice(0, 10);
 
-    let data = await this.fetchFromBcra(date);
+    const data = await this.fetchFromBcra(date);
     if (data) {
       await this.upsertRates(date, data, "BCRA");
       return;
@@ -98,7 +98,7 @@ export class FxService {
   }
 
   async range(code: string, from?: string, to?: string) {
-    const where: any = { currencyCode: code };
+    const where: unknown = { currencyCode: code };
     if (from || to) {
       where.date = {};
       if (from) where.date.gte = new Date(from);

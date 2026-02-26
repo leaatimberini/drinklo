@@ -13,11 +13,11 @@ export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async summary(query: DashboardQueryDto) {
-    const runOnReadClient = (this.prisma as any).withReadClient as
-      | (<T>(run: (client: any) => Promise<T>) => Promise<T>)
+    const runOnReadClient = (this.prisma as unknown).withReadClient as
+      | (<T>(run: (client: unknown) => Promise<T>) => Promise<T>)
       | undefined;
 
-    const run = async (client: any) => {
+    const run = async (client: unknown) => {
       const now = new Date();
       const to = parseDate(query.to, now);
       const from = parseDate(query.from, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
@@ -102,6 +102,6 @@ export class DashboardService {
     if (runOnReadClient) {
       return runOnReadClient(run);
     }
-    return run(this.prisma as any);
+    return run(this.prisma as unknown);
   }
 }

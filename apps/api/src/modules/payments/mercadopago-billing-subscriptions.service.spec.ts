@@ -2,7 +2,7 @@ import { MercadoPagoBillingSubscriptionsService } from "./mercadopago-billing-su
 import { MercadoPagoAdapter } from "./adapters/mercadopago.adapter";
 
 describe("MercadoPagoBillingSubscriptionsService", () => {
-  const prisma: any = {
+  const prisma: unknown = {
     subscription: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
@@ -22,8 +22,8 @@ describe("MercadoPagoBillingSubscriptionsService", () => {
 
   beforeEach(() => {
     jest.restoreAllMocks();
-    for (const delegate of Object.values(prisma) as any[]) {
-      Object.values(delegate).forEach((fn: any) => fn?.mockReset?.());
+    for (const delegate of Object.values(prisma) as unknown[]) {
+      Object.values(delegate).forEach((fn: unknown) => fn?.mockReset?.());
     }
     secrets.getSecret.mockReset();
     sandbox.deterministicPreapproval.mockReset();
@@ -36,10 +36,10 @@ describe("MercadoPagoBillingSubscriptionsService", () => {
   it("skips preapproval creation during trial unless allowed", async () => {
     const service = new MercadoPagoBillingSubscriptionsService(
       prisma,
-      secrets as any,
-      sandbox as any,
-      plans as any,
-      audit as any,
+      secrets as unknown,
+      sandbox as unknown,
+      plans as unknown,
+      audit as unknown,
     );
     plans.getSubscription.mockResolvedValue({
       id: "s1",
@@ -57,10 +57,10 @@ describe("MercadoPagoBillingSubscriptionsService", () => {
   it("creates preapproval using mocked MP API and stores ids/status", async () => {
     const service = new MercadoPagoBillingSubscriptionsService(
       prisma,
-      secrets as any,
-      sandbox as any,
-      plans as any,
-      audit as any,
+      secrets as unknown,
+      sandbox as unknown,
+      plans as unknown,
+      audit as unknown,
     );
     plans.getSubscription.mockResolvedValue({
       id: "s1",
@@ -84,7 +84,7 @@ describe("MercadoPagoBillingSubscriptionsService", () => {
       id: "mp-pre-1",
       status: "authorized",
       next_payment_date: "2026-04-01T03:00:00.000Z",
-    } as any);
+    } as unknown);
 
     const result = await service.createOrUpdatePreapproval("c1", { activate: true });
 
@@ -104,10 +104,10 @@ describe("MercadoPagoBillingSubscriptionsService", () => {
   it("maps recurring payment approval and failures to subscription states", async () => {
     const service = new MercadoPagoBillingSubscriptionsService(
       prisma,
-      secrets as any,
-      sandbox as any,
-      plans as any,
-      audit as any,
+      secrets as unknown,
+      sandbox as unknown,
+      plans as unknown,
+      audit as unknown,
     );
     prisma.subscription.findFirst.mockResolvedValueOnce({
       id: "s1",

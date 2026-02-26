@@ -48,7 +48,7 @@ export class BillingController {
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
   @SodAction("PLAN_UPGRADE")
-  upgrade(@Req() req: any, @Body() body: PlanChangeDto) {
+  upgrade(@Req() req: unknown, @Body() body: PlanChangeDto) {
     return this.planChanges.upgrade(req.user.companyId, body.targetTier, req.user.sub, Boolean(body.dryRun));
   }
 
@@ -56,38 +56,38 @@ export class BillingController {
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
   @SodAction("PLAN_DOWNGRADE")
-  downgrade(@Req() req: any, @Body() body: PlanChangeDto) {
+  downgrade(@Req() req: unknown, @Body() body: PlanChangeDto) {
     return this.planChanges.downgrade(req.user.companyId, body.targetTier, req.user.sub, Boolean(body.dryRun));
   }
 
   @Post("cancel")
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  cancel(@Req() req: any, @Body() body: CancelSubscriptionDto) {
+  cancel(@Req() req: unknown, @Body() body: CancelSubscriptionDto) {
     return this.planChanges.cancel(req.user.companyId, req.user.sub, Boolean(body?.dryRun));
   }
 
   @Post("reactivate")
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  reactivate(@Req() req: any) {
+  reactivate(@Req() req: unknown) {
     return this.planChanges.reactivate(req.user.companyId, req.user.sub);
   }
 
   @Get("arca/readiness")
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  getArcaReadiness(@Req() req: any) {
+  getArcaReadiness(@Req() req: unknown) {
     const raw = req.query?.invoiceTypes;
     const invoiceTypes = Array.isArray(raw) ? raw : typeof raw === "string" ? raw.split(",") : [];
-    return this.arcaReadiness.getChecklist({ companyId: req.user.companyId, invoiceTypes: invoiceTypes as any });
+    return this.arcaReadiness.getChecklist({ companyId: req.user.companyId, invoiceTypes: invoiceTypes as unknown });
   }
 
   @Post("arca/readiness/dry-run")
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
   @SodAction("ARCA_DRY_RUN")
-  runArcaDryRun(@Req() req: any, @Body() body: ArcaReadinessDryRunDto) {
+  runArcaDryRun(@Req() req: unknown, @Body() body: ArcaReadinessDryRunDto) {
     return this.arcaReadiness.runDryRun(req.user.companyId, req.user.sub, body);
   }
 
@@ -95,7 +95,7 @@ export class BillingController {
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
   @SodAction("ARCA_READINESS_REPORT")
-  generateArcaReadinessReport(@Req() req: any, @Body() body: ArcaReadinessReportDto) {
+  generateArcaReadinessReport(@Req() req: unknown, @Body() body: ArcaReadinessReportDto) {
     return this.arcaReadiness.generateReport(req.user.companyId, req.user.sub, body);
   }
 }

@@ -8,11 +8,11 @@ function makeConfig() {
         CONTROL_PLANE_URL: "",
         CONTROL_PLANE_INGEST_TOKEN: "",
         INSTANCE_ID: "test-inst",
-      } as Record<string, any>)[key],
-  } as any;
+      } as Record<string, unknown>)[key],
+  } as unknown;
 }
 
-function makePrisma(deliveryOverrides?: Partial<any>) {
+function makePrisma(deliveryOverrides?: Partial<unknown>) {
   const baseDelivery = {
     id: "d1",
     companyId: "co1",
@@ -55,17 +55,17 @@ function makePrisma(deliveryOverrides?: Partial<any>) {
     secret: {
       findMany: jest.fn().mockResolvedValue([]),
     },
-  } as any;
+  } as unknown;
 }
 
 describe("IntegrationBuilderService", () => {
   it("schedules retry on failure before max attempts", async () => {
     const prisma = makePrisma({ attemptCount: 0, maxAttempts: 3 });
-    const secrets = { getSecret: jest.fn().mockResolvedValue(null) } as any;
+    const secrets = { getSecret: jest.fn().mockResolvedValue(null) } as unknown;
     const service = new IntegrationBuilderService(prisma, secrets, makeConfig());
-    jest.spyOn(service as any, "performHttp").mockRejectedValue(new Error("timeout"));
+    jest.spyOn(service as unknown, "performHttp").mockRejectedValue(new Error("timeout"));
 
-    await (service as any).executeDelivery("d1");
+    await (service as unknown).executeDelivery("d1");
     service.onModuleDestroy();
 
     expect(prisma.integrationConnectorDelivery.update).toHaveBeenCalled();
@@ -76,11 +76,11 @@ describe("IntegrationBuilderService", () => {
 
   it("moves to DLQ after max attempts reached", async () => {
     const prisma = makePrisma({ attemptCount: 1, maxAttempts: 2 });
-    const secrets = { getSecret: jest.fn().mockResolvedValue(null) } as any;
+    const secrets = { getSecret: jest.fn().mockResolvedValue(null) } as unknown;
     const service = new IntegrationBuilderService(prisma, secrets, makeConfig());
-    jest.spyOn(service as any, "performHttp").mockRejectedValue(new Error("HTTP 500"));
+    jest.spyOn(service as unknown, "performHttp").mockRejectedValue(new Error("HTTP 500"));
 
-    await (service as any).executeDelivery("d1");
+    await (service as unknown).executeDelivery("d1");
     service.onModuleDestroy();
 
     const updateData = prisma.integrationConnectorDelivery.update.mock.calls[0][0].data;

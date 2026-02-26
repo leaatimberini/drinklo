@@ -14,7 +14,7 @@ type ServiceStatus = {
 type SupportSummary = {
   services: ServiceStatus[];
   uptime: { name: string; uptimePct: number }[];
-  ops: { errors: any[]; jobFailures: any[] };
+  ops: { errors: unknown[]; jobFailures: unknown[] };
   version: { commit: string; buildDate: string };
 };
 
@@ -58,7 +58,7 @@ export default function SupportPage() {
   return (
     <main style={{ padding: 32, maxWidth: 900 }}>
       <h1 style={{ fontSize: 28, marginBottom: 8, fontFamily: "var(--font-heading)" }}>Support Portal</h1>
-      <p>Herramientas de soporte y diagnóstico.</p>
+      <p>Herramientas de soporte y diagnï¿½stico.</p>
 
       <label style={{ display: "block", marginTop: 16 }}>
         Token JWT

@@ -11,7 +11,7 @@ import { DeveloperApiService } from "./developer-api.service";
 export class DeveloperApiUsageInterceptor implements NestInterceptor {
   constructor(private readonly developerApi: DeveloperApiService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
     const ctx = request.developerApi as

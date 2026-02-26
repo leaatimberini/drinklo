@@ -14,7 +14,7 @@ export class WarehouseController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing", "support")
   @Get("cohorts")
-  async cohorts(@Req() req: any, @Query("from") from?: string, @Query("to") to?: string) {
+  async cohorts(@Req() req: unknown, @Query("from") from?: string, @Query("to") to?: string) {
     return this.warehouse.getCohorts(req.user.companyId, from, to);
   }
 
@@ -22,7 +22,7 @@ export class WarehouseController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing", "support")
   @Get("retention")
-  async retention(@Req() req: any, @Query("from") from?: string, @Query("to") to?: string) {
+  async retention(@Req() req: unknown, @Query("from") from?: string, @Query("to") to?: string) {
     return this.warehouse.getRetention(req.user.companyId, from, to);
   }
 
@@ -30,7 +30,7 @@ export class WarehouseController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing", "support")
   @Get("ltv")
-  async ltv(@Req() req: any, @Query("from") from?: string, @Query("to") to?: string) {
+  async ltv(@Req() req: unknown, @Query("from") from?: string, @Query("to") to?: string) {
     return this.warehouse.getLtv(req.user.companyId, from, to);
   }
 
@@ -38,7 +38,7 @@ export class WarehouseController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing", "support")
   @Get("rfm")
-  async rfm(@Req() req: any, @Query("from") from?: string, @Query("to") to?: string) {
+  async rfm(@Req() req: unknown, @Query("from") from?: string, @Query("to") to?: string) {
     return this.warehouse.getRfm(req.user.companyId, from, to);
   }
 

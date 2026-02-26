@@ -15,7 +15,7 @@ export class EventsController {
   ) {}
 
   @Post("events/ingest")
-  async ingest(@Body() body: any, @Headers("x-event-token") token?: string) {
+  async ingest(@Body() body: unknown, @Headers("x-event-token") token?: string) {
     const required = process.env.EVENT_INGEST_TOKEN;
     if (required && token !== required) {
       return { ok: false, message: "unauthorized" };
@@ -29,7 +29,7 @@ export class EventsController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "support")
-  async stats(@Req() req: any) {
+  async stats(@Req() req: unknown) {
     const companyId = req.user?.companyId;
     return this.events.getStats(companyId);
   }
@@ -39,7 +39,7 @@ export class EventsController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "support")
   async featureUsage(
-    @Req() req: any,
+    @Req() req: unknown,
     @Query("from") from?: string,
     @Query("to") to?: string,
     @Query("windowMinutes") windowMinutes?: string,

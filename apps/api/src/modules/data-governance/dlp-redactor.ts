@@ -45,7 +45,7 @@ function redactString(raw: string, keyName?: string): string {
   return value;
 }
 
-export function redactDeep<T = any>(input: T, parentKey?: string): T {
+export function redactDeep<T = unknown>(input: T, parentKey?: string): T {
   if (typeof input === "string") {
     return redactString(input, parentKey) as T;
   }
@@ -53,8 +53,8 @@ export function redactDeep<T = any>(input: T, parentKey?: string): T {
     return input.map((item) => redactDeep(item, parentKey)) as T;
   }
   if (input && typeof input === "object") {
-    const out: Record<string, any> = {};
-    for (const [key, value] of Object.entries(input as Record<string, any>)) {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
       if (typeof value === "string") {
         out[key] = redactString(value, key);
       } else {

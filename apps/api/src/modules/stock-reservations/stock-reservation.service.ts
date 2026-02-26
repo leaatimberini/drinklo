@@ -27,7 +27,7 @@ export class StockReservationService {
       let picks = [] as Array<{ lotId: string; stockItemId: string; quantity: number; lotCode: string; expiryDate: Date | null }>;
       try {
         picks = await this.lots.allocateLotsWithClient(
-          client as any,
+          client as unknown,
           companyId,
           item.variantId,
           item.quantity,
@@ -35,7 +35,7 @@ export class StockReservationService {
         );
       } catch (error) {
         const hasTrackedLots = await this.lots.hasTrackedLotsWithClient(
-          client as any,
+          client as unknown,
           companyId,
           item.variantId,
           branchId,
@@ -91,7 +91,7 @@ export class StockReservationService {
         },
       });
       if (picks.length > 0) {
-        await this.lots.reserveLotsWithClient(client as any, companyId, reservation.id, picks);
+        await this.lots.reserveLotsWithClient(client as unknown, companyId, reservation.id, picks);
       }
 
       if (picks[0]?.stockItemId) {
@@ -153,7 +153,7 @@ export class StockReservationService {
         }
       }
       if (lotRows.length > 0) {
-        await this.lots.confirmReservationLotsWithClient(this.prisma as any, reservation.id);
+        await this.lots.confirmReservationLotsWithClient(this.prisma as unknown, reservation.id);
       }
 
       await this.prisma.stockReservation.update({
@@ -213,7 +213,7 @@ export class StockReservationService {
         `;
       }
       if (lotRows.length > 0) {
-        await this.lots.releaseReservationLotsWithClient(this.prisma as any, reservation.id);
+        await this.lots.releaseReservationLotsWithClient(this.prisma as unknown, reservation.id);
       }
 
       await this.prisma.stockReservation.update({

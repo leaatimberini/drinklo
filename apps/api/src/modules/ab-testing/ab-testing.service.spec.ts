@@ -2,7 +2,7 @@ import { AbTestingService } from "./ab-testing.service";
 import { ExperimentStatus, ExperimentTarget } from "@erp/db";
 
 describe("AbTestingService", () => {
-  function buildService(overrides: any = {}) {
+  function buildService(overrides: unknown = {}) {
     const prisma = {
       company: { findFirst: jest.fn().mockResolvedValue({ id: "c1", settings: { enableAbTesting: true } }) },
       experiment: { findFirst: jest.fn() },
@@ -10,7 +10,7 @@ describe("AbTestingService", () => {
       experimentEvent: { create: jest.fn() },
       ...overrides,
     };
-    return { service: new AbTestingService(prisma as any), prisma };
+    return { service: new AbTestingService(prisma as unknown), prisma };
   }
 
   it("assigns stable variant based on cookie", async () => {

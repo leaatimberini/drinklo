@@ -4,7 +4,7 @@ import { IsBoolean, IsObject, IsOptional, IsString } from "class-validator";
 export class BrandingImportDto {
   @ApiProperty()
   @IsObject()
-  payload!: Record<string, any>;
+  payload!: Record<string, unknown>;
 
   @ApiProperty()
   @IsString()

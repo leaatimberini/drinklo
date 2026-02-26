@@ -7,15 +7,15 @@ export default function BiPage() {
   const [token, setToken] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [cohorts, setCohorts] = useState<any[]>([]);
-  const [retention, setRetention] = useState<any[]>([]);
-  const [ltv, setLtv] = useState<any | null>(null);
-  const [rfm, setRfm] = useState<any[]>([]);
+  const [cohorts, setCohorts] = useState<unknown[]>([]);
+  const [retention, setRetention] = useState<unknown[]>([]);
+  const [ltv, setLtv] = useState<unknown | null>(null);
+  const [rfm, setRfm] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const rangeLabel = useMemo(() => {
-    if (!from || !to) return "Últimos 12 meses";
+    if (!from || !to) return "ï¿½ltimos 12 meses";
     return `${from} ? ${to}`;
   }, [from, to]);
 
@@ -45,7 +45,7 @@ export default function BiPage() {
       setRetention(await retentionRes.json());
       setLtv(await ltvRes.json());
       setRfm(await rfmRes.json());
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message ?? "Error cargando BI");
     } finally {
       setLoading(false);
@@ -55,7 +55,7 @@ export default function BiPage() {
   return (
     <main style={{ padding: 32 }}>
       <h1 style={{ fontSize: 28, fontFamily: "var(--font-heading)" }}>BI Avanzado</h1>
-      <p style={{ color: "#555" }}>Zona horaria: America/Argentina/Buenos_Aires · Moneda: ARS</p>
+      <p style={{ color: "#555" }}>Zona horaria: America/Argentina/Buenos_Aires ï¿½ Moneda: ARS</p>
 
       <section style={{ marginTop: 16, display: "grid", gap: 12, maxWidth: 520 }}>
         <label>
@@ -111,7 +111,7 @@ export default function BiPage() {
                 <th style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>Mes</th>
                 <th style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>Clientes</th>
                 <th style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>Repetidores</th>
-                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>Órdenes promedio</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>ï¿½rdenes promedio</th>
               </tr>
             </thead>
             <tbody>
@@ -130,7 +130,7 @@ export default function BiPage() {
 
       {retention.length > 0 && (
         <section style={{ marginTop: 24 }}>
-          <h2>Retención 30 días</h2>
+          <h2>Retenciï¿½n 30 dï¿½as</h2>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>

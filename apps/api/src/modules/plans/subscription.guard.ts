@@ -36,7 +36,7 @@ type RoutePolicy = {
   reason?: string;
 };
 
-function parseJwtPayloadUnsafe(authHeader?: string | null): any | null {
+function parseJwtPayloadUnsafe(authHeader?: string | null): unknown | null {
   if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) return null;
   const token = authHeader.slice(7).trim();
   const parts = token.split(".");
@@ -49,7 +49,7 @@ function parseJwtPayloadUnsafe(authHeader?: string | null): any | null {
   }
 }
 
-function getRoutePath(req: any) {
+function getRoutePath(req: unknown) {
   const base = String(req?.baseUrl ?? "");
   const route = String(req?.route?.path ?? req?.path ?? req?.url ?? "");
   return `${base}${route}`.replace(/\/+/g, "/");
@@ -240,7 +240,7 @@ export class SubscriptionGuard implements CanActivate {
     restrictedVariant: "CATALOG_ONLY" | "ALLOW_BASIC_SALES";
     path: string;
   }) {
-    const { routePolicy, restrictedVariant, method, path } = input;
+    const { routePolicy, restrictedVariant, path } = input;
     if (!routePolicy.mutation) {
       return null;
     }
@@ -301,7 +301,7 @@ export class SubscriptionGuard implements CanActivate {
     return null;
   }
 
-  private async resolveRequestContext(req: any, path: string): Promise<ResolvedContext | null> {
+  private async resolveRequestContext(req: unknown, path: string): Promise<ResolvedContext | null> {
     const requestUser = req.user as { companyId?: string; sub?: string; role?: string } | undefined;
     const jwtPayload = requestUser?.companyId
       ? requestUser

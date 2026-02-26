@@ -29,7 +29,7 @@ function basePrisma() {
     },
     governanceRun: {
       create: jest.fn().mockResolvedValue({ id: "run-1", startedAt: new Date("2026-02-01T00:00:00.000Z") }),
-      update: jest.fn().mockImplementation(async ({ data }: any) => ({
+      update: jest.fn().mockImplementation(async ({ data }: unknown) => ({
         id: "run-1",
         startedAt: new Date("2026-02-01T00:00:00.000Z"),
         finishedAt: new Date("2026-02-01T00:10:00.000Z"),
@@ -71,7 +71,7 @@ function basePrisma() {
     company: {
       findMany: jest.fn().mockResolvedValue([]),
     },
-  } as any;
+  } as unknown;
 }
 
 describe("DataGovernanceService", () => {

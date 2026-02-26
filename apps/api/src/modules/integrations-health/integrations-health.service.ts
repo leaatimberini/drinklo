@@ -11,7 +11,7 @@ type HealthResult = {
   status: HealthStatus;
   message?: string;
   checkedAt: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 };
 
 @Injectable()
@@ -26,7 +26,7 @@ export class IntegrationsHealthService {
     provider: string,
     status: HealthStatus,
     message?: string,
-    meta?: Record<string, any>,
+    meta?: Record<string, unknown>,
     actorId?: string,
   ) {
     await this.prisma.integrationHealthLog.create({
@@ -75,7 +75,7 @@ export class IntegrationsHealthService {
       const message = "Mercado Pago OK";
       await this.log(companyId, "MERCADOPAGO", status, message, { user: data?.id }, actorId);
       return { provider: "MERCADOPAGO", status, message, checkedAt, meta: { user: data?.id } };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const status: HealthStatus = "FAIL";
       const message = error?.message ?? "Mercado Pago check failed";
       await this.log(companyId, "MERCADOPAGO", status, message, undefined, actorId);
@@ -167,7 +167,7 @@ export class IntegrationsHealthService {
         weightKg: Number(process.env.ANDREANI_TEST_WEIGHT_KG ?? 1),
       });
 
-      let createResult: any = null;
+      let createResult: unknown = null;
       if (process.env.ANDREANI_TEST_CREATE === "true") {
         createResult = await adapter.createShipment({
           orderId: `test-${Date.now()}`,
@@ -189,7 +189,7 @@ export class IntegrationsHealthService {
         });
       }
 
-      let trackResult: any = null;
+      let trackResult: unknown = null;
       const trackingCode = process.env.ANDREANI_TEST_TRACKING_CODE;
       if (trackingCode) {
         trackResult = await adapter.track(trackingCode);
@@ -220,7 +220,7 @@ export class IntegrationsHealthService {
           track: trackResult?.status ?? null,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const status: HealthStatus = "FAIL";
       const message = error?.message ?? "Andreani check failed";
       await this.log(companyId, "ANDREANI", status, message, undefined, actorId);

@@ -33,8 +33,8 @@ type MappingSuggestionResponse = {
     canImport: boolean;
     count: number;
     errors: Array<{ row: number; field?: string; message: string }>;
-    previewRaw: Record<string, any>[];
-    previewMapped: Record<string, any>[];
+    previewRaw: Record<string, unknown>[];
+    previewMapped: Record<string, unknown>[];
   };
 };
 
@@ -43,7 +43,7 @@ type ImportRunResult = {
   dryRun: boolean;
   count: number;
   errors: Array<{ row: number; field?: string; message: string }>;
-  preview: Record<string, any>[];
+  preview: Record<string, unknown>[];
   mappingApplied?: Record<string, string | null> | null;
 };
 
@@ -83,7 +83,7 @@ export default function ImportAssistPage() {
       headers: { Authorization: `Bearer ${token}` },
       body: form,
     });
-    const payload = (await res.json().catch(() => ({}))) as any;
+    const payload = (await res.json().catch(() => ({}))) as unknown;
     setLoading(false);
     if (!res.ok) {
       setMessage(payload.message ?? payload.error ?? "No se pudo analizar el archivo");
@@ -117,7 +117,7 @@ export default function ImportAssistPage() {
       headers: { Authorization: `Bearer ${token}` },
       body: form,
     });
-    const payload = (await res.json().catch(() => ({}))) as any;
+    const payload = (await res.json().catch(() => ({}))) as unknown;
     setLoading(false);
     if (!res.ok) {
       setMessage(payload.message ?? payload.error ?? "No se pudo ejecutar import");
@@ -154,7 +154,7 @@ export default function ImportAssistPage() {
     });
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setMessage((payload as any).message ?? "No se pudo guardar template");
+      setMessage((payload as unknown).message ?? "No se pudo guardar template");
       return;
     }
     setMessage("Template guardado.");
@@ -168,7 +168,7 @@ export default function ImportAssistPage() {
     });
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setMessage((payload as any).message ?? "No se pudo borrar template");
+      setMessage((payload as unknown).message ?? "No se pudo borrar template");
       return;
     }
     setMessage("Template eliminado.");

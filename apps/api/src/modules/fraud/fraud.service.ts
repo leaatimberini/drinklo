@@ -103,7 +103,7 @@ export class FraudService {
         reviewedById: userId,
         reviewedAt: new Date(),
         context: {
-          ...(assessment.context as Record<string, any> | null),
+          ...(assessment.context as Record<string, unknown> | null),
           reviewNote: note ?? null,
         },
       },
@@ -148,7 +148,7 @@ export class FraudService {
     };
   }
 
-  private async notifyAlert(payload: Record<string, any>) {
+  private async notifyAlert(payload: Record<string, unknown>) {
     const controlPlaneWebhook = process.env.CONTROL_PLANE_ALERT_WEBHOOK_URL ?? "";
     const botWebhook = process.env.BOT_ALERT_WEBHOOK_URL ?? "";
 
@@ -291,7 +291,7 @@ export class FraudService {
         where: { id: orderId },
         data: {
           shippingMeta: {
-            ...(order.shippingMeta as Record<string, any> | null),
+            ...(order.shippingMeta as Record<string, unknown> | null),
             fraudHold: scored.action === "HOLD_ORDER",
             fraudVerificationRequired: scored.action === "REQUIRE_VERIFICATION",
             fraudAssessmentId: assessment.id,

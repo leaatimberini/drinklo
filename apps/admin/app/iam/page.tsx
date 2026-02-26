@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function IamPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
-  const [config, setConfig] = useState<any>({
+  const [config, setConfig] = useState<unknown>({
     ssoEnabled: false,
     ssoProtocol: "NONE",
     mfaEnabled: true,
@@ -22,7 +22,7 @@ export default function IamPage() {
   });
   const [msg, setMsg] = useState<string | null>(null);
   const [mfaCode, setMfaCode] = useState("");
-  const [mfaSetup, setMfaSetup] = useState<any>(null);
+  const [mfaSetup, setMfaSetup] = useState<unknown>(null);
 
   const auth = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 

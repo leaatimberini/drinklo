@@ -77,7 +77,7 @@ export class SandboxService {
 
   async resetDemoSnapshot(companyId: string) {
     await this.ensureDemoResetAllowed(companyId);
-    await this.prisma.$transaction(async (tx: any) => {
+    await this.prisma.$transaction(async (tx: unknown) => {
       await tx.stockReservationLot.deleteMany({ where: { companyId } });
       await tx.stockReservation.deleteMany({ where: { companyId } });
       await tx.orderStatusEvent.deleteMany({ where: { order: { companyId } } });
@@ -411,7 +411,7 @@ export class SandboxService {
       throw new NotFoundException("Order not found");
     }
 
-    await this.prisma.$transaction(async (tx: any) => {
+    await this.prisma.$transaction(async (tx: unknown) => {
       const payment = await tx.payment.findFirst({
         where: { orderId, provider: "MERCADOPAGO" },
       });

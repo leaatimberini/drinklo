@@ -1,7 +1,7 @@
 import { PlansService } from "./plans.service";
 
 describe("PlansService", () => {
-  const prismaMock: any = {
+  const prismaMock: unknown = {
     planEntitlement: {
       upsert: jest.fn(),
       findMany: jest.fn(),
@@ -22,9 +22,9 @@ describe("PlansService", () => {
   };
 
   beforeEach(() => {
-    Object.values(prismaMock).forEach((delegate: any) => {
+    Object.values(prismaMock).forEach((delegate: unknown) => {
       if (delegate && typeof delegate === "object") {
-        Object.values(delegate).forEach((fn: any) => {
+        Object.values(delegate).forEach((fn: unknown) => {
           if (typeof fn?.mockReset === "function") fn.mockReset();
         });
       }

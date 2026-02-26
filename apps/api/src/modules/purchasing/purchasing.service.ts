@@ -184,7 +184,7 @@ export class PurchasingService {
       });
 
       const location = await this.ensureDefaultStockLocation(tx, companyId);
-      const resultLines: any[] = [];
+      const resultLines: unknown[] = [];
 
       for (const line of dto.items) {
         let poItem = line.purchaseOrderItemId

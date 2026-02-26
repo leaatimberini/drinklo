@@ -12,7 +12,7 @@ export class PortalJwtStrategy extends PassportStrategy(Strategy, "portal-jwt") 
     });
   }
 
-  validate(payload: any) {
+  validate(payload: unknown) {
     return payload;
   }
 }

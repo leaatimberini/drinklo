@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export function RestrictedModeBanner() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-  const [state, setState] = useState<any | null>(null);
+  const [state, setState] = useState<unknown | null>(null);
 
   useEffect(() => {
     fetch(`${apiUrl}/themes/public`)

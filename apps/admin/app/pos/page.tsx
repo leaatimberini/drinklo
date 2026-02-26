@@ -422,7 +422,7 @@ export default function PosPage() {
 
         <label>
           Medio de pago
-          <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as any)}>
+          <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as unknown)}>
             <option value="cash">Efectivo</option>
             <option value="card">Tarjeta</option>
             <option value="transfer">Transferencia</option>

@@ -1,7 +1,7 @@
 import { AutomationService } from "./automation.service";
 import { ActionType, FlowStatus } from "@erp/db";
 
-function buildService(overrides: any = {}) {
+function buildService(overrides: unknown = {}) {
   const prisma = {
     flow: {
       findUnique: jest.fn(),
@@ -24,7 +24,7 @@ function buildService(overrides: any = {}) {
   const emails = {
     sendTest: jest.fn(),
   };
-  const service = new AutomationService(prisma as any, emails as any);
+  const service = new AutomationService(prisma as unknown, emails as unknown);
   return { service, prisma, emails };
 }
 

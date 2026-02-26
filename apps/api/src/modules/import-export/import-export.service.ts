@@ -14,16 +14,16 @@ export type ImportResult = {
   dryRun: boolean;
   errors: ImportError[];
   count: number;
-  preview: Record<string, any>[];
+  preview: Record<string, unknown>[];
 };
 
-function asBool(value: any) {
+function asBool(value: unknown) {
   if (typeof value === "boolean") return value;
   const str = String(value ?? "").toLowerCase();
   return str === "true" || str === "1" || str === "yes" || str === "si";
 }
 
-function asNumber(value: any) {
+function asNumber(value: unknown) {
   if (value === null || value === undefined || value === "") return null;
   const num = Number(value);
   return Number.isFinite(num) ? num : null;
@@ -41,11 +41,11 @@ export class ImportExportService {
     return SUPPORTED;
   }
 
-  validate(type: ImportType, rows: Record<string, any>[]) {
+  validate(type: ImportType, rows: Record<string, unknown>[]) {
     const errors: ImportError[] = [];
     const preview = rows.slice(0, 20);
 
-    const requireField = (row: any, field: string, rowIndex: number) => {
+    const requireField = (row: unknown, field: string, rowIndex: number) => {
       if (!row[field]) {
         errors.push({ row: rowIndex + 1, field, message: "Required" });
       }
@@ -83,7 +83,7 @@ export class ImportExportService {
     return { errors, preview };
   }
 
-  async validateRefs(type: ImportType, companyId: string, rows: Record<string, any>[]) {
+  async validateRefs(type: ImportType, companyId: string, rows: Record<string, unknown>[]) {
     const errors: ImportError[] = [];
 
     if (type === "variants") {
@@ -140,7 +140,7 @@ export class ImportExportService {
     return errors;
   }
 
-  async apply(type: ImportType, companyId: string, rows: Record<string, any>[]) {
+  async apply(type: ImportType, companyId: string, rows: Record<string, unknown>[]) {
     if (type === "products") {
       return this.importProducts(companyId, rows);
     }
@@ -156,7 +156,7 @@ export class ImportExportService {
     return this.importCustomers(companyId, rows);
   }
 
-  private async importProducts(companyId: string, rows: Record<string, any>[]) {
+  private async importProducts(companyId: string, rows: Record<string, unknown>[]) {
     return this.prisma.$transaction(async (tx) => {
       for (const row of rows) {
         const product = await tx.product.create({
@@ -184,7 +184,7 @@ export class ImportExportService {
     });
   }
 
-  private async importVariants(companyId: string, rows: Record<string, any>[]) {
+  private async importVariants(companyId: string, rows: Record<string, unknown>[]) {
     return this.prisma.$transaction(async (tx) => {
       for (const row of rows) {
         await tx.productVariant.create({
@@ -200,7 +200,7 @@ export class ImportExportService {
     });
   }
 
-  private async importPrices(companyId: string, rows: Record<string, any>[]) {
+  private async importPrices(companyId: string, rows: Record<string, unknown>[]) {
     const touchedSkus: string[] = [];
     await this.prisma.$transaction(async (tx) => {
       for (const row of rows) {
@@ -227,7 +227,7 @@ export class ImportExportService {
     await this.edgeCache.purgePricing(companyId, touchedSkus, "price_imported");
   }
 
-  private async importStock(companyId: string, rows: Record<string, any>[]) {
+  private async importStock(companyId: string, rows: Record<string, unknown>[]) {
     return this.prisma.$transaction(async (tx) => {
       for (const row of rows) {
         const variant = await tx.productVariant.findFirst({ where: { companyId, sku: row.variantSku } });
@@ -269,7 +269,7 @@ export class ImportExportService {
     });
   }
 
-  private async importCustomers(companyId: string, rows: Record<string, any>[]) {
+  private async importCustomers(companyId: string, rows: Record<string, unknown>[]) {
     return this.prisma.$transaction(async (tx) => {
       for (const row of rows) {
         const customer = await tx.customer.create({

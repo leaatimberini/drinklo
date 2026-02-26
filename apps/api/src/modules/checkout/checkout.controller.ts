@@ -21,7 +21,7 @@ export class CheckoutController {
   @Post("quote")
   async quote(@Body() body: QuoteRequestDto) {
     const company = await this.checkout.getCompany();
-    return this.shipping.quote(company.id, body as any);
+    return this.shipping.quote(company.id, body as unknown);
   }
 
   @Post("orders")

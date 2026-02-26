@@ -16,19 +16,19 @@ export class ImmutableAuditController {
 
   @Get()
   @Roles("admin", "support")
-  list(@Req() req: any, @Query() query: AuditQueryDto) {
+  list(@Req() req: unknown, @Query() query: AuditQueryDto) {
     return this.audit.list(req.user.companyId, query);
   }
 
   @Get("verify")
   @Roles("admin", "support")
-  verify(@Req() req: any, @Query() query: AuditQueryDto) {
+  verify(@Req() req: unknown, @Query() query: AuditQueryDto) {
     return this.audit.verify(req.user.companyId, query);
   }
 
   @Get("evidence-pack")
   @Roles("admin", "support")
-  async evidencePack(@Req() req: any, @Res() res: Response, @Query() query: AuditQueryDto) {
+  async evidencePack(@Req() req: unknown, @Res() res: Response, @Query() query: AuditQueryDto) {
     const pack = await this.audit.exportEvidencePack(req.user.companyId, query);
     const file = `evidence-pack-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
     res.setHeader("Content-Type", "application/json");

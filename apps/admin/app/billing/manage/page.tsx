@@ -40,16 +40,16 @@ export default function BillingManagePage() {
   const cpDefault = process.env.NEXT_PUBLIC_CONTROL_PLANE_URL ?? "http://localhost:3010";
   const [token, setToken] = useState("");
   const [data, setData] = useState<EntitlementsResponse | null>(null);
-  const [catalog, setCatalog] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<unknown[]>([]);
   const [targetTier, setTargetTier] = useState("C2");
-  const [preview, setPreview] = useState<any | null>(null);
+  const [preview, setPreview] = useState<unknown | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [marketingConsent, setMarketingConsent] = useState(false);
 
   const [cpUrl, setCpUrl] = useState(cpDefault);
   const [cpPortalToken, setCpPortalToken] = useState("");
   const [instanceId, setInstanceId] = useState("");
-  const [portalData, setPortalData] = useState<any | null>(null);
+  const [portalData, setPortalData] = useState<unknown | null>(null);
 
   async function loadInstanceBilling() {
     setMessage(null);
@@ -248,7 +248,7 @@ export default function BillingManagePage() {
             <div><strong>Próximo cobro:</strong> {portalData.account.nextBillingAt ? new Date(portalData.account.nextBillingAt).toLocaleString() : "-"}</div>
             <h3>Facturas</h3>
             <ul>
-              {(portalData.invoices ?? []).slice(0, 8).map((inv: any) => (
+              {(portalData.invoices ?? []).slice(0, 8).map((inv: unknown) => (
                 <li key={inv.id}>
                   {inv.status} · {inv.currency} {inv.amount}
                   {inv.status === "OPEN" ? <> <button onClick={() => payOpenInvoice(inv.id)}>Pagar</button></> : null}

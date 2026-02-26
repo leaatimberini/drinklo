@@ -10,13 +10,13 @@ export function initSentry() {
     tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0),
     beforeSend(event) {
       if (event.request) {
-        const headers = { ...(event.request.headers ?? {}) } as Record<string, any>;
+        const headers = { ...(event.request.headers ?? {}) } as Record<string, unknown>;
         delete headers.authorization;
         delete headers.cookie;
         event.request.headers = headers;
       }
       if (event.extra) {
-        const extra = { ...event.extra } as Record<string, any>;
+        const extra = { ...event.extra } as Record<string, unknown>;
         for (const key of Object.keys(extra)) {
           if (/password|token|secret/i.test(key)) {
             extra[key] = "[REDACTED]";

@@ -57,7 +57,7 @@ export class EdgeCacheService {
     await this.post("/api/edge/invalidate", event);
   }
 
-  private async post(path: string, payload: any) {
+  private async post(path: string, payload: unknown) {
     if (!this.controlPlaneUrl || !this.controlPlaneToken) {
       return;
     }
@@ -71,7 +71,7 @@ export class EdgeCacheService {
         },
         body: JSON.stringify(payload),
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.warn(`control-plane ingest failed: ${error?.message ?? "unknown"}`);
     }
   }

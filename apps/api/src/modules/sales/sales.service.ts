@@ -239,7 +239,7 @@ export class SalesService {
           let lotPicks: Array<{ lotCode: string; quantity: number }> = [];
           try {
             lotPicks = await this.lots.consumeLotsForSaleWithClient(
-              tx as any,
+              tx as unknown,
               company.id,
               item.variant.id,
               item.quantity,
@@ -247,7 +247,7 @@ export class SalesService {
             );
           } catch (error) {
             const hasTrackedLots = await this.lots.hasTrackedLotsWithClient(
-              tx as any,
+              tx as unknown,
               company.id,
               item.variant.id,
               stockItem.branchId ?? undefined,

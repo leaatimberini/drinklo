@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-export function stableStringify(value: any): string {
+export function stableStringify(value: unknown): string {
   if (value === null || typeof value !== "object") {
     return JSON.stringify(value);
   }
@@ -12,7 +12,7 @@ export function stableStringify(value: any): string {
   return `{${entries.join(",")}}`;
 }
 
-export function signPayload(payload: any, secret: string) {
+export function signPayload(payload: unknown, secret: string) {
   const data = stableStringify(payload);
   return crypto.createHmac("sha256", secret).update(data).digest("hex");
 }

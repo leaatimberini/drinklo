@@ -13,9 +13,9 @@ export type PluginContext = {
 };
 
 export type ProductDecoratorHook = (input: {
-  product: any;
+  product: unknown;
   context: PluginContext;
-}) => Promise<Record<string, any> | null> | Record<string, any> | null;
+}) => Promise<Record<string, unknown> | null> | Record<string, unknown> | null;
 
 export type PricingRuleHook = (input: {
   item: { productId: string; variantId?: string | null; quantity: number; unitPrice: number };
@@ -25,7 +25,7 @@ export type PricingRuleHook = (input: {
 export type UiSlotHook = (input: {
   slot: string;
   context: PluginContext;
-}) => Promise<Array<{ title: string; body: string }> | { title: string; body: string } | null;
+}) => Promise<Array<{ title: string; body: string }> | null> | Array<{ title: string; body: string }> | null;
 
 export type PluginModule = {
   hooks?: {

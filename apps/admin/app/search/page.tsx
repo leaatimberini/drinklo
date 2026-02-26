@@ -40,7 +40,7 @@ export default function SearchAdminPage() {
 
   async function saveConfig() {
     setMessage(null);
-    let parsed: any = {};
+    let parsed: unknown = {};
     try {
       parsed = JSON.parse(synonyms || "{}");
     } catch {

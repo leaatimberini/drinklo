@@ -2,7 +2,7 @@ import { PromosService } from "./promos.service";
 import { CouponType } from "@erp/db";
 
 describe("PromosService", () => {
-  function buildService(overrides: any = {}) {
+  function buildService(overrides: unknown = {}) {
     const prisma = {
       coupon: {
         findFirst: jest.fn(),
@@ -20,7 +20,7 @@ describe("PromosService", () => {
       },
       ...overrides,
     };
-    return { service: new PromosService(prisma as any), prisma };
+    return { service: new PromosService(prisma as unknown), prisma };
   }
 
   it("applies percent coupon only to eligible category", async () => {

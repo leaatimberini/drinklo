@@ -3,6 +3,8 @@ import { Cron } from "@nestjs/schedule";
 import type { Subscription } from "@erp/db";
 import { Queue, Worker } from "bullmq";
 import IORedis from "ioredis";
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- optional runtime import used only when email notifications are triggered
+import { createRequire } from "node:module";
 import { PrismaService } from "../prisma/prisma.service";
 import { ImmutableAuditService } from "../immutable-audit/immutable-audit.service";
 import { BotAuditService } from "../bot-audit/bot-audit.service";
@@ -11,6 +13,7 @@ import { addDaysPreservingBuenosAiresWallClock } from "../plans/plan-time.util";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_GRACE_DAYS = 7;
 const QUEUE_NAME = "subscription-lifecycle";
+const requireModule = createRequire(__filename);
 
 type LifecycleJobName = "trial-expirer" | "grace-expirer" | "past-due-handler" | "trial-reminder-notifier";
 
@@ -41,7 +44,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
     if (!redisUrl) return;
 
     this.connection = new IORedis(redisUrl);
-    this.queue = new Queue(QUEUE_NAME, { connection: this.connection as any });
+    this.queue = new Queue(QUEUE_NAME, { connection: this.connection as unknown });
     this.worker = new Worker(
       QUEUE_NAME,
       async (job) => {
@@ -59,7 +62,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
             return { ok: false, reason: "unknown_job" };
         }
       },
-      { connection: this.connection as any },
+      { connection: this.connection as unknown },
     );
   }
 
@@ -371,7 +374,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
     fromStatus: string,
     toStatus: string,
     actor: string,
-    payload: Record<string, any>,
+    payload: Record<string, unknown>,
   ) {
     await this.audit.append({
       companyId,
@@ -398,7 +401,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
     subscription: Subscription,
     kind: "trial_expired" | "past_due_started" | "grace_started" | "restricted_started",
     actor: string,
-    extraPayload: Record<string, any>,
+    extraPayload: Record<string, unknown>,
   ) {
     const messages = {
       trial_expired: {
@@ -442,7 +445,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
       dedupeSuffix: string;
       subject: string;
       html: string;
-      payload: Record<string, any>;
+      payload: Record<string, unknown>;
     },
   ) {
     let sent = 0;
@@ -528,7 +531,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
   }
 
   protected async sendEmail(to: string, subject: string, html: string) {
-    const { buildEmailSender } = require("../email-templates/email-sender") as {
+    const { buildEmailSender } = requireModule("../email-templates/email-sender") as {
       buildEmailSender: () => { send(input: { to: string; subject: string; html: string }): Promise<void> };
     };
     const sender = buildEmailSender();
@@ -557,7 +560,7 @@ export class SubscriptionLifecycleService implements OnModuleInit, OnModuleDestr
     kind: string;
     dedupeKey: string;
     recipient: string | null;
-    payload: any;
+    payload: unknown;
   }) {
     try {
       const result = await this.prisma.subscriptionLifecycleNotification.createMany({

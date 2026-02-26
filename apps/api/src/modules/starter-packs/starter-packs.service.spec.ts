@@ -10,7 +10,7 @@ describe("StarterPacksService", () => {
       attributeDefinition: {
         upsert: jest.fn().mockResolvedValue({ id: "a1" }),
       },
-    } as any;
+    } as unknown;
 
     const service = new StarterPacksService(prisma);
     await service.applyCatalog("co1");
@@ -26,7 +26,7 @@ describe("StarterPacksService", () => {
       },
       dashboardTemplate: { create: jest.fn().mockResolvedValue({ id: "d1" }) },
       reportTemplate: { create: jest.fn().mockResolvedValue({ id: "r1" }) },
-    } as any;
+    } as unknown;
 
     const service = new StarterPacksService(prisma);
     await service.applyTemplates("co1");

@@ -44,15 +44,15 @@ describe("AiCopilotService", () => {
       count: jest.fn(),
     },
     $queryRaw: jest.fn(),
-  } as any;
+  } as unknown;
 
   const audit = {
     append: jest.fn().mockResolvedValue(undefined),
-  } as any;
+  } as unknown;
 
   const ops = {
     getSnapshot: jest.fn(),
-  } as any;
+  } as unknown;
 
   const userBase = {
     sub: "u1",
@@ -100,7 +100,7 @@ describe("AiCopilotService", () => {
   it("requires explicit approval before executing action", async () => {
     const service = new AiCopilotService(prisma, audit, ops);
 
-    const response = await service.chat(userBase as any, "crear cupon del 10", "admin");
+    const response = await service.chat(userBase as unknown, "crear cupon del 10", "admin");
 
     expect(response.approvalRequired).toBe(true);
     expect(response.proposals.length).toBeGreaterThan(0);
@@ -111,13 +111,13 @@ describe("AiCopilotService", () => {
     const service = new AiCopilotService(prisma, audit, ops);
     const user = { ...userBase, permissions: ["products:read"] };
 
-    await expect(service.approveProposal(user as any, "p1")).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.approveProposal(user as unknown, "p1")).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it("generates immutable audit on approved execution", async () => {
     const service = new AiCopilotService(prisma, audit, ops);
 
-    const result = await service.approveProposal(userBase as any, "p1", "ok");
+    const result = await service.approveProposal(userBase as unknown, "p1", "ok");
 
     expect(result.execution.ok).toBe(true);
     expect(prisma.coupon.create).toHaveBeenCalledTimes(1);
@@ -127,7 +127,7 @@ describe("AiCopilotService", () => {
   it("returns explain-and-cite references in chat responses", async () => {
     const service = new AiCopilotService(prisma, audit, ops);
 
-    const response = await service.chat(userBase as any, "necesito ayuda con backups y deploy", "admin");
+    const response = await service.chat(userBase as unknown, "necesito ayuda con backups y deploy", "admin");
 
     expect(Array.isArray(response.citations)).toBe(true);
     expect(response.citations.length).toBeGreaterThan(0);
@@ -142,7 +142,7 @@ describe("AiCopilotService", () => {
       permissions: ["products:read"],
     };
 
-    const response = await service.chat(user as any, "incidente redis caido, sugeri runbook", "incident");
+    const response = await service.chat(user as unknown, "incidente redis caido, sugeri runbook", "incident");
 
     expect(response.message).toContain("Sin permiso para modo incidentes");
     expect(response.proposals).toHaveLength(0);
@@ -168,13 +168,13 @@ describe("AiCopilotService", () => {
     const service = new AiCopilotService(prisma, audit, ops);
     const user = { ...userBase, permissions: [...userBase.permissions, "settings:write"] };
 
-    const chat = await service.chat(user as any, "incidente redis timeout, sugeri runbook y mitigar", "incident");
+    const chat = await service.chat(user as unknown, "incidente redis timeout, sugeri runbook y mitigar", "incident");
 
     expect(chat.approvalRequired).toBe(true);
-    expect(chat.proposals.some((p: any) => p.actionType === "RUN_INCIDENT_PLAYBOOK")).toBe(true);
+    expect(chat.proposals.some((p: unknown) => p.actionType === "RUN_INCIDENT_PLAYBOOK")).toBe(true);
     expect(prisma.coupon.create).not.toHaveBeenCalled();
 
-    const approved = await service.approveProposal(user as any, "p_inc", "approved_incident_action");
+    const approved = await service.approveProposal(user as unknown, "p_inc", "approved_incident_action");
 
     expect(approved.execution.ok).toBe(true);
     expect(approved.execution.resource).toBe("incidentPlaybook");

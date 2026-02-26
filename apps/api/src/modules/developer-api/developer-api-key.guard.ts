@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { DEVELOPER_API_SCOPES_KEY } from "./scopes.decorator";
 import { DeveloperApiService } from "./developer-api.service";
 
-function getApiKeyFromRequest(request: any) {
+function getApiKeyFromRequest(request: unknown) {
   const header = request.headers?.["x-api-key"] ?? request.headers?.["X-API-Key"];
   if (header) {
     return String(header).trim();

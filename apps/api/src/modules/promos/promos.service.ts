@@ -34,7 +34,7 @@ export class PromosService {
     return this.prisma.coupon.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
   }
 
-  async createCoupon(companyId: string, data: any) {
+  async createCoupon(companyId: string, data: unknown) {
     return this.prisma.coupon.create({
       data: {
         companyId,
@@ -59,7 +59,7 @@ export class PromosService {
     return this.prisma.giftCard.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
   }
 
-  async createGiftCard(companyId: string, data: any, createdById?: string) {
+  async createGiftCard(companyId: string, data: unknown, createdById?: string) {
     return this.prisma.$transaction(async (tx) => {
       const card = await tx.giftCard.create({
         data: {
@@ -102,7 +102,7 @@ export class PromosService {
     return this.prisma.loyaltyTier.findMany({ where: { companyId }, orderBy: { minPoints: "asc" } });
   }
 
-  async createLoyaltyTier(companyId: string, data: any) {
+  async createLoyaltyTier(companyId: string, data: unknown) {
     return this.prisma.loyaltyTier.create({
       data: {
         companyId,
@@ -117,7 +117,7 @@ export class PromosService {
     return this.prisma.loyaltyRule.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
   }
 
-  async createLoyaltyRule(companyId: string, data: any) {
+  async createLoyaltyRule(companyId: string, data: unknown) {
     return this.prisma.loyaltyRule.create({
       data: {
         companyId,

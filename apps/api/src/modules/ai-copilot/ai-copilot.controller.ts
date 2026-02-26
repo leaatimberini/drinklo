@@ -15,25 +15,25 @@ export class AiCopilotController {
 
   @Post("chat")
   @Permissions("products:read")
-  chat(@Req() req: any, @Body() body: CopilotChatDto) {
+  chat(@Req() req: unknown, @Body() body: CopilotChatDto) {
     return this.copilot.chat(req.user, body.prompt, body.mode ?? "admin");
   }
 
   @Get("proposals")
   @Permissions("products:read")
-  list(@Req() req: any, @Query("status") status?: string) {
+  list(@Req() req: unknown, @Query("status") status?: string) {
     return this.copilot.listProposals(req.user.companyId, status ?? "PENDING");
   }
 
   @Get("rag/status")
   @Permissions("products:read")
-  ragStatus(@Req() req: any, @Query("mode") mode?: string) {
+  ragStatus(@Req() req: unknown, @Query("mode") mode?: string) {
     return this.copilot.getRagStatus(req.user, mode ?? "admin");
   }
 
   @Post("proposals/:id/approve")
   @Permissions("products:read")
-  approve(@Req() req: any, @Param("id") id: string, @Body() body: CopilotApproveDto) {
+  approve(@Req() req: unknown, @Param("id") id: string, @Body() body: CopilotApproveDto) {
     return this.copilot.approveProposal(req.user, id, body.note);
   }
 }

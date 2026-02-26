@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { decryptSecret, encryptSecret } from "./secret-crypto";
 
-type SecretPayload = Record<string, any>;
+type SecretPayload = Record<string, unknown>;
 
-const PROVIDER_MASKS: Record<string, (payload: SecretPayload) => Record<string, any>> = {
+const PROVIDER_MASKS: Record<string, (payload: SecretPayload) => Record<string, unknown>> = {
   MERCADOPAGO: (payload) => ({
     accessTokenLast4: payload.accessToken ? String(payload.accessToken).slice(-4) : undefined,
     publicKeyLast4: payload.publicKey ? String(payload.publicKey).slice(-4) : undefined,

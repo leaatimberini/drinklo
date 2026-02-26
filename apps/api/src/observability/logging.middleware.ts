@@ -8,9 +8,9 @@ export function loggingMiddleware(req: Request, res: Response, next: NextFunctio
     const log = {
       level: "info",
       msg: "request",
-      requestId: (req as any).requestId,
-      userId: (req as any).user?.sub,
-      companyId: (req as any).user?.companyId,
+      requestId: (req as unknown).requestId,
+      userId: (req as unknown).user?.sub,
+      companyId: (req as unknown).user?.companyId,
       route: req.originalUrl,
       method: req.method,
       status: res.statusCode,

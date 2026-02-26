@@ -15,7 +15,7 @@ export class StarterPacksController {
 
   @Post("apply")
   @Permissions("settings:write")
-  async apply(@Req() req: any, @Body() body: ApplyStarterPackDto) {
+  async apply(@Req() req: unknown, @Body() body: ApplyStarterPackDto) {
     const catalog = body.catalog ?? true;
     const templates = body.templates ?? true;
     const packageId = body.packageId;

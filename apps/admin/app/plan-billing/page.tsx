@@ -57,11 +57,11 @@ type EntitlementsResponse = {
 export default function PlanBillingPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
-  const [catalog, setCatalog] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<unknown[]>([]);
   const [data, setData] = useState<EntitlementsResponse | null>(null);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<unknown[]>([]);
   const [targetTier, setTargetTier] = useState("C2");
-  const [changePreview, setChangePreview] = useState<any | null>(null);
+  const [changePreview, setChangePreview] = useState<unknown | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [restrictedVariant, setRestrictedVariant] = useState<"CATALOG_ONLY" | "ALLOW_BASIC_SALES">("ALLOW_BASIC_SALES");
 
@@ -257,11 +257,11 @@ export default function PlanBillingPage() {
               <div><strong>Estado:</strong> {data.subscription.status}</div>
               <div><strong>Tier actual:</strong> {data.subscription.currentTier}</div>
               <div><strong>Proximo tier:</strong> {data.subscription.nextTier ?? "-"}</div>
-              <div><strong>Cancel fin ciclo:</strong> {String((data.subscription as any).cancelAtPeriodEnd ?? false)}</div>
+              <div><strong>Cancel fin ciclo:</strong> {String((data.subscription as unknown).cancelAtPeriodEnd ?? false)}</div>
               <div><strong>Periodo actual:</strong> {new Date(data.subscription.currentPeriodStart).toLocaleString()} - {new Date(data.subscription.currentPeriodEnd).toLocaleString()}</div>
               <div><strong>Trial hasta:</strong> {data.subscription.trialEndAt ? new Date(data.subscription.trialEndAt).toLocaleString() : "-"}</div>
               <div><strong>Timezone:</strong> {data.timezone ?? "America/Argentina/Buenos_Aires"}</div>
-              <div><strong>Soft limit:</strong> {String((data.subscription as any).softLimited ?? false)}</div>
+              <div><strong>Soft limit:</strong> {String((data.subscription as unknown).softLimited ?? false)}</div>
             </div>
           </section>
 
@@ -300,7 +300,7 @@ export default function PlanBillingPage() {
                 <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   <label>
                     Variante provider
-                    <select value={restrictedVariant} onChange={(e) => setRestrictedVariant(e.target.value as any)}>
+                    <select value={restrictedVariant} onChange={(e) => setRestrictedVariant(e.target.value as unknown)}>
                       <option value="ALLOW_BASIC_SALES">allow-basic-sales</option>
                       <option value="CATALOG_ONLY">catalog-only</option>
                     </select>

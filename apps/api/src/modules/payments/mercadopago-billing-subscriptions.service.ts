@@ -21,7 +21,7 @@ type PaymentLike = {
   status?: string;
   preapproval_id?: string | number;
   date_approved?: string;
-  metadata?: any;
+  metadata?: unknown;
   external_reference?: string;
 };
 
@@ -44,7 +44,7 @@ export class MercadoPagoBillingSubscriptionsService {
     return new MercadoPagoAdapter({ accessToken });
   }
 
-  private normalizeMpStatus(value: any) {
+  private normalizeMpStatus(value: unknown) {
     return String(value ?? "").toLowerCase();
   }
 
@@ -56,7 +56,7 @@ export class MercadoPagoBillingSubscriptionsService {
     companyId: string,
     subscriptionId: string,
     action: string,
-    payload: Record<string, any>,
+    payload: Record<string, unknown>,
   ) {
     await this.audit.append({
       companyId,
@@ -116,7 +116,7 @@ export class MercadoPagoBillingSubscriptionsService {
       }),
     ]);
     const tier = (options?.targetTier ?? subscription.currentTier) as "C1" | "C2" | "C3";
-    const entitlement = catalog.find((item: any) => item.tier === tier);
+    const entitlement = catalog.find((item: unknown) => item.tier === tier);
     if (!entitlement) {
       throw new Error(`Entitlement not found for tier ${tier}`);
     }
@@ -125,7 +125,7 @@ export class MercadoPagoBillingSubscriptionsService {
     const reason = `${company?.name ?? "Company"} - Plan ${tier}`;
     const isSandbox = Boolean(settings?.sandboxMode);
 
-    let response: any;
+    let response: unknown;
     if (isSandbox) {
       response = this.sandbox.deterministicPreapproval(companyId, amount, tier);
     } else {
@@ -145,7 +145,7 @@ export class MercadoPagoBillingSubscriptionsService {
         },
       };
       response = subscription.mpPreapprovalId
-        ? await adapter.updatePreapproval(subscription.mpPreapprovalId, payload as any)
+        ? await adapter.updatePreapproval(subscription.mpPreapprovalId, payload as unknown)
         : await adapter.createPreapproval(payload);
     }
 
@@ -156,7 +156,7 @@ export class MercadoPagoBillingSubscriptionsService {
         mpPreapprovalId: String(response.id ?? subscription.mpPreapprovalId ?? ""),
         mpPreapprovalStatus: String(response.status ?? "pending"),
         mpNextBillingDate: response.next_payment_date ? new Date(response.next_payment_date) : undefined,
-        mpSubscriptionRaw: response as any,
+        mpSubscriptionRaw: response as unknown,
       },
     });
 
@@ -176,11 +176,11 @@ export class MercadoPagoBillingSubscriptionsService {
   async handlePreapprovalWebhook(params: {
     companyId?: string | null;
     dataId?: string;
-    body?: any;
+    body?: unknown;
     topic?: MpTopic;
   }) {
     const dataId = String(params.dataId ?? "");
-    let subscription =
+    const subscription =
       (dataId
         ? await this.prisma.subscription.findFirst({
             where: { mpPreapprovalId: dataId },
@@ -194,10 +194,10 @@ export class MercadoPagoBillingSubscriptionsService {
     }
     const companyId = subscription.companyId;
     const settings = await this.prisma.companySettings.findUnique({ where: { companyId } });
-    let preapproval: any;
+    let preapproval: unknown;
     if (settings?.sandboxMode) {
       const catalog = await this.plans.getPlanCatalog();
-      const entitlement = catalog.find((item: any) => item.tier === subscription!.currentTier);
+      const entitlement = catalog.find((item: unknown) => item.tier === subscription!.currentTier);
       preapproval = this.sandbox.deterministicPreapproval(companyId, Number(entitlement?.monthlyPriceArs ?? 0), String(subscription.currentTier));
       preapproval.id = subscription.mpPreapprovalId ?? preapproval.id;
     } else {
@@ -220,7 +220,7 @@ export class MercadoPagoBillingSubscriptionsService {
         mpPreapprovalId: String(preapproval.id ?? subscription.mpPreapprovalId ?? ""),
         mpPreapprovalStatus: String(preapproval.status ?? subscription.mpPreapprovalStatus ?? "pending"),
         mpNextBillingDate: preapproval.next_payment_date ? new Date(preapproval.next_payment_date) : undefined,
-        mpSubscriptionRaw: preapproval as any,
+        mpSubscriptionRaw: preapproval as unknown,
         status: nextStatus,
         graceEndAt:
           nextStatus && (nextStatus === "PAST_DUE" || nextStatus === "GRACE")
@@ -263,7 +263,7 @@ export class MercadoPagoBillingSubscriptionsService {
 
     const now = new Date();
     let nextStatus = subscription.status;
-    const data: any = {
+    const data: unknown = {
       billingProvider: "MERCADOPAGO",
       mpPreapprovalId: preapprovalId,
     };

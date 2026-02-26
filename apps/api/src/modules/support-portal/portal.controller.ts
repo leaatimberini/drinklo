@@ -44,14 +44,14 @@ export class PortalController {
   @Get("tickets")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  tickets(@Req() req: any) {
+  tickets(@Req() req: unknown) {
     return this.portal.listTickets(req.user.companyId, req.user.sub);
   }
 
   @Post("tickets")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  createTicket(@Req() req: any, @Body() body: CreateTicketDto) {
+  createTicket(@Req() req: unknown, @Body() body: CreateTicketDto) {
     return this.portal.createTicket(
       req.user.companyId,
       req.user.sub,
@@ -64,7 +64,7 @@ export class PortalController {
   @Get("tickets/detail")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  ticket(@Req() req: any) {
+  ticket(@Req() req: unknown) {
     const id = req.query.id;
     return this.portal.getTicket(req.user.companyId, req.user.sub, id);
   }
@@ -72,7 +72,7 @@ export class PortalController {
   @Post("tickets/message")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  addMessage(@Req() req: any, @Body() body: AddMessageDto) {
+  addMessage(@Req() req: unknown, @Body() body: AddMessageDto) {
     const ticketId = req.query.id;
     return this.portal.addMessage(req.user.companyId, req.user.sub, ticketId, body.message);
   }
@@ -80,7 +80,7 @@ export class PortalController {
   @Post("tickets/diagnostic")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  attachDiagnostic(@Req() req: any) {
+  attachDiagnostic(@Req() req: unknown) {
     const ticketId = req.query.id;
     return this.portal.attachDiagnostic(req.user.companyId, req.user.sub, ticketId);
   }
@@ -88,19 +88,19 @@ export class PortalController {
   @Get("incidents")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  incidents(@Req() req: any) {
+  incidents(@Req() req: unknown) {
     return this.portal.listIncidents(req.user.companyId);
   }
 
   @Get("integrations")
   @ApiBearerAuth()
   @UseGuards(AuthGuard("portal-jwt"))
-  integrations(@Req() req: any) {
+  integrations(@Req() req: unknown) {
     return this.portal.listIntegrations(req.user.companyId);
   }
 
   @Post("email/inbound")
-  async inboundEmail(@Body() body: any, @Req() req: any) {
+  async inboundEmail(@Body() body: unknown, @Req() req: unknown) {
     if (process.env.SUPPORT_EMAIL_INBOUND_ENABLED !== "true") {
       return { ok: false, message: "disabled" };
     }

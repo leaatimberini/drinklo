@@ -1,7 +1,7 @@
 import { Prisma, TaxPriceMode, TaxRoundingMode, TaxRoundingScope, TaxRuleKind } from "@erp/db";
 import { TaxesService } from "./taxes.service";
 
-function makePrismaMock(overrides?: Partial<any>) {
+function makePrismaMock(overrides?: Partial<unknown>) {
   const profile = {
     id: "tp1",
     companyId: "co1",
@@ -35,7 +35,7 @@ function makePrismaMock(overrides?: Partial<any>) {
     },
     $transaction: jest.fn(),
     ...overrides,
-  } as any;
+  } as unknown;
 }
 
 describe("TaxesService", () => {

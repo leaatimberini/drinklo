@@ -11,7 +11,7 @@ export type InvalidationEvent = {
   reason: string;
   tags: string[];
   paths: string[];
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
 };
 
 export type WebVitalSample = {

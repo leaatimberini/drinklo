@@ -27,19 +27,19 @@ export class SearchAdminController {
 
   @Get("config")
   @Roles("admin", "manager", "marketing")
-  async getConfig(@Req() req: any) {
+  async getConfig(@Req() req: unknown) {
     return this.search.getConfig(req.user.companyId);
   }
 
   @Post("config")
   @Roles("admin", "manager", "marketing")
-  async updateConfig(@Req() req: any, @Body() body: SearchConfigDto) {
+  async updateConfig(@Req() req: unknown, @Body() body: SearchConfigDto) {
     return this.search.updateConfig(req.user.companyId, body);
   }
 
   @Post("reindex")
   @Roles("admin")
-  async reindex(@Req() req: any, @Body() body: SearchReindexDto) {
+  async reindex(@Req() req: unknown, @Body() body: SearchReindexDto) {
     return this.search.enqueueReindex(req.user.companyId, body.mode);
   }
 }

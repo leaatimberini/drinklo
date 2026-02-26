@@ -26,8 +26,8 @@ export default function ArcaReadinessPage() {
   const [amountArs, setAmountArs] = useState("1234.56");
   const [pointOfSale, setPointOfSale] = useState("");
   const [checklist, setChecklist] = useState<ChecklistResponse | null>(null);
-  const [dryRun, setDryRun] = useState<any>(null);
-  const [report, setReport] = useState<any>(null);
+  const [dryRun, setDryRun] = useState<unknown>(null);
+  const [report, setReport] = useState<unknown>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<null | "checklist" | "dryrun" | "report">(null);
 
@@ -51,7 +51,7 @@ export default function ArcaReadinessPage() {
   async function runDryRun() {
     setLoading("dryrun");
     setMessage(null);
-    const body: any = { invoiceTypes, amountArs: Number(amountArs) };
+    const body: unknown = { invoiceTypes, amountArs: Number(amountArs) };
     if (pointOfSale.trim()) body.pointOfSale = Number(pointOfSale);
     const res = await fetch(`${apiUrl}/billing/arca/readiness/dry-run`, {
       method: "POST",
@@ -71,7 +71,7 @@ export default function ArcaReadinessPage() {
   async function generateReport() {
     setLoading("report");
     setMessage(null);
-    const body: any = { invoiceTypes, amountArs: Number(amountArs), includeDryRun: true };
+    const body: unknown = { invoiceTypes, amountArs: Number(amountArs), includeDryRun: true };
     if (pointOfSale.trim()) body.pointOfSale = Number(pointOfSale);
     const res = await fetch(`${apiUrl}/billing/arca/readiness/report`, {
       method: "POST",
@@ -183,7 +183,7 @@ export default function ArcaReadinessPage() {
                 <tr><th align="left">Tipo</th><th align="left">OK</th><th align="left">Resultado</th><th align="left">CAE/Error</th></tr>
               </thead>
               <tbody>
-                {dryRun.cases.map((c: any, idx: number) => (
+                {dryRun.cases.map((c: unknown, idx: number) => (
                   <tr key={`${c.type}-${idx}`} style={{ borderTop: "1px solid #e5e7eb" }}>
                     <td>{c.type}</td><td>{String(c.ok)}</td><td>{c.result ?? "-"}</td><td>{c.cae ?? c.error ?? "-"}</td>
                   </tr>

@@ -12,7 +12,7 @@ type PluginDefinition = {
   root: string;
 };
 
-function stableStringify(value: any): string {
+function stableStringify(value: unknown): string {
   if (value === null || typeof value !== "object") {
     return JSON.stringify(value);
   }
@@ -27,7 +27,7 @@ function stableStringify(value: any): string {
 function verifySignature(manifest: PluginManifest, secret: string) {
   if (!manifest.signature) return false;
   const payload = { ...manifest };
-  delete (payload as any).signature;
+  delete (payload as unknown).signature;
   const expected = crypto.createHmac("sha256", secret).update(stableStringify(payload)).digest("hex");
   if (expected.length !== manifest.signature.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(manifest.signature));
@@ -130,14 +130,14 @@ export class PluginsService {
     return manifest.permissions.filter((perm) => allowed.includes(perm));
   }
 
-  async decorateProduct(companyId: string, product: any) {
+  async decorateProduct(companyId: string, product: unknown) {
     const plugins = await this.getAllowedPlugins(companyId);
     const records = await this.prisma.companyPlugin.findMany({
       where: { companyId, enabled: true },
     });
     const recordMap = new Map(records.map((r) => [r.name, r]));
 
-    const decorations: Array<{ plugin: string; data: any }> = [];
+    const decorations: Array<{ plugin: string; data: unknown }> = [];
     for (const plugin of plugins) {
       const hook = plugin.module.hooks?.["product.decorate"];
       if (!hook) continue;

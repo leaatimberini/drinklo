@@ -10,7 +10,7 @@ describe("ImportExportService", () => {
   it("validates products CSV", () => {
     const buffer = fs.readFileSync(fixture("products.csv"));
     const { rows } = parseFile(buffer);
-    const service = new ImportExportService({} as any, {} as any, {} as any);
+    const service = new ImportExportService({} as unknown, {} as unknown, {} as unknown);
     const result = service.validate("products", rows);
     expect(result.errors.length).toBe(0);
     expect(result.preview.length).toBeGreaterThan(0);
@@ -19,7 +19,7 @@ describe("ImportExportService", () => {
   it("detects invalid products", () => {
     const buffer = fs.readFileSync(fixture("products_invalid.csv"));
     const { rows } = parseFile(buffer);
-    const service = new ImportExportService({} as any, {} as any, {} as any);
+    const service = new ImportExportService({} as unknown, {} as unknown, {} as unknown);
     const result = service.validate("products", rows);
     expect(result.errors.length).toBeGreaterThan(0);
   });
@@ -35,19 +35,19 @@ describe("ImportExportService", () => {
       priceRule: {
         create: jest.fn().mockResolvedValue({ id: "pr1" }),
       },
-    } as any;
+    } as unknown;
 
     const prisma = {
-      $transaction: jest.fn(async (run: any) => run(tx)),
-    } as any;
+      $transaction: jest.fn(async (run: unknown) => run(tx)),
+    } as unknown;
 
     const edgeCache = {
       purgePricing: jest.fn().mockResolvedValue(undefined),
-    } as any;
+    } as unknown;
 
     const catalog = {
       invalidateAll: jest.fn(),
-    } as any;
+    } as unknown;
 
     const service = new ImportExportService(prisma, edgeCache, catalog);
 

@@ -15,33 +15,33 @@ export class TaxesAdminController {
 
   @Get("profile")
   @Permissions("pricing:read")
-  getProfile(@Req() req: any) {
+  getProfile(@Req() req: unknown) {
     return this.taxes.getProfile(req.user.companyId);
   }
 
   @Put("profile")
   @Permissions("pricing:write")
   @SodAction("PRICING_CONFIGURE")
-  upsertProfile(@Req() req: any, @Body() body: UpsertTaxProfileDto) {
+  upsertProfile(@Req() req: unknown, @Body() body: UpsertTaxProfileDto) {
     return this.taxes.upsertProfile(req.user.companyId, body, req.user.sub);
   }
 
   @Get("rules")
   @Permissions("pricing:read")
-  listRules(@Req() req: any) {
+  listRules(@Req() req: unknown) {
     return this.taxes.listRules(req.user.companyId);
   }
 
   @Put("rules")
   @Permissions("pricing:write")
   @SodAction("PRICING_CONFIGURE")
-  replaceRules(@Req() req: any, @Body() body: ReplaceTaxRulesDto) {
+  replaceRules(@Req() req: unknown, @Body() body: ReplaceTaxRulesDto) {
     return this.taxes.replaceRules(req.user.companyId, body, req.user.sub);
   }
 
   @Post("simulate")
   @Permissions("pricing:read")
-  simulate(@Req() req: any, @Body() body: TaxSimulateDto) {
+  simulate(@Req() req: unknown, @Body() body: TaxSimulateDto) {
     return this.taxes.simulate(req.user.companyId, body);
   }
 }

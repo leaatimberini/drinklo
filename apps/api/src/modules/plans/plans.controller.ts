@@ -21,31 +21,31 @@ export class PlansController {
 
   @Get("admin/plans/subscription")
   @Roles("admin", "manager", "support")
-  subscription(@Req() req: any) {
+  subscription(@Req() req: unknown) {
     return this.plans.getSubscription(req.user.companyId);
   }
 
   @Get("admin/plans/entitlements")
   @Roles("admin", "manager", "support")
-  entitlements(@Req() req: any) {
+  entitlements(@Req() req: unknown) {
     return this.plans.getEffective(req.user.companyId);
   }
 
   @Get("admin/plans/usage/current")
   @Roles("admin", "manager", "support")
-  usage(@Req() req: any) {
+  usage(@Req() req: unknown) {
     return this.plans.getCurrentUsage(req.user.companyId);
   }
 
   @Get("admin/plans/restricted-mode")
   @Roles("admin", "support")
-  restrictedMode(@Req() req: any) {
+  restrictedMode(@Req() req: unknown) {
     return this.plans.getRestrictedModeConfig(req.user.companyId);
   }
 
   @Post("admin/plans/restricted-mode")
   @Roles("admin", "support")
-  setRestrictedMode(@Req() req: any, @Body() body: UpdateRestrictedModeVariantDto) {
+  setRestrictedMode(@Req() req: unknown, @Body() body: UpdateRestrictedModeVariantDto) {
     return this.plans.setRestrictedModeVariant(req.user.companyId, body.variant);
   }
 

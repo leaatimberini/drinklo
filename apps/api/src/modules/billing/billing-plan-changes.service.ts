@@ -62,14 +62,14 @@ export class BillingPlanChangesService {
 
   private async getCatalogByTier() {
     const catalog = await this.plans.getPlanCatalog();
-    return new Map(catalog.map((item: any) => [item.tier as Tier, item]));
+    return new Map(catalog.map((item: unknown) => [item.tier as Tier, item]));
   }
 
   private periodDurationDays(start: Date, end: Date) {
     return Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS));
   }
 
-  private async evaluateSoftLimits(companyId: string, targetTier: Tier, catalogByTier: Map<Tier, any>) {
+  private async evaluateSoftLimits(companyId: string, targetTier: Tier, catalogByTier: Map<Tier, unknown>) {
     const entitlement = catalogByTier.get(targetTier);
     const usage = await this.plans.getCurrentUsage(companyId);
     if (!entitlement) {
@@ -195,13 +195,13 @@ export class BillingPlanChangesService {
           periodStart: subscription.currentPeriodStart,
           periodEnd: subscription.currentPeriodEnd,
           effectiveAt: now,
-          remainingRatio: new Prisma.Decimal((estimate as any).proration.remainingRatio),
-          subtotal: new Prisma.Decimal((estimate as any).proration.total),
-          total: new Prisma.Decimal((estimate as any).proration.total),
+          remainingRatio: new Prisma.Decimal((estimate as unknown).proration.remainingRatio),
+          subtotal: new Prisma.Decimal((estimate as unknown).proration.total),
+          total: new Prisma.Decimal((estimate as unknown).proration.total),
           details: estimate,
           createdById: actorUserId ?? null,
           items: {
-            create: ((estimate as any).lineItems as Array<any>).map((item) => ({
+            create: ((estimate as unknown).lineItems as Array<unknown>).map((item) => ({
               type: item.type,
               description: item.description,
               amount: new Prisma.Decimal(item.amount),
@@ -355,7 +355,7 @@ export class BillingPlanChangesService {
         OR: [{ nextTier: { not: null } }, { cancelAtPeriodEnd: true }],
       },
     });
-    const results: any[] = [];
+    const results: unknown[] = [];
     for (const row of due) {
       const durationDays = this.periodDurationDays(row.currentPeriodStart, row.currentPeriodEnd);
       if (row.cancelAtPeriodEnd) {
@@ -400,7 +400,7 @@ export class BillingPlanChangesService {
           currentPeriodEnd: nextEnd,
           softLimited: soft.softLimited,
           softLimitReason: soft.reason,
-          softLimitSnapshot: soft.snapshot as any,
+          softLimitSnapshot: soft.snapshot as unknown,
         },
       });
       if (changed.count === 0) continue;

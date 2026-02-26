@@ -44,7 +44,7 @@ export class SupportController {
 
   @Post("customers")
   @Roles("admin", "support")
-  async createCustomer(@Body() body: any) {
+  async createCustomer(@Body() body: unknown) {
     const company = await this.prisma.company.findFirst();
     if (!company) {
       return { ok: false, message: "Company not found" };

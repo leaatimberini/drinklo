@@ -1,14 +1,14 @@
 import { SodPolicyMode } from "@erp/db";
 import { SodAccessReviewsService } from "./sod-access-reviews.service";
 
-function makeConfig(values?: Record<string, any>) {
+function makeConfig(values?: Record<string, unknown>) {
   return {
     get: (key: string) => values?.[key],
-  } as any;
+  } as unknown;
 }
 
-function makePrisma(overrides?: Partial<any>) {
-  const prisma: any = {
+function makePrisma(overrides?: Partial<unknown>) {
+  const prisma: unknown = {
     sodPolicy: {
       count: jest.fn().mockResolvedValue(2),
       createMany: jest.fn(),
@@ -78,7 +78,7 @@ function makePrisma(overrides?: Partial<any>) {
         },
       ]),
     },
-    $transaction: jest.fn(async (cb: any) => cb(prisma)),
+    $transaction: jest.fn(async (cb: unknown) => cb(prisma)),
     ...overrides,
   };
   return prisma;

@@ -13,13 +13,10 @@ import type {
   ConnectorSecretRotateDto,
   DeliveryLogsQueryDto,
   IntegrationBuilderPreviewDto,
-  UpsertIntegrationConnectorDto,
   UpsertIntegrationConnectorsDto,
 } from "./dto/integration-builder.dto";
 
-type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
-
-function getPath(obj: any, path: string): any {
+function getPath(obj: unknown, path: string): unknown {
   const normalized = path.startsWith("$.") ? path.slice(2) : path.startsWith("$") ? path.slice(1) : path;
   if (!normalized) return obj;
   const segments = normalized.split(".").filter(Boolean);
@@ -31,11 +28,11 @@ function getPath(obj: any, path: string): any {
   return curr ?? null;
 }
 
-function interpolateString(template: string, ctx: { event: any; secret: any }) {
+function interpolateString(template: string, ctx: { event: unknown; secret: unknown }) {
   if (template.startsWith("$.") || template === "$") {
     return getPath(ctx.event, template);
   }
-  return template.replace(/\{\{\s*(event|secret)\.([^\}]+)\s*\}\}/g, (_, root, path) => {
+  return template.replace(/\{\{\s*(event|secret)\.([^}]+)\s*\}\}/g, (_, root, path) => {
     const value = getPath(root === "event" ? ctx.event : ctx.secret, `$."${String(path).replace(/"/g, "")}"`);
     const direct = getPath(root === "event" ? ctx.event : ctx.secret, `$.${String(path).trim()}`);
     const resolved = direct ?? value;
@@ -43,7 +40,7 @@ function interpolateString(template: string, ctx: { event: any; secret: any }) {
   });
 }
 
-export function applyJsonMapping(template: any, ctx: { event: any; secret?: any }): any {
+export function applyJsonMapping(template: unknown, ctx: { event: unknown; secret?: unknown }): unknown {
   if (template === null || template === undefined) return null;
   if (typeof template === "string") return interpolateString(template, { event: ctx.event, secret: ctx.secret ?? {} });
   if (Array.isArray(template)) return template.map((item) => applyJsonMapping(item, ctx));
@@ -116,7 +113,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
   }
 
   async upsertConnectors(companyId: string, dto: UpsertIntegrationConnectorsDto) {
-    const saved = [] as any[];
+    const saved = [] as unknown[];
     for (const item of dto.items) {
       const data = {
         companyId,
@@ -242,7 +239,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
             sourceEvent: event.name,
             status: IntegrationConnectorDeliveryStatus.PENDING,
             maxAttempts: connector.retryMaxAttempts,
-            eventEnvelope: event as any,
+            eventEnvelope: event as unknown,
           },
         })
         .catch(() => undefined); // dedupe by unique(connectorId,eventId)
@@ -296,7 +293,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
       return;
     }
 
-    const event = delivery.eventEnvelope as any;
+    const event = delivery.eventEnvelope as unknown;
     const secret = delivery.connector.secretProviderKey
       ? await this.secrets.getSecret(delivery.companyId, delivery.connector.secretProviderKey)
       : null;
@@ -304,7 +301,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
     const outboundPayload = applyJsonMapping(delivery.connector.mapping, { event, secret });
     const outboundHeaders = (applyJsonMapping(delivery.connector.headers ?? {}, { event, secret }) ?? {}) as Record<
       string,
-      any
+      unknown
     >;
 
     const method = String(delivery.connector.method ?? "POST").toUpperCase();
@@ -322,7 +319,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
     try {
       const response = await this.performHttp(delivery.connector.destinationUrl, {
         method,
-        headers: outboundHeaders as any,
+        headers: outboundHeaders as unknown,
         body: ["GET", "DELETE"].includes(method) ? undefined : JSON.stringify(outboundPayload),
         timeoutMs,
       });
@@ -337,8 +334,8 @@ export class IntegrationBuilderService implements OnModuleDestroy {
             attemptCount: delivery.attemptCount + 1,
             deliveredAt: new Date(),
             durationMs,
-            requestPayload: outboundPayload as any,
-            requestHeaders: outboundHeaders as any,
+            requestPayload: outboundPayload as unknown,
+            requestHeaders: outboundHeaders as unknown,
             responseStatus: response.status,
             responseBody: response.body.slice(0, 8000),
             error: null,
@@ -355,7 +352,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
       } else {
         throw new Error(`HTTP ${response.status}: ${response.body.slice(0, 250)}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const attempt = delivery.attemptCount + 1;
       const finalAttempt = attempt >= delivery.maxAttempts;
       const durationMs = Date.now() - started;
@@ -369,8 +366,8 @@ export class IntegrationBuilderService implements OnModuleDestroy {
             durationMs,
             error: errorMessage,
             nextAttemptAt: null,
-            requestPayload: outboundPayload as any,
-            requestHeaders: outboundHeaders as any,
+            requestPayload: outboundPayload as unknown,
+            requestHeaders: outboundHeaders as unknown,
           },
         });
       } else {
@@ -383,8 +380,8 @@ export class IntegrationBuilderService implements OnModuleDestroy {
             durationMs,
             error: errorMessage,
             nextAttemptAt: new Date(Date.now() + backoffMs),
-            requestPayload: outboundPayload as any,
-            requestHeaders: outboundHeaders as any,
+            requestPayload: outboundPayload as unknown,
+            requestHeaders: outboundHeaders as unknown,
           },
         });
       }
@@ -425,7 +422,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
       where: {
         companyId,
         connectorId,
-        status: query.status ? (query.status as any) : undefined,
+        status: query.status ? (query.status as unknown) : undefined,
       },
       orderBy: { createdAt: "desc" },
       take: query.limit ?? 50,
@@ -534,7 +531,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
         },
         body: JSON.stringify(payload),
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.warn(`control-plane integration-builder report failed: ${error?.message ?? "unknown"}`);
     }
   }

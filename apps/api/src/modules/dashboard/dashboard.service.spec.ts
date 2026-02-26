@@ -6,7 +6,7 @@ describe("DashboardService", () => {
       company: { findFirst: jest.fn().mockResolvedValue(null) },
       $queryRaw: jest.fn(),
     };
-    const service = new DashboardService(prismaMock as any);
+    const service = new DashboardService(prismaMock as unknown);
     const result = await service.summary({});
     expect(result.kpis.sales).toBe(0);
     expect(result.topProducts).toEqual([]);
@@ -22,7 +22,7 @@ describe("DashboardService", () => {
         .mockResolvedValueOnce([{ variantId: "v1", sku: "SKU", quantity: 2 }]),
     };
 
-    const service = new DashboardService(prismaMock as any);
+    const service = new DashboardService(prismaMock as unknown);
     const result = await service.summary({ top: 5, lowStock: 3 });
     expect(result.kpis.sales).toBe(1000);
     expect(result.kpis.tickets).toBe(2);
@@ -36,7 +36,7 @@ describe("DashboardService", () => {
       $queryRaw: jest.fn().mockResolvedValueOnce([{ sales: 0, tickets: 0 }]).mockResolvedValueOnce([]).mockResolvedValueOnce([]),
     };
 
-    const service = new DashboardService(prismaMock as any);
+    const service = new DashboardService(prismaMock as unknown);
     await service.summary({});
     expect(prismaMock.$queryRaw).toHaveBeenCalledTimes(3);
   });

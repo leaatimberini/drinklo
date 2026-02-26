@@ -19,7 +19,7 @@ export class IamController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "support")
-  async getConfig(@Req() req: any) {
+  async getConfig(@Req() req: unknown) {
     const cfg = await this.iam.getConfig(req.user.companyId);
     return this.iam.summarizeStatus(cfg);
   }
@@ -28,7 +28,7 @@ export class IamController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin")
-  async updateConfig(@Req() req: any, @Body() body: UpdateIamConfigDto) {
+  async updateConfig(@Req() req: unknown, @Body() body: UpdateIamConfigDto) {
     const cfg = await this.iam.updateConfig(req.user.companyId, body);
     return this.iam.summarizeStatus(cfg);
   }
@@ -37,7 +37,7 @@ export class IamController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin")
-  testConnection(@Req() req: any, @Body() body: TestIamConnectionDto) {
+  testConnection(@Req() req: unknown, @Body() body: TestIamConnectionDto) {
     return this.iam.testConnection(req.user.companyId, body.protocol);
   }
 
@@ -45,7 +45,7 @@ export class IamController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "support")
-  setupMfa(@Req() req: any) {
+  setupMfa(@Req() req: unknown) {
     return this.iam.setupMfa(req.user.sub, req.user.email ?? "user@example.local");
   }
 
@@ -53,18 +53,18 @@ export class IamController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "support")
-  verifyMfa(@Req() req: any, @Body() body: VerifyMfaDto) {
+  verifyMfa(@Req() req: unknown, @Body() body: VerifyMfaDto) {
     return this.iam.verifyMfa(req.user.sub, body.code);
   }
 
   @Post("auth/sso/login")
   async ssoLogin(@Body() body: SsoMockLoginDto) {
     const user = await this.iam.authenticateSsoMock(body.protocol, body.token, body.companyId);
-    return this.auth.issueTokenForUser(user as any);
+    return this.auth.issueTokenForUser(user as unknown);
   }
 
   @Post("scim/v2/Users")
-  async scimCreate(@Headers("authorization") authorization: string | undefined, @Body() body: any) {
+  async scimCreate(@Headers("authorization") authorization: string | undefined, @Body() body: unknown) {
     const token = String(authorization ?? "").replace(/^Bearer\s+/i, "").trim();
     const user = await this.iam.scimCreateUserByToken(token, body);
     return {
@@ -76,10 +76,10 @@ export class IamController {
   }
 
   @Patch("scim/v2/Users/:id")
-  async scimPatch(@Headers("authorization") authorization: string | undefined, @Req() req: any, @Body() body: any) {
+  async scimPatch(@Headers("authorization") authorization: string | undefined, @Req() req: unknown, @Body() body: unknown) {
     const token = String(authorization ?? "").replace(/^Bearer\s+/i, "").trim();
     const operations = body?.Operations ?? [];
-    const isDisable = operations.some((op: any) => op?.path === "active" && op?.value === false);
+    const isDisable = operations.some((op: unknown) => op?.path === "active" && op?.value === false);
     if (!isDisable) {
       return { ok: true, ignored: true };
     }
@@ -91,7 +91,7 @@ export class IamController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "support")
-  async status(@Req() req: any) {
+  async status(@Req() req: unknown) {
     const cfg = await this.iam.getConfig(req.user.companyId);
     return this.iam.summarizeStatus(cfg);
   }

@@ -116,7 +116,7 @@ export const EnvSchema = z.object({
 
 export type EnvConfig = z.infer<typeof EnvSchema>;
 
-export function validateEnv(env: Record<string, any>) {
+export function validateEnv(env: Record<string, unknown>) {
   const result = EnvSchema.safeParse(env);
   if (!result.success) {
     throw new Error(`Invalid environment configuration: ${result.error.message}`);

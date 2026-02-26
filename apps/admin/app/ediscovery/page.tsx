@@ -38,7 +38,7 @@ export default function EdiscoveryPage() {
       const text = await res.text();
       setPackJson(text);
       setMessage("Export forense generado");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error exportando: ${error.message}`);
     }
   }
@@ -59,7 +59,7 @@ export default function EdiscoveryPage() {
       setVerifyResult(text);
       if (!res.ok) throw new Error(text);
       setMessage("Verificación OK");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error verificando: ${error.message}`);
     }
   }

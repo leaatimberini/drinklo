@@ -11,10 +11,10 @@ const DEFAULT_ACTION_CONFIG = JSON.stringify({ templateId: "" }, null, 2);
 export default function AutomationPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
-  const [flows, setFlows] = useState<any[]>([]);
-  const [triggers, setTriggers] = useState<any[]>([]);
-  const [selectedFlow, setSelectedFlow] = useState<any | null>(null);
-  const [metrics, setMetrics] = useState<any[]>([]);
+  const [flows, setFlows] = useState<unknown[]>([]);
+  const [triggers, setTriggers] = useState<unknown[]>([]);
+  const [selectedFlow, setSelectedFlow] = useState<unknown | null>(null);
+  const [metrics, setMetrics] = useState<unknown[]>([]);
   const [newFlow, setNewFlow] = useState({ name: "", triggerId: "", frequencyCap: 1, quietStart: "22:00", quietEnd: "08:00", consentRequired: true, conditions: DEFAULT_CONDITIONS });
   const [triggerForm, setTriggerForm] = useState({ type: "CART_ABANDONED", config: JSON.stringify({ windowMinutes: 30 }, null, 2) });
   const [actionForm, setActionForm] = useState({ type: "EMAIL", delayMinutes: 0, position: 0, config: DEFAULT_ACTION_CONFIG });
@@ -54,7 +54,7 @@ export default function AutomationPage() {
       if (!res.ok) throw new Error("No se pudo crear el trigger");
       const trigger = await res.json();
       setTriggers((prev) => [trigger, ...prev]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message ?? "Error");
     }
   }
@@ -79,7 +79,7 @@ export default function AutomationPage() {
       const flow = await res.json();
       setFlows((prev) => [flow, ...prev]);
       setSelectedFlow(flow);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message ?? "Error");
     }
   }
@@ -99,9 +99,9 @@ export default function AutomationPage() {
           config,
         }),
       });
-      if (!res.ok) throw new Error("No se pudo agregar acción");
+      if (!res.ok) throw new Error("No se pudo agregar acciï¿½n");
       await loadData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message ?? "Error");
     }
   }
@@ -136,7 +136,7 @@ export default function AutomationPage() {
         <select value={triggerForm.type} onChange={(e) => setTriggerForm({ ...triggerForm, type: e.target.value })}>
           <option value="CART_ABANDONED">Carrito abandonado</option>
           <option value="POST_PURCHASE">Post-compra</option>
-          <option value="BIRTHDAY">Cumpleaños</option>
+          <option value="BIRTHDAY">Cumpleaï¿½os</option>
           <option value="STOCK_BACK">Stock-back</option>
           <option value="WINBACK">Winback</option>
         </select>
@@ -158,7 +158,7 @@ export default function AutomationPage() {
         </select>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <label>
-            Frequency cap (por día)
+            Frequency cap (por dï¿½a)
             <input type="number" value={newFlow.frequencyCap} onChange={(e) => setNewFlow({ ...newFlow, frequencyCap: Number(e.target.value) })} />
           </label>
           <label>
@@ -188,7 +188,7 @@ export default function AutomationPage() {
         <div style={{ display: "grid", gap: 8 }}>
           {flows.map((flow) => (
             <button key={flow.id} onClick={() => { setSelectedFlow(flow); loadMetrics(flow.id); }} style={{ textAlign: "left" }}>
-              {flow.name} · {flow.status}
+              {flow.name} ï¿½ {flow.status}
             </button>
           ))}
         </div>
@@ -203,9 +203,9 @@ export default function AutomationPage() {
           <div>
             <h4>Acciones</h4>
             <ul>
-              {(selectedFlow.actions ?? []).map((action: any) => (
+              {(selectedFlow.actions ?? []).map((action: unknown) => (
                 <li key={action.id}>
-                  {action.type} · delay {action.delayMinutes}m · pos {action.position}
+                  {action.type} ï¿½ delay {action.delayMinutes}m ï¿½ pos {action.position}
                 </li>
               ))}
             </ul>
@@ -216,17 +216,17 @@ export default function AutomationPage() {
               <option value="PUSH">Push (stub)</option>
               <option value="IN_APP">In-App (stub)</option>
               <option value="TELEGRAM">Telegram (stub)</option>
-              <option value="COUPON">Cupón</option>
+              <option value="COUPON">Cupï¿½n</option>
             </select>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               <input type="number" placeholder="Delay (min)" value={actionForm.delayMinutes} onChange={(e) => setActionForm({ ...actionForm, delayMinutes: Number(e.target.value) })} />
-              <input type="number" placeholder="Posición" value={actionForm.position} onChange={(e) => setActionForm({ ...actionForm, position: Number(e.target.value) })} />
+              <input type="number" placeholder="Posiciï¿½n" value={actionForm.position} onChange={(e) => setActionForm({ ...actionForm, position: Number(e.target.value) })} />
             </div>
             <label>
               Config (JSON)
               <textarea rows={4} value={actionForm.config} onChange={(e) => setActionForm({ ...actionForm, config: e.target.value })} />
             </label>
-            <button onClick={addAction}>Agregar acción</button>
+            <button onClick={addAction}>Agregar acciï¿½n</button>
           </div>
 
           <div style={{ marginTop: 16 }}>
@@ -236,7 +236,7 @@ export default function AutomationPage() {
           </div>
 
           <div style={{ marginTop: 16 }}>
-            <h4>Métricas</h4>
+            <h4>Mï¿½tricas</h4>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>

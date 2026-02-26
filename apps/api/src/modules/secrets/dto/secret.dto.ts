@@ -5,7 +5,7 @@ export class RotateSecretDto {
   provider!: string;
 
   @IsObject()
-  payload!: Record<string, any>;
+  payload!: Record<string, unknown>;
 
   @IsOptional()
   @IsDateString()

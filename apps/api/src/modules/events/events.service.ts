@@ -78,7 +78,7 @@ export class EventsService {
           body: JSON.stringify(batch),
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       for (const event of batch) {
         await this.prisma.eventLog.create({
           data: {

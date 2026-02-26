@@ -20,61 +20,61 @@ export class IntegrationBuilderController {
 
   @Get("connectors")
   @Permissions("settings:write")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.builder.listConnectors(req.user.companyId);
   }
 
   @Put("connectors")
   @Permissions("settings:write")
-  upsert(@Req() req: any, @Body() body: UpsertIntegrationConnectorsDto) {
+  upsert(@Req() req: unknown, @Body() body: UpsertIntegrationConnectorsDto) {
     return this.builder.upsertConnectors(req.user.companyId, body);
   }
 
   @Delete("connectors/:id")
   @Permissions("settings:write")
-  remove(@Req() req: any, @Param("id") id: string) {
+  remove(@Req() req: unknown, @Param("id") id: string) {
     return this.builder.deleteConnector(req.user.companyId, id);
   }
 
   @Post("preview")
   @Permissions("settings:write")
-  preview(@Req() req: any, @Body() body: IntegrationBuilderPreviewDto) {
+  preview(@Req() req: unknown, @Body() body: IntegrationBuilderPreviewDto) {
     return this.builder.preview(req.user.companyId, body);
   }
 
   @Post("connectors/:id/secret")
   @Permissions("settings:write")
-  rotateSecret(@Req() req: any, @Param("id") id: string, @Body() body: ConnectorSecretRotateDto) {
+  rotateSecret(@Req() req: unknown, @Param("id") id: string, @Body() body: ConnectorSecretRotateDto) {
     return this.builder.rotateConnectorSecret(req.user.companyId, id, body, req.user.sub);
   }
 
   @Get("connectors/:id/logs")
   @Permissions("settings:write")
-  logs(@Req() req: any, @Param("id") id: string, @Query() query: DeliveryLogsQueryDto) {
+  logs(@Req() req: unknown, @Param("id") id: string, @Query() query: DeliveryLogsQueryDto) {
     return this.builder.listDeliveryLogs(req.user.companyId, id, query);
   }
 
   @Get("connectors/:id/metrics")
   @Permissions("settings:write")
-  metrics(@Req() req: any, @Param("id") id: string) {
+  metrics(@Req() req: unknown, @Param("id") id: string) {
     return this.builder.getConnectorMetrics(req.user.companyId, id);
   }
 
   @Get("metrics")
   @Permissions("settings:write")
-  allMetrics(@Req() req: any) {
+  allMetrics(@Req() req: unknown) {
     return this.builder.listAllConnectorMetrics(req.user.companyId);
   }
 
   @Post("connectors/:id/retry-dlq")
   @Permissions("settings:write")
-  retryDlq(@Req() req: any, @Param("id") id: string) {
+  retryDlq(@Req() req: unknown, @Param("id") id: string) {
     return this.builder.retryDlq(req.user.companyId, id);
   }
 
   @Post("report-control-plane")
   @Permissions("settings:write")
-  async reportControlPlane(@Req() req: any) {
+  async reportControlPlane(@Req() req: unknown) {
     await this.builder.reportSummaryToControlPlane(req.user.companyId);
     return { ok: true };
   }

@@ -6,12 +6,12 @@ describe("PrivacyService", () => {
       customer: { findFirst: jest.fn().mockResolvedValue({ id: "c1" }) },
       address: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
       privacyRequest: { create: jest.fn().mockResolvedValue({ id: "p1" }) },
-      $transaction: async (fn: any) => fn(prisma),
+      $transaction: async (fn: unknown) => fn(prisma),
       companySettings: {
         findUnique: jest.fn().mockResolvedValue({ retentionLogsDays: 90 }),
         update: jest.fn().mockResolvedValue({ retentionLogsDays: 30 }),
       },
-    } as any;
+    } as unknown;
 
     const governance = {
       getEffectivePolicies: jest.fn().mockResolvedValue({
@@ -23,7 +23,7 @@ describe("PrivacyService", () => {
         ],
       }),
       upsertPolicies: jest.fn().mockResolvedValue([]),
-    } as any;
+    } as unknown;
 
     const service = new PrivacyService(prisma, governance);
     await service.anonymizeCustomer("co", "c1", "u1", "note");

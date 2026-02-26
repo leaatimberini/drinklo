@@ -1,9 +1,9 @@
 import { ThrottlerGuard, ThrottlerModuleOptions } from "@nestjs/throttler";
-import { ExecutionContext, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class ApiThrottlerGuard extends ThrottlerGuard {
-  protected getTracker(req: Record<string, any>): string {
+  protected getTracker(req: Record<string, unknown>): string {
     const ip = req.ip ?? req.headers["x-forwarded-for"] ?? "unknown";
     const auth = (req.headers["authorization"] as string) ?? "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";

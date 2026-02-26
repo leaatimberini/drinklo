@@ -10,7 +10,7 @@ describe("ReconciliationService", () => {
       },
       sale: { findMany: jest.fn().mockResolvedValue([]) },
       payment: { findMany: jest.fn().mockResolvedValue([]) },
-    } as any;
+    } as unknown;
 
     const service = new ReconciliationService(prisma);
     const report = await service.report("c1");

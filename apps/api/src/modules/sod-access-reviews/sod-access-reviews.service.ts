@@ -16,12 +16,6 @@ import type {
   UpsertSodPoliciesDto,
 } from "./dto/sod-access-reviews.dto";
 
-type ActionKey =
-  | "PRICING_CONFIGURE"
-  | "PURCHASE_APPROVE"
-  | "INVOICE_ISSUE"
-  | "RECONCILIATION_RUN";
-
 type EvaluateInput = {
   companyId: string;
   userId?: string;
@@ -114,7 +108,7 @@ export class SodAccessReviewsService {
     });
 
     const saved = await this.prisma.$transaction(async (tx) => {
-      const out = [] as any[];
+      const out = [] as unknown[];
       for (const item of normalized) {
         const row = await tx.sodPolicy.upsert({
           where: { companyId_code: { companyId, code: item.code } },
@@ -124,7 +118,7 @@ export class SodAccessReviewsService {
             actionA: item.actionA,
             actionB: item.actionB,
             pairKey: item.pairKey,
-            mode: item.mode as any,
+            mode: item.mode as unknown,
             enabled: item.enabled ?? true,
             updatedById: actorId ?? null,
           },
@@ -136,7 +130,7 @@ export class SodAccessReviewsService {
             actionA: item.actionA,
             actionB: item.actionB,
             pairKey: item.pairKey,
-            mode: item.mode as any,
+            mode: item.mode as unknown,
             enabled: item.enabled ?? true,
             createdById: actorId ?? null,
             updatedById: actorId ?? null,
@@ -151,7 +145,7 @@ export class SodAccessReviewsService {
     return saved;
   }
 
-  async evaluateAndRecord(input: EvaluateInput): Promise<{ allowed: boolean; violations: any[] }> {
+  async evaluateAndRecord(input: EvaluateInput): Promise<{ allowed: boolean; violations: unknown[] }> {
     if (!input.companyId || !input.requestAction) {
       return { allowed: true, violations: [] };
     }
@@ -170,7 +164,7 @@ export class SodAccessReviewsService {
     }
 
     const permissionsSet = new Set((input.permissions ?? []).map(String));
-    const violations: any[] = [];
+    const violations: unknown[] = [];
     let allowed = true;
 
     for (const policy of policies) {
@@ -445,7 +439,7 @@ export class SodAccessReviewsService {
         },
         body: JSON.stringify(summary),
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.warn(`control-plane SoD report failed: ${error?.message ?? "unknown"}`);
     }
   }
@@ -522,7 +516,7 @@ export class SodAccessReviewsService {
       companyId,
       capturedAt: now.toISOString(),
       metrics: metrics.metrics,
-      policies: metrics.policies.map((p: any) => ({
+      policies: metrics.policies.map((p: unknown) => ({
         code: p.code,
         name: p.name,
         actionA: p.actionA,

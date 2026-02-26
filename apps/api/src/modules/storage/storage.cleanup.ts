@@ -23,7 +23,7 @@ export class StorageCleanupService {
     for (const item of targets) {
       try {
         await this.storage.delete(item.key);
-      } catch (error: any) {
+      } catch (error: unknown) {
         this.logger.warn(`Failed to delete ${item.key}: ${error?.message ?? String(error)}`);
       }
     }

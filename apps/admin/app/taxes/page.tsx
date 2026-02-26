@@ -82,8 +82,8 @@ export default function TaxesAdminPage() {
     setMessage(null);
     try {
       const [loadedProfile, loadedRules] = await Promise.all([
-        api<any>("/admin/taxes/profile"),
-        api<any[]>("/admin/taxes/rules"),
+        api<unknown>("/admin/taxes/profile"),
+        api<unknown[]>("/admin/taxes/rules"),
       ]);
       setProfile({
         name: loadedProfile.name ?? "Default",
@@ -118,7 +118,7 @@ export default function TaxesAdminPage() {
         ),
       );
       setMessage("Configuración cargada");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error al cargar: ${error.message}`);
     }
   }
@@ -134,7 +134,7 @@ export default function TaxesAdminPage() {
         }),
       });
       setMessage("Perfil fiscal guardado");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error al guardar perfil: ${error.message}`);
     }
   }
@@ -149,7 +149,7 @@ export default function TaxesAdminPage() {
       });
       setMessage("Reglas guardadas");
       await loadAll();
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error en reglas: ${error.message}`);
     }
   }
@@ -158,13 +158,13 @@ export default function TaxesAdminPage() {
     setMessage(null);
     try {
       const payload = JSON.parse(simulationJson);
-      const result = await api<any>("/admin/taxes/simulate", {
+      const result = await api<unknown>("/admin/taxes/simulate", {
         method: "POST",
         body: JSON.stringify(payload),
       });
       setSimulationResult(JSON.stringify(result, null, 2));
       setMessage("Simulación OK");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage(`Error en simulación: ${error.message}`);
     }
   }

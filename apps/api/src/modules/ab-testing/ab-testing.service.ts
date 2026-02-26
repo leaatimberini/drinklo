@@ -56,7 +56,7 @@ export class AbTestingService {
     return this.prisma.experiment.findMany({ where: { companyId }, include: { variants: true }, orderBy: { createdAt: "desc" } });
   }
 
-  async createExperiment(companyId: string, data: any) {
+  async createExperiment(companyId: string, data: unknown) {
     return this.prisma.experiment.create({
       data: {
         companyId,
@@ -71,7 +71,7 @@ export class AbTestingService {
     });
   }
 
-  async createVariant(companyId: string, experimentId: string, data: any) {
+  async createVariant(companyId: string, experimentId: string, data: unknown) {
     const experiment = await this.prisma.experiment.findUnique({ where: { id: experimentId } });
     if (!experiment || experiment.companyId !== companyId) throw new NotFoundException("Experiment not found");
     return this.prisma.experimentVariant.create({

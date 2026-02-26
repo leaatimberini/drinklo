@@ -16,7 +16,7 @@ export class EdiscoveryController {
 
   @Post("export")
   @Permissions("settings:write")
-  async exportPack(@Req() req: any, @Body() body: EdiscoveryExportDto, @Res() res: Response) {
+  async exportPack(@Req() req: unknown, @Body() body: EdiscoveryExportDto, @Res() res: Response) {
     const pack = await this.ediscovery.exportForensicPack(req.user.companyId, body);
     const file = `ediscovery-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
     res.setHeader("Content-Type", "application/json");

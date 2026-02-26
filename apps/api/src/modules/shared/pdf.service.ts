@@ -3,10 +3,10 @@ import { chromium } from "playwright";
 
 @Injectable()
 export class PdfService {
-  renderQuoteTemplate(quote: any) {
+  renderQuoteTemplate(quote: unknown) {
     const rows = quote.items
       .map(
-        (item: any) => `
+        (item: unknown) => `
         <tr>
           <td>${item.name}</td>
           <td>${item.sku ?? ""}</td>
@@ -57,10 +57,10 @@ export class PdfService {
     `;
   }
 
-  renderOrderTemplate(order: any) {
+  renderOrderTemplate(order: unknown) {
     const rows = order.items
       .map(
-        (item: any) => `
+        (item: unknown) => `
         <tr>
           <td>${item.name}</td>
           <td>${item.sku ?? ""}</td>
@@ -71,7 +71,7 @@ export class PdfService {
       .join("");
 
     const total = order.items.reduce(
-      (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
+      (sum: number, item: unknown) => sum + Number(item.unitPrice) * item.quantity,
       0,
     );
 
@@ -113,7 +113,7 @@ export class PdfService {
     `;
   }
 
-  renderInvoiceTemplate(invoice: any) {
+  renderInvoiceTemplate(invoice: unknown) {
     return `
       <html>
         <head>

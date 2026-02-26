@@ -1,7 +1,7 @@
 ﻿import { generateTotp, IamService } from "./iam.service";
 
 describe("IamService", () => {
-  const prisma: any = {
+  const prisma: unknown = {
     companyIamConfig: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
@@ -31,8 +31,8 @@ describe("IamService", () => {
 
   beforeEach(() => {
     service = new IamService(prisma);
-    Object.values(prisma).forEach((obj: any) => {
-      Object.values(obj).forEach((fn: any) => fn.mockReset?.());
+    Object.values(prisma).forEach((obj: unknown) => {
+      Object.values(obj).forEach((fn: unknown) => fn.mockReset?.());
     });
   });
 

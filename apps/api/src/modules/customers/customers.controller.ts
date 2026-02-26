@@ -15,31 +15,31 @@ export class CustomersController {
 
   @Get()
   @Permissions("customers:read")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.customers.list(req.user.companyId);
   }
 
   @Get(":id")
   @Permissions("customers:read")
-  get(@Req() req: any, @Param("id") id: string) {
+  get(@Req() req: unknown, @Param("id") id: string) {
     return this.customers.get(req.user.companyId, id);
   }
 
   @Post()
   @Permissions("customers:write")
-  create(@Req() req: any, @Body() body: CreateCustomerDto) {
+  create(@Req() req: unknown, @Body() body: CreateCustomerDto) {
     return this.customers.create(req.user.companyId, body, req.user.sub);
   }
 
   @Patch(":id")
   @Permissions("customers:write")
-  update(@Req() req: any, @Param("id") id: string, @Body() body: UpdateCustomerDto) {
+  update(@Req() req: unknown, @Param("id") id: string, @Body() body: UpdateCustomerDto) {
     return this.customers.update(req.user.companyId, id, body, req.user.sub);
   }
 
   @Delete(":id")
   @Permissions("customers:write")
-  remove(@Req() req: any, @Param("id") id: string) {
+  remove(@Req() req: unknown, @Param("id") id: string) {
     return this.customers.remove(req.user.companyId, id, req.user.sub);
   }
 }

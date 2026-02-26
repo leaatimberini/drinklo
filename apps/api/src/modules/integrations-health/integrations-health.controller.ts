@@ -14,7 +14,7 @@ export class IntegrationsHealthController {
 
   @Get("health")
   @Permissions("settings:write")
-  async checkAll(@Req() req: any) {
+  async checkAll(@Req() req: unknown) {
     const companyId = req.user.companyId;
     const actorId = req.user.sub;
     const results = await Promise.all([
@@ -26,13 +26,13 @@ export class IntegrationsHealthController {
 
   @Post("health/mercadopago/webhook-test")
   @Permissions("settings:write")
-  webhookTest(@Req() req: any) {
+  webhookTest(@Req() req: unknown) {
     return this.health.testMercadoPagoWebhook(req.user.companyId, req.user.sub);
   }
 
   @Get("logs")
   @Permissions("settings:write")
-  logs(@Req() req: any, @Query("limit") limit?: string) {
+  logs(@Req() req: unknown, @Query("limit") limit?: string) {
     const parsed = Number(limit ?? 50);
     return this.health.getLogs(req.user.companyId, Number.isFinite(parsed) ? parsed : 50);
   }

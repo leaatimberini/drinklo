@@ -6,8 +6,8 @@ export default function AuditPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
   const [query, setQuery] = useState({ category: "", action: "", from: "", to: "", limit: 100 });
-  const [items, setItems] = useState<any[]>([]);
-  const [verify, setVerify] = useState<any>(null);
+  const [items, setItems] = useState<unknown[]>([]);
+  const [verify, setVerify] = useState<unknown>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
   async function search() {

@@ -21,7 +21,7 @@ export class ComplianceController {
   }
 
   @Post("compliance/consent")
-  async consent(@Req() req: any, @Body() body: ConsentDto) {
+  async consent(@Req() req: unknown, @Body() body: ConsentDto) {
     const company = await this.prisma.company.findFirst();
     if (!company) {
       return { ok: true };
@@ -39,7 +39,7 @@ export class ComplianceController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  adminSettings(@Req() req: any) {
+  adminSettings(@Req() req: unknown) {
     return this.compliance.getAdminSettings(req.user.companyId);
   }
 
@@ -47,7 +47,7 @@ export class ComplianceController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  update(@Req() req: any, @Body() body: UpdateComplianceDto) {
+  update(@Req() req: unknown, @Body() body: UpdateComplianceDto) {
     return this.compliance.updateAdminSettings(req.user.companyId, body);
   }
 }

@@ -236,10 +236,10 @@ export class AssistedImportService {
     return { mapping, fields, unmappedHeaders };
   }
 
-  applyMapping(rows: Record<string, any>[], mapping: Record<string, string | null | undefined>) {
+  applyMapping(rows: Record<string, unknown>[], mapping: Record<string, string | null | undefined>) {
     if (!mapping || Object.keys(mapping).length === 0) return rows;
     return rows.map((row) => {
-      const mapped: Record<string, any> = {};
+      const mapped: Record<string, unknown> = {};
       for (const [field, sourceHeader] of Object.entries(mapping)) {
         if (!sourceHeader) continue;
         mapped[field] = row[sourceHeader];

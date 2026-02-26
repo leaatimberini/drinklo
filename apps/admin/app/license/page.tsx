@@ -33,7 +33,7 @@ export default function LicensePage() {
       }
       const data = (await res.json()) as LicenseStatus;
       setStatus(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al consultar licencia");
     }
   }

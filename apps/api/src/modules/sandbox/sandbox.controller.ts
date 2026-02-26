@@ -15,37 +15,37 @@ export class SandboxController {
 
   @Get("status")
   @Permissions("settings:write")
-  status(@Req() req: any) {
+  status(@Req() req: unknown) {
     return this.sandbox.getStatus(req.user.companyId);
   }
 
   @Post("mode")
   @Permissions("settings:write")
-  setMode(@Req() req: any, @Body() body: SetSandboxModeDto) {
+  setMode(@Req() req: unknown, @Body() body: SetSandboxModeDto) {
     return this.sandbox.setMode(req.user.companyId, body.sandboxMode);
   }
 
   @Post("reset")
   @Permissions("settings:write")
-  reset(@Req() req: any) {
+  reset(@Req() req: unknown) {
     return this.sandbox.resetCompany(req.user.companyId);
   }
 
   @Get("demo-status")
   @Permissions("settings:write")
-  demoStatus(@Req() req: any) {
+  demoStatus(@Req() req: unknown) {
     return this.sandbox.getDemoStatus(req.user.companyId);
   }
 
   @Post("demo-reset")
   @Permissions("settings:write")
-  demoReset(@Req() req: any) {
+  demoReset(@Req() req: unknown) {
     return this.sandbox.resetDemoSnapshot(req.user.companyId);
   }
 
   @Post("simulate-payment/:orderId")
   @Permissions("settings:write")
-  simulatePayment(@Req() req: any, @Param("orderId") orderId: string) {
+  simulatePayment(@Req() req: unknown, @Param("orderId") orderId: string) {
     return this.sandbox.approveSandboxPayment(req.user.companyId, orderId);
   }
 }

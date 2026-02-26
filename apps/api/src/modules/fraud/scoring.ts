@@ -10,7 +10,7 @@ export type FraudReason = {
   label: string;
   triggered: boolean;
   points: number;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
 };
 
 export type ScoreInput = {

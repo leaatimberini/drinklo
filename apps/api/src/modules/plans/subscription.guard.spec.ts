@@ -2,17 +2,17 @@ import { HttpException } from "@nestjs/common";
 import { ExecutionContext } from "@nestjs/common";
 import { SubscriptionGuard } from "./subscription.guard";
 
-function fakeJwt(payload: any) {
-  const base64url = (obj: any) => Buffer.from(JSON.stringify(obj)).toString("base64url");
+function fakeJwt(payload: unknown) {
+  const base64url = (obj: unknown) => Buffer.from(JSON.stringify(obj)).toString("base64url");
   return `${base64url({ alg: "none", typ: "JWT" })}.${base64url(payload)}.sig`;
 }
 
-function makeContext(req: any): ExecutionContext {
+function makeContext(req: unknown): ExecutionContext {
   return {
     switchToHttp: () => ({ getRequest: () => req }),
-    getClass: () => ({} as any),
-    getHandler: () => ({} as any),
-  } as any;
+    getClass: () => ({} as unknown),
+    getHandler: () => ({} as unknown),
+  } as unknown;
 }
 
 describe("SubscriptionGuard", () => {
@@ -32,10 +32,10 @@ describe("SubscriptionGuard", () => {
       developerApiKey: {
         findFirst: jest.fn(async () => ({ companyId: "company-1" })),
       },
-    } as any;
+    } as unknown;
     const audit = {
       append: jest.fn(async () => ({ id: "audit-1" })),
-    } as any;
+    } as unknown;
     const guard = new SubscriptionGuard(prisma, audit);
     return { guard, prisma, audit };
   }

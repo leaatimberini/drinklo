@@ -25,7 +25,7 @@ export class SetupService {
       new Set(Object.values(RolePermissions).flat()),
     );
 
-    return this.prisma.$transaction(async (tx: any) => {
+    return this.prisma.$transaction(async (tx: unknown) => {
       for (const item of PLAN_CATALOG_DEFAULTS) {
         await tx.planEntitlement.upsert({
           where: { tier: item.tier },
@@ -67,7 +67,7 @@ export class SetupService {
         },
       });
 
-      const branch = await tx.branch.create({
+      await tx.branch.create({
         data: {
           companyId: company.id,
           name: "Principal",

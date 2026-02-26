@@ -81,7 +81,7 @@ export class OpsService {
     const env = envAllowlist.reduce((acc, key) => {
       acc[key] = process.env[key];
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, unknown>);
 
     let secretsStatus = { expired: 0, unverified: 0 };
     if (companyId) {

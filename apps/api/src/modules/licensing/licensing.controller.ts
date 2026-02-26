@@ -17,19 +17,19 @@ export class LicensingController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin")
-  status(@Req() req: any) {
+  status(@Req() req: unknown) {
     return this.licensing.getStatus(req.user.companyId);
   }
 
   @Post("apply")
   @UseGuards(SuperAdminGuard)
-  apply(@Req() req: any, @Body() body: LicenseApplyDto) {
+  apply(@Req() req: unknown, @Body() body: LicenseApplyDto) {
     return this.licensing.apply(req.user.companyId, body.licenseKey);
   }
 
   @Post("generate")
   @UseGuards(SuperAdminGuard)
-  generate(@Req() req: any, @Body() body: LicenseGenerateDto) {
+  generate(@Req() req: unknown, @Body() body: LicenseGenerateDto) {
     return this.licensing.generate(req.user.companyId, body.plan, body.expiresAt, body.features ?? []);
   }
 
@@ -37,7 +37,7 @@ export class LicensingController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin")
-  enforcement(@Req() req: any) {
+  enforcement(@Req() req: unknown) {
     const feature = req.query?.feature as keyof typeof PremiumFeatures | undefined;
     const selected = feature ? PremiumFeatures[feature] : undefined;
     return this.licensing.getEnforcement(req.user.companyId, selected);

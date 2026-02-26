@@ -155,3 +155,29 @@ It includes:
   - `pnpm lint` ❌ (blocked by pre-existing issues outside storefront, mainly `apps/admin` and `apps/api`)
   - `pnpm test` ❌ (blocked at `@erp/sdk#test`; `tsx --test test` tries to resolve `packages/sdk/test/index.json`)
   - `pnpm gate` ❌ (stops at `lint` due repo-wide pre-existing failures)
+
+## ES (Actualizacion branch feature/134-fix-admin-api-lint)
+
+### Admin/API lint cleanup (branch `feature/134-fix-admin-api-lint`)
+- Alcance:
+  - corregir fallas de lint preexistentes en `apps/admin` y `apps/api` sin cambios funcionales
+- Estrategia:
+  - auto-fix `@typescript-eslint/no-explicit-any` -> `unknown` con ESLint (`fixToUnknown`)
+  - fixes manuales puntuales para imports/vars sin uso, escapes regex/string, `require()` especificos y errores de parseo preexistentes
+- Validacion ejecutada:
+  - `pnpm -C apps/admin lint` ? (warnings de hooks, sin errores)
+  - `pnpm -C apps/api lint` ?
+  - `pnpm lint` ?
+
+## EN (Update for branch feature/134-fix-admin-api-lint)
+
+### Admin/API lint cleanup (branch `feature/134-fix-admin-api-lint`)
+- Scope:
+  - fix pre-existing lint failures in `apps/admin` and `apps/api` only, with no functional changes
+- Strategy:
+  - auto-fix `@typescript-eslint/no-explicit-any` -> `unknown` via ESLint (`fixToUnknown`)
+  - targeted manual fixes for unused imports/vars, regex/string escapes, specific `require()` usages, and existing parse errors
+- Validation run:
+  - `pnpm -C apps/admin lint` ? (hook warnings only, no errors)
+  - `pnpm -C apps/api lint` ?
+  - `pnpm lint` ?

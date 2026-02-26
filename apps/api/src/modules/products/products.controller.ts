@@ -20,38 +20,38 @@ export class ProductsController {
 
   @Get()
   @Permissions("products:read")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.products.list(req.user.companyId);
   }
 
   @Get(":id")
   @Permissions("products:read")
-  get(@Req() req: any, @Param("id") id: string) {
+  get(@Req() req: unknown, @Param("id") id: string) {
     return this.products.get(req.user.companyId, id);
   }
 
   @Post()
   @Permissions("products:write")
-  create(@Req() req: any, @Body() body: CreateProductDto) {
+  create(@Req() req: unknown, @Body() body: CreateProductDto) {
     return this.products.create(req.user.companyId, body, req.user.sub);
   }
 
   @Patch(":id")
   @Permissions("products:write")
-  update(@Req() req: any, @Param("id") id: string, @Body() body: UpdateProductDto) {
+  update(@Req() req: unknown, @Param("id") id: string, @Body() body: UpdateProductDto) {
     return this.products.update(req.user.companyId, id, body, req.user.sub);
   }
 
   @Delete(":id")
   @Permissions("products:write")
-  remove(@Req() req: any, @Param("id") id: string) {
+  remove(@Req() req: unknown, @Param("id") id: string) {
     return this.products.remove(req.user.companyId, id, req.user.sub);
   }
 
   @Post(":id/image")
   @Permissions("products:write")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadImage(@Req() req: any, @Param("id") id: string, @UploadedFile() file?: Express.Multer.File) {
+  async uploadImage(@Req() req: unknown, @Param("id") id: string, @UploadedFile() file?: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException("File is required");
     }

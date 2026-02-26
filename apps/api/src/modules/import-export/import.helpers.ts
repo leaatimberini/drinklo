@@ -2,7 +2,7 @@ import XLSX from "xlsx";
 
 export type ParsedFile = {
   headers: string[];
-  rows: Record<string, any>[];
+  rows: Record<string, unknown>[];
 };
 
 function normalizeHeader(value: string) {
@@ -16,11 +16,11 @@ export function parseFile(buffer: Buffer): ParsedFile {
     return { headers: [], rows: [] };
   }
   const worksheet = workbook.Sheets[sheetName];
-  const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" }) as Record<string, any>[];
+  const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" }) as Record<string, unknown>[];
 
   const headers = json.length > 0 ? Object.keys(json[0]).map(normalizeHeader) : [];
   const rows = json.map((row) => {
-    const mapped: Record<string, any> = {};
+    const mapped: Record<string, unknown> = {};
     for (const key of Object.keys(row)) {
       mapped[normalizeHeader(key)] = row[key];
     }
@@ -36,8 +36,8 @@ export type ImportError = {
   message: string;
 };
 
-export function toCsv<T extends Record<string, any>>(rows: T[], headers: string[]) {
-  const escape = (value: any) => {
+export function toCsv<T extends Record<string, unknown>>(rows: T[], headers: string[]) {
+  const escape = (value: unknown) => {
     const str = value === null || value === undefined ? "" : String(value);
     if (/[",\n]/.test(str)) {
       return `"${str.replace(/"/g, '""')}"`;

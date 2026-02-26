@@ -15,43 +15,43 @@ export class StockController {
 
   @Get("locations")
   @Permissions("inventory:read")
-  listLocations(@Req() req: any) {
+  listLocations(@Req() req: unknown) {
     return this.stock.listLocations(req.user.companyId);
   }
 
   @Post("locations")
   @Permissions("inventory:write")
-  createLocation(@Req() req: any, @Body() body: CreateStockLocationDto) {
+  createLocation(@Req() req: unknown, @Body() body: CreateStockLocationDto) {
     return this.stock.createLocation(req.user.companyId, body, req.user.sub);
   }
 
   @Get("items")
   @Permissions("inventory:read")
-  listItems(@Req() req: any) {
+  listItems(@Req() req: unknown) {
     return this.stock.listItems(req.user.companyId);
   }
 
   @Get("lookup")
   @Permissions("inventory:read")
-  lookup(@Req() req: any, @Query("code") code?: string) {
+  lookup(@Req() req: unknown, @Query("code") code?: string) {
     return this.stock.lookupByCode(req.user.companyId, code ?? "");
   }
 
   @Post("items")
   @Permissions("inventory:write")
-  createItem(@Req() req: any, @Body() body: CreateStockItemDto) {
+  createItem(@Req() req: unknown, @Body() body: CreateStockItemDto) {
     return this.stock.createItem(req.user.companyId, body, req.user.sub);
   }
 
   @Post("movements/receive")
   @Permissions("inventory:write")
-  receive(@Req() req: any, @Body() body: ReceiveStockDto) {
+  receive(@Req() req: unknown, @Body() body: ReceiveStockDto) {
     return this.stock.receiveStock(req.user.companyId, body, req.user.sub);
   }
 
   @Patch("items/:id")
   @Permissions("inventory:write")
-  updateItem(@Req() req: any, @Param("id") id: string, @Body() body: UpdateStockItemDto) {
+  updateItem(@Req() req: unknown, @Param("id") id: string, @Body() body: UpdateStockItemDto) {
     return this.stock.updateItem(req.user.companyId, id, body, req.user.sub);
   }
 }

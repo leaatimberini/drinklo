@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString, Min } from "class-validator";
+import { IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
 import { CouponType, LoyaltyRuleType } from "@erp/db";
 
 export class CreateCouponDto {
@@ -87,7 +87,7 @@ export class CreateLoyaltyRuleDto {
   type!: LoyaltyRuleType;
 
   @IsObject()
-  config!: Record<string, any>;
+  config!: Record<string, unknown>;
 
   @IsOptional()
   @IsString()

@@ -60,7 +60,7 @@ export default function LotsPage() {
       setAlerts(await alertsRes.json());
       setWindows(await windowsRes.json());
       setRotation(await rotationRes.json());
-    } catch (e: any) {
+    } catch (e: unknown) {
       setError(e.message ?? "Error inesperado");
     }
   }

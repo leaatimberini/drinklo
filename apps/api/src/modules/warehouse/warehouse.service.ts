@@ -231,16 +231,16 @@ export class WarehouseService {
     const data = JSON.parse(raw);
     const rows = data.data ?? [];
     if (rows.length === 0) return [];
-    const recencies = rows.map((r: any) => r.recency_days).sort((a: number, b: number) => a - b);
-    const frequencies = rows.map((r: any) => r.frequency).sort((a: number, b: number) => a - b);
-    const monetaries = rows.map((r: any) => r.monetary).sort((a: number, b: number) => a - b);
+    const recencies = rows.map((r: unknown) => r.recency_days).sort((a: number, b: number) => a - b);
+    const frequencies = rows.map((r: unknown) => r.frequency).sort((a: number, b: number) => a - b);
+    const monetaries = rows.map((r: unknown) => r.monetary).sort((a: number, b: number) => a - b);
     const pick = (arr: number[], p: number) => arr[Math.floor((arr.length - 1) * p)] ?? arr[0];
     const thresholds = {
       recency: pick(recencies, 0.5),
       frequency: pick(frequencies, 0.5),
       monetary: pick(monetaries, 0.5),
     };
-    return rows.map((row: any) => ({
+    return rows.map((row: unknown) => ({
       ...row,
       segment:
         row.recency_days <= thresholds.recency && row.frequency >= thresholds.frequency && row.monetary >= thresholds.monetary

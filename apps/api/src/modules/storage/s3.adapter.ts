@@ -72,7 +72,7 @@ export class S3StorageAdapter implements StorageAdapter {
 
     const chunks: Buffer[] = [];
     for await (const chunk of body) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as any));
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as unknown));
     }
     return Buffer.concat(chunks);
   }

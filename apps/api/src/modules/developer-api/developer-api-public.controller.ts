@@ -37,25 +37,25 @@ export class DeveloperApiPublicController {
 
   @Get("products")
   @DeveloperApiScopes("read:products")
-  listProducts(@Req() req: any, @Query() query: ProductsQueryDto) {
+  listProducts(@Req() req: unknown, @Query() query: ProductsQueryDto) {
     return this.developerApi.listProducts(req.developerApi.companyId, query.q, query.page ?? 1, query.pageSize ?? 50);
   }
 
   @Get("categories")
   @DeveloperApiScopes("read:categories")
-  listCategories(@Req() req: any) {
+  listCategories(@Req() req: unknown) {
     return this.developerApi.listCategories(req.developerApi.companyId);
   }
 
   @Get("pricelists")
   @DeveloperApiScopes("read:pricelists")
-  listPriceLists(@Req() req: any) {
+  listPriceLists(@Req() req: unknown) {
     return this.developerApi.listPriceLists(req.developerApi.companyId);
   }
 
   @Get("stock/availability")
   @DeveloperApiScopes("read:stock")
-  listStockAvailability(@Req() req: any) {
+  listStockAvailability(@Req() req: unknown) {
     return this.developerApi.listStockAvailability(req.developerApi.companyId);
   }
 }

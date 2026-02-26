@@ -158,7 +158,7 @@ export class AndreaniDevelopersAdapter implements AndreaniAdapter {
     const data = await res.json();
     return {
       status: data.eventos?.[0]?.estado ?? "unknown",
-      history: (data.eventos ?? []).map((item: any) => ({
+      history: (data.eventos ?? []).map((item: unknown) => ({
         date: item.fecha,
         status: item.estado,
         detail: item.comentario,

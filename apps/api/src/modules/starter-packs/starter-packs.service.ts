@@ -169,13 +169,13 @@ export class StarterPacksService {
 
     for (const tpl of BASE_DASHBOARDS) {
       await this.prisma.dashboardTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as any },
+        data: { companyId, name: tpl.name, config: tpl.config as unknown },
       });
     }
 
     for (const tpl of BASE_REPORTS) {
       await this.prisma.reportTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as any },
+        data: { companyId, name: tpl.name, config: tpl.config as unknown },
       });
     }
   }
@@ -219,13 +219,13 @@ export class StarterPacksService {
 
     for (const tpl of pack.dashboards) {
       await this.prisma.dashboardTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as any },
+        data: { companyId, name: tpl.name, config: tpl.config as unknown },
       });
     }
 
     for (const tpl of pack.reports) {
       await this.prisma.reportTemplate.create({
-        data: { companyId, name: tpl.name, config: tpl.config as any },
+        data: { companyId, name: tpl.name, config: tpl.config as unknown },
       });
     }
 

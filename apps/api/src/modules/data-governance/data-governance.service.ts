@@ -54,7 +54,7 @@ export class DataGovernanceService {
 
   private extractIdentity(payload: unknown): { customerId?: string; customerEmail?: string; userId?: string } {
     if (!payload || typeof payload !== "object") return {};
-    const obj = payload as Record<string, any>;
+    const obj = payload as Record<string, unknown>;
     const customerId = obj.customerId ?? obj.customer?.id ?? undefined;
     const customerEmail = obj.customerEmail ?? obj.email ?? obj.customer?.email ?? obj.recipient ?? undefined;
     const userId = obj.userId ?? obj.user?.id ?? undefined;
@@ -225,7 +225,7 @@ export class DataGovernanceService {
         periodFrom: this.parseDate(payload.periodFrom),
         periodTo: this.parseDate(payload.periodTo),
         reason: payload.reason,
-        evidence: evidence as any,
+        evidence: evidence as unknown,
         evidenceHash,
         status: LegalHoldStatus.ACTIVE,
         createdById: userId,
@@ -341,7 +341,7 @@ export class DataGovernanceService {
             postalCode: null,
             country: null,
             shippingMeta: {
-              ...((item.shippingMeta as Record<string, any> | null) ?? {}),
+              ...((item.shippingMeta as Record<string, unknown> | null) ?? {}),
               governance: {
                 runId,
                 anonymizedAt: new Date().toISOString(),
@@ -578,7 +578,7 @@ export class DataGovernanceService {
         status: updated.status,
         summary,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.prisma.governanceRun.update({
         where: { id: run.id },
         data: {
@@ -609,7 +609,7 @@ export class DataGovernanceService {
     for (const company of companies) {
       try {
         await this.runPurge(company.id, undefined, "cron");
-      } catch (error: any) {
+      } catch (error: unknown) {
         this.logger.warn(`Governance purge failed for ${company.id}: ${error?.message ?? String(error)}`);
       }
     }

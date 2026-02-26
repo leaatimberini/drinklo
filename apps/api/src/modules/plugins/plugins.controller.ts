@@ -26,7 +26,7 @@ export class PluginsController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.plugins.listAvailable(req.user.companyId);
   }
 
@@ -34,7 +34,7 @@ export class PluginsController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"), PermissionsGuard)
   @Permissions("settings:write")
-  update(@Req() req: any, @Body() body: UpdatePluginDto) {
+  update(@Req() req: unknown, @Body() body: UpdatePluginDto) {
     return this.plugins.setPlugin(req.user.companyId, {
       name: body.name,
       enabled: body.enabled,

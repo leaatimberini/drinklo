@@ -15,7 +15,7 @@ type SetupPayload = {
 
 type ThemeTemplate = { id: "A" | "B" | "C"; name: string };
 
-const steps = ["Empresa", "Admin", "Confirmación"] as const;
+const steps = ["Empresa", "Admin", "Confirmaciï¿½n"] as const;
 
 type Step = (typeof steps)[number];
 
@@ -97,7 +97,7 @@ export default function Page() {
       }
       setSuccess(true);
       setStatus({ initialized: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error inesperado");
     } finally {
       setIsSubmitting(false);
@@ -120,7 +120,7 @@ export default function Page() {
         throw new Error(payload.message ?? "Update failed");
       }
       setThemeMsg("Theme actualizado.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setThemeMsg(err.message ?? "Error al actualizar.");
     }
   }
@@ -152,7 +152,7 @@ export default function Page() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <label>
               Theme Admin
-              <select value={adminTheme} onChange={(e) => setAdminTheme(e.target.value as any)}>
+              <select value={adminTheme} onChange={(e) => setAdminTheme(e.target.value as unknown)}>
                 {(themeData?.templates ?? []).map((theme) => (
                   <option key={`admin-${theme.id}`} value={theme.id}>
                     {theme.id} - {theme.name}
@@ -162,7 +162,7 @@ export default function Page() {
             </label>
             <label>
               Theme Storefront
-              <select value={storefrontTheme} onChange={(e) => setStorefrontTheme(e.target.value as any)}>
+              <select value={storefrontTheme} onChange={(e) => setStorefrontTheme(e.target.value as unknown)}>
                 {(themeData?.templates ?? []).map((theme) => (
                   <option key={`store-${theme.id}`} value={theme.id}>
                     {theme.id} - {theme.name}
@@ -181,7 +181,7 @@ export default function Page() {
 
   return (
     <main style={{ padding: 32, fontFamily: "ui-sans-serif, system-ui", maxWidth: 520 }}>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Configuración inicial</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Configuraciï¿½n inicial</h1>
       <p style={{ color: "#555" }}>
         Paso {stepIndex + 1} de {steps.length}: {step}
       </p>
@@ -246,7 +246,7 @@ export default function Page() {
         </section>
       )}
 
-      {step === "Confirmación" && (
+      {step === "Confirmaciï¿½n" && (
         <section style={{ marginTop: 24, background: "#f6f6f6", padding: 16, borderRadius: 8 }}>
           <p>
             <strong>Empresa:</strong> {form.companyName}
@@ -278,7 +278,7 @@ export default function Page() {
           onClick={() => setStepIndex((prev) => Math.max(0, prev - 1))}
           disabled={stepIndex === 0 || isSubmitting}
         >
-          Atrás
+          Atrï¿½s
         </button>
         {stepIndex < steps.length - 1 ? (
           <button

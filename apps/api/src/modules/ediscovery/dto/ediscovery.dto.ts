@@ -1,5 +1,4 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { Type } from "class-transformer";
 import { IsArray, IsIn, IsISO8601, IsOptional, IsString } from "class-validator";
 
 export const EDISCOVERY_ENTITIES = [
@@ -36,6 +35,6 @@ export class EdiscoveryExportDto {
 export class EdiscoveryVerifyDto {
   @ApiPropertyOptional({ description: "eDiscovery export package JSON" })
   @IsOptional()
-  pack?: any;
+  pack?: unknown;
 }
 

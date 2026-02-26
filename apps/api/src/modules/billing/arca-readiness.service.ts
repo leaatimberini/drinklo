@@ -28,7 +28,7 @@ function asArrayInvoiceTypes(input?: Array<"A" | "B" | "C" | "M"> | null) {
   for (const raw of input ?? []) {
     const t = String(raw).toUpperCase();
     if (!allowed.has(t)) continue;
-    if (!unique.includes(t as any)) unique.push(t as any);
+    if (!unique.includes(t as unknown)) unique.push(t as unknown);
   }
   return unique;
 }
@@ -97,7 +97,7 @@ export class ArcaReadinessService {
     return new WsfeClient(config);
   }
 
-  protected inspectCertificateMaterial(secretPayload: any): CertInspection {
+  protected inspectCertificateMaterial(secretPayload: unknown): CertInspection {
     const errors: string[] = [];
     const certPem = secretPayload?.certPem || (secretPayload?.certPath ? this.readFileUtf8(secretPayload.certPath) : null);
     const keyPem = secretPayload?.keyPem || (secretPayload?.keyPath ? this.readFileUtf8(secretPayload.keyPath) : null);
@@ -244,7 +244,7 @@ export class ArcaReadinessService {
           source: cert.source,
           verifiedAt: secretRow?.verifiedAt?.toISOString() ?? null,
           secretStatus: secretRow?.status ?? null,
-          certFingerprint: cert.fingerprint256 ?? (secretRow?.meta as any)?.certFingerprint ?? null,
+          certFingerprint: cert.fingerprint256 ?? (secretRow?.meta as unknown)?.certFingerprint ?? null,
           validTo: cert.validTo ?? null,
           issuer: cert.issuer ?? null,
           subject: cert.subject ?? null,
@@ -312,7 +312,7 @@ export class ArcaReadinessService {
     const invoiceTypes = asArrayInvoiceTypes(input.invoiceTypes).length ? asArrayInvoiceTypes(input.invoiceTypes) : (["B", "C"] as Array<"B" | "C">);
     const pointOfSale = Number(input.pointOfSale ?? settings.afipPointOfSale ?? 0);
     const amount = Number(input.amountArs ?? 1234.56);
-    const env: "HOMO" = "HOMO";
+    const env = "HOMO" as const;
 
     const wsaa = this.createWsaa({
       certPath: secretPayload?.certPath,
@@ -346,7 +346,7 @@ export class ArcaReadinessService {
             result: resp.result,
             raw: resp.raw,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           cases.push({ type, ok: false, error: error?.message ?? String(error) });
         }
       }
@@ -368,7 +368,7 @@ export class ArcaReadinessService {
           companyId: company.id,
           service: "ARCA_READINESS_DRYRUN",
           environment: env,
-          response: payload as any,
+          response: payload as unknown,
         },
       });
       await this.audit.append({
@@ -385,11 +385,11 @@ export class ArcaReadinessService {
       });
 
       return {
-        ok: cases.every((c: any) => c.ok),
+        ok: cases.every((c: unknown) => c.ok),
         checklist,
         ...payload,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const failure = {
         mode: env,
         startedAt: startedAt.toISOString(),
@@ -402,7 +402,7 @@ export class ArcaReadinessService {
           service: "ARCA_READINESS_DRYRUN",
           environment: env,
           error: failure.error,
-          response: failure as any,
+          response: failure as unknown,
         },
       });
       await this.audit.append({
@@ -435,9 +435,9 @@ export class ArcaReadinessService {
       dryRunSummary: dryRun
         ? {
             ok: dryRun.ok,
-            mode: (dryRun as any).mode,
-            cases: Array.isArray((dryRun as any).cases)
-              ? (dryRun as any).cases.map((c: any) => ({ type: c.type, ok: c.ok, result: c.result ?? null }))
+            mode: (dryRun as unknown).mode,
+            cases: Array.isArray((dryRun as unknown).cases)
+              ? (dryRun as unknown).cases.map((c: unknown) => ({ type: c.type, ok: c.ok, result: c.result ?? null }))
               : [],
           }
         : null,
@@ -456,7 +456,7 @@ export class ArcaReadinessService {
         companyId,
         service: "ARCA_READINESS_REPORT",
         environment: String(checklist.arca.environmentEffective ?? "HOMO"),
-        response: { manifest, payloadHash, signature, storageKey } as any,
+        response: { manifest, payloadHash, signature, storageKey } as unknown,
       },
     });
     await this.audit.append({
@@ -485,7 +485,7 @@ export class ArcaReadinessService {
     };
   }
 
-  private renderReadinessReportHtml(args: { checklist: any; dryRun: any; manifest: any; payloadHash: string; signature: string }) {
+  private renderReadinessReportHtml(args: { checklist: unknown; dryRun: unknown; manifest: unknown; payloadHash: string; signature: string }) {
     const rows = (args.checklist.items ?? [])
       .map(
         (item: ArcaChecklistItem) => `
@@ -501,7 +501,7 @@ export class ArcaReadinessService {
     const dryRunCases = Array.isArray(args.dryRun?.cases)
       ? args.dryRun.cases
           .map(
-            (c: any) => `
+            (c: unknown) => `
           <tr>
             <td>${c.type ?? "-"}</td>
             <td>${c.ok ? "OK" : "FAIL"}</td>

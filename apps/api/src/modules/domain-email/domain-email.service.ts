@@ -59,7 +59,7 @@ export class DomainEmailService {
     });
   }
 
-  async recordEvent(companyId: string, dto: EmailEventDto, payload: any) {
+  async recordEvent(companyId: string, dto: EmailEventDto, payload: unknown) {
     return this.prisma.emailEventLog.create({
       data: {
         companyId,

@@ -16,14 +16,14 @@ export class FulfillmentController {
 
   @Get("orders")
   @Roles("admin", "manager", "deposito")
-  list(@Req() req: any, @Query() query: FulfillmentQueryDto) {
+  list(@Req() req: unknown, @Query() query: FulfillmentQueryDto) {
     return this.fulfillment.listOrders(req.user.companyId, query.status);
   }
 
   @Post("orders/:id/status")
   @Roles("admin", "manager", "deposito")
   update(
-    @Req() req: any,
+    @Req() req: unknown,
     @Param("id") id: string,
     @Body() body: UpdateOrderStatusDto,
   ) {

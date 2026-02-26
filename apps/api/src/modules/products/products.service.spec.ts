@@ -11,20 +11,20 @@ describe("ProductsService edge invalidation", () => {
     productVariant: {
       create: jest.fn(),
     },
-    $transaction: jest.fn(async (run: any) => run(prisma)),
-  } as any;
+    $transaction: jest.fn(async (run: unknown) => run(prisma)),
+  } as unknown;
 
   const plugins = {
-    decorateProduct: jest.fn(async (_companyId: string, item: any) => item),
-  } as any;
+    decorateProduct: jest.fn(async (_companyId: string, item: unknown) => item),
+  } as unknown;
 
   const catalog = {
     invalidateAll: jest.fn(),
-  } as any;
+  } as unknown;
 
   const edgeCache = {
     purgeProduct: jest.fn(),
-  } as any;
+  } as unknown;
 
   beforeEach(() => {
     jest.clearAllMocks();

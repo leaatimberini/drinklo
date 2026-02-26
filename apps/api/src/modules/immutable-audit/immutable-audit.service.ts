@@ -13,10 +13,10 @@ type RecordInput = {
   actorRole?: string | null;
   aggregateType?: string | null;
   aggregateId?: string | null;
-  payload?: any;
+  payload?: unknown;
 };
 
-export function stableStringify(value: any): string {
+export function stableStringify(value: unknown): string {
   if (value === null || value === undefined) return "null";
   if (typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map((v) => stableStringify(v)).join(",")}]`;
@@ -101,7 +101,7 @@ export class ImmutableAuditService {
     });
   }
 
-  async list(companyId: string, query: any) {
+  async list(companyId: string, query: unknown) {
     return this.prisma.immutableAuditLog.findMany({
       where: {
         companyId,
@@ -124,7 +124,7 @@ export class ImmutableAuditService {
     });
   }
 
-  verifyChain(logs: Array<any>) {
+  verifyChain(logs: Array<unknown>) {
     const ordered = [...logs].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     let previous: string | null = null;
     for (const log of ordered) {
@@ -161,18 +161,18 @@ export class ImmutableAuditService {
     return { ok: true, count: ordered.length, tailHash: previous };
   }
 
-  async verify(companyId: string, query: any) {
+  async verify(companyId: string, query: unknown) {
     const logs = await this.list(companyId, { ...query, limit: 10000 });
     return this.verifyChain(logs);
   }
 
-  signEvidencePack(pack: any) {
+  signEvidencePack(pack: unknown) {
     const secret = process.env.AUDIT_EVIDENCE_SECRET ?? process.env.JWT_SECRET ?? "dev-audit-secret";
     const canonical = stableStringify(pack);
     return crypto.createHmac("sha256", secret).update(canonical).digest("hex");
   }
 
-  async exportEvidencePack(companyId: string, query: any) {
+  async exportEvidencePack(companyId: string, query: unknown) {
     const logs = await this.list(companyId, { ...query, limit: 10000 });
     const verification = this.verifyChain(logs);
     const pack = {
@@ -186,7 +186,7 @@ export class ImmutableAuditService {
     return { ...pack, signature, signatureAlgorithm: "HMAC-SHA256" };
   }
 
-  async recordCriticalFromRequest(req: any, result: any, statusCode: number) {
+  async recordCriticalFromRequest(req: unknown, result: unknown, statusCode: number) {
     const route = req?.route?.path ? `${req.baseUrl ?? ""}${req.route.path}` : req?.url ?? "";
     const method = String(req?.method ?? "GET").toUpperCase();
     const map = this.classify(method, route);

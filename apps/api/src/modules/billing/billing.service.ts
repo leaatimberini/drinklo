@@ -63,7 +63,7 @@ export class BillingService {
           companyId: company.id,
           service: "ARCA_SANDBOX",
           environment: "HOMO",
-          response: deterministic.raw as any,
+          response: deterministic.raw as unknown,
         },
       });
       await this.prisma.eventLog.create({
@@ -175,15 +175,15 @@ export class BillingService {
 
   private async withRetry<T>(fn: () => Promise<T>, service: string, companyId: string, env: string) {
     const attempts = 3;
-    let lastError: any;
+    let lastError: unknown;
     for (let i = 0; i < attempts; i += 1) {
       try {
         const result = await fn();
         await this.prisma.afipLog.create({
-          data: { companyId, service, environment: env, response: result as any },
+          data: { companyId, service, environment: env, response: result as unknown },
         });
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
         lastError = error;
         await this.prisma.afipLog.create({
           data: {

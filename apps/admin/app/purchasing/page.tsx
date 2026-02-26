@@ -94,7 +94,7 @@ export default function PurchasingPage() {
 
   async function receiveGoods() {
     if (!receiveOrderId) return;
-    const body: any = { items: [{ barcode, quantityReceived: quantity, unitCost: receiveCost }] };
+    const body: unknown = { items: [{ barcode, quantityReceived: quantity, unitCost: receiveCost }] };
     const res = await fetch(`${apiUrl}/purchasing/orders/${receiveOrderId}/receive`, {
       method: "POST",
       headers,

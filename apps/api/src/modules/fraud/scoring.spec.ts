@@ -1,5 +1,6 @@
 ﻿import { calculateFraudScore } from "./scoring";
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- JSON fixture load without runner config changes
 const fixtures = require("./__fixtures__/scoring.fixtures.json");
 
 describe("Fraud scoring", () => {

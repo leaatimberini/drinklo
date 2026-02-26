@@ -180,7 +180,7 @@ export class RecommendationsService {
 
     const counts = new Map<string, number>();
     for (const event of events) {
-      const payload = event.payload as Record<string, any>;
+      const payload = event.payload as Record<string, unknown>;
       const productId = payload.productId ?? payload.productIds?.[0];
       if (!productId) continue;
       counts.set(productId, (counts.get(productId) ?? 0) + 1);
@@ -293,7 +293,7 @@ export class RecommendationsService {
     }
 
     const counts = new Map<string, number>();
-    for (const [_, products] of orderMap) {
+    for (const products of orderMap.values()) {
       const hasAny = cartProductIds.some((id) => products.has(id));
       if (!hasAny) continue;
       for (const productId of products) {
@@ -338,7 +338,7 @@ export class RecommendationsService {
         const margin = price - cost;
         return { product, selection, price, margin };
       })
-      .filter(Boolean) as Array<any>;
+      .filter(Boolean) as Array<unknown>;
 
     return items
       .sort((a, b) => b.margin - a.margin)

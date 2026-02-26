@@ -14,7 +14,7 @@ export class MercadoPagoAdapter {
     notification_url?: string;
   }) {
     const preference = new Preference(this.client);
-    return preference.create({ body: payload as any });
+    return preference.create({ body: payload as unknown });
   }
 
   async getPayment(paymentId: string) {
@@ -22,7 +22,7 @@ export class MercadoPagoAdapter {
     return payment.get({ id: paymentId });
   }
 
-  private async request<T = any>(method: string, path: string, body?: any): Promise<T> {
+  private async request<T = unknown>(method: string, path: string, body?: unknown): Promise<T> {
     const res = await fetch(`https://api.mercadopago.com${path}`, {
       method,
       headers: {

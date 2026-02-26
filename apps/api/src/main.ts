@@ -29,7 +29,7 @@ async function bootstrap() {
   app.use(requestIdMiddleware);
   app.use(loggingMiddleware);
   app.use(csrfMiddleware);
-  app.use((req: any, res: any, next: any) => {
+  app.use((req: unknown, res: unknown, next: unknown) => {
     const rawVersion = req.headers["x-api-version"] ?? req.query?.apiVersion;
     const requestedVersion = Number(rawVersion ?? versionPolicy.defaultVersion);
     if (!Number.isFinite(requestedVersion)) {
@@ -49,7 +49,7 @@ async function bootstrap() {
     if (deprecation) {
       res.setHeader("Deprecation", "true");
       res.setHeader("Sunset", `${deprecation.sunsetOn}T23:59:59Z`);
-      res.setHeader("Link", `</docs/v${deprecation.successor}>; rel=\"successor-version\"`);
+      res.setHeader("Link", `</docs/v${deprecation.successor}>; rel="successor-version"`);
     }
     return next();
   });
@@ -62,7 +62,7 @@ async function bootstrap() {
         stdio: "inherit",
         env: process.env,
       });
-    } catch (error) {
+    } catch {
       // eslint-disable-next-line no-console
       console.error("Schema mismatch detected. Run migrations before starting.");
       process.exit(1);

@@ -15,7 +15,7 @@ export class PluginMarketplaceController {
 
   @Post("request")
   @Permissions("settings:write")
-  request(@Req() req: any, @Body() body: PluginRequestDto) {
+  request(@Req() req: unknown, @Body() body: PluginRequestDto) {
     void req;
     return this.marketplace.requestPlugin(body);
   }

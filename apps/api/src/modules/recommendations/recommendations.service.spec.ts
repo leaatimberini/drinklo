@@ -2,7 +2,7 @@
 import { RecommendationsService } from "./recommendations.service";
 
 describe("RecommendationsService", () => {
-  const prismaMock: any = {
+  const prismaMock: unknown = {
     company: { findFirst: jest.fn().mockResolvedValue({ id: "c1" }) },
     companySettings: { findFirst: jest.fn().mockResolvedValue({ ageGateMode: "18" }) },
     priceList: { findFirst: jest.fn().mockResolvedValue({ id: "pl1" }) },

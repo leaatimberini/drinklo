@@ -2,10 +2,10 @@
 import { PurchasingService } from "./purchasing.service";
 
 type State = {
-  po: any;
-  poItem: any;
-  stockItem: any;
-  variant: any;
+  po: unknown;
+  poItem: unknown;
+  stockItem: unknown;
+  variant: unknown;
   method: string;
   updatedPoStatus?: string;
   updatedCost?: number;
@@ -13,7 +13,7 @@ type State = {
 };
 
 function makeService(state: State) {
-  const tx: any = {
+  const tx: unknown = {
     goodsReceipt: {
       create: jest.fn(async () => ({ id: "gr-1" })),
     },
@@ -26,19 +26,19 @@ function makeService(state: State) {
     },
     purchaseOrderItem: {
       findFirst: jest.fn(async () => state.poItem),
-      update: jest.fn(async ({ data }: any) => {
+      update: jest.fn(async ({ data }: unknown) => {
         state.poItem.quantityReceived = data.quantityReceived;
         return state.poItem;
       }),
       findMany: jest.fn(async () => [state.poItem]),
     },
     goodsReceiptItem: {
-      create: jest.fn(async ({ data }: any) => ({ id: "gri-1", ...data })),
+      create: jest.fn(async ({ data }: unknown) => ({ id: "gri-1", ...data })),
     },
     stockItem: {
       findFirst: jest.fn(async () => state.stockItem),
       create: jest.fn(async () => state.stockItem),
-      update: jest.fn(async ({ data }: any) => {
+      update: jest.fn(async ({ data }: unknown) => {
         state.stockItem.quantity = data.quantity;
         return state.stockItem;
       }),
@@ -52,7 +52,7 @@ function makeService(state: State) {
     },
     productVariant: {
       findFirst: jest.fn(async () => state.variant),
-      update: jest.fn(async ({ data }: any) => {
+      update: jest.fn(async ({ data }: unknown) => {
         state.variant.cost = data.cost;
         state.updatedCost = Number((data.cost as Prisma.Decimal).toNumber());
         return state.variant;
@@ -65,14 +65,14 @@ function makeService(state: State) {
       }),
     },
     purchaseOrder: {
-      update: jest.fn(async ({ data }: any) => {
+      update: jest.fn(async ({ data }: unknown) => {
         state.updatedPoStatus = data.status;
         return { ...state.po, status: data.status };
       }),
     },
   };
 
-  const prisma: any = {
+  const prisma: unknown = {
     supplier: {
       findFirst: jest.fn(),
     },
@@ -82,7 +82,7 @@ function makeService(state: State) {
     purchaseOrder: {
       findFirst: jest.fn(async () => state.po),
     },
-    $transaction: jest.fn(async (fn: any) => fn(tx)),
+    $transaction: jest.fn(async (fn: unknown) => fn(tx)),
   };
 
   return { service: new PurchasingService(prisma), tx, prisma };

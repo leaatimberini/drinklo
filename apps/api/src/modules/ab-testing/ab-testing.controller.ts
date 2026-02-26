@@ -17,7 +17,7 @@ export class AbTestingController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing")
   @Get("admin/experiments")
-  list(@Req() req: any) {
+  list(@Req() req: unknown) {
     return this.ab.listExperiments(req.user.companyId);
   }
 
@@ -25,7 +25,7 @@ export class AbTestingController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing")
   @Post("admin/experiments")
-  create(@Req() req: any, @Body() body: CreateExperimentDto) {
+  create(@Req() req: unknown, @Body() body: CreateExperimentDto) {
     return this.ab.createExperiment(req.user.companyId, body);
   }
 
@@ -33,7 +33,7 @@ export class AbTestingController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing")
   @Post("admin/experiments/:id/variants")
-  createVariant(@Req() req: any, @Param("id") id: string, @Body() body: CreateVariantDto) {
+  createVariant(@Req() req: unknown, @Param("id") id: string, @Body() body: CreateVariantDto) {
     return this.ab.createVariant(req.user.companyId, id, body);
   }
 
@@ -41,13 +41,13 @@ export class AbTestingController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "manager", "marketing")
   @Get("admin/experiments/:id/report")
-  report(@Req() req: any, @Param("id") id: string) {
+  report(@Req() req: unknown, @Param("id") id: string) {
     return this.ab.report(req.user.companyId, id);
   }
 
   @Get("experiments/assign")
   async assign(
-    @Req() req: any,
+    @Req() req: unknown,
     @Res({ passthrough: true }) res: Response,
     @Query("target") target: ExperimentTarget,
     @Query("userId") userId?: string,
@@ -65,7 +65,7 @@ export class AbTestingController {
   }
 
   @Post("experiments/event")
-  async recordEvent(@Req() req: any, @Body() body: RecordExperimentEventDto) {
+  async recordEvent(@Req() req: unknown, @Body() body: RecordExperimentEventDto) {
     const enabled = await this.ab.isEnabled();
     if (!enabled) return { ok: false, reason: "disabled" };
     const companyId = await this.ab.getCompanyId();

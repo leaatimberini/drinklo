@@ -37,7 +37,7 @@ export class CreateVariantDto {
   weight!: number;
 
   @IsObject()
-  payload!: Record<string, any>;
+  payload!: Record<string, unknown>;
 }
 
 export class RecordExperimentEventDto {

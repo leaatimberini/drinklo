@@ -11,7 +11,7 @@ type SecretMeta = {
   rotatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  meta?: Record<string, any> | null;
+  meta?: Record<string, unknown> | null;
 };
 
 const PROVIDERS = ["MERCADOPAGO", "ANDREANI", "MERCADOLIBRE", "ARCA"] as const;
@@ -56,7 +56,7 @@ export default function SecretsPage() {
       }
       const data = (await res.json()) as SecretMeta[];
       setSecrets(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al cargar secrets");
     }
   }
@@ -85,7 +85,7 @@ export default function SecretsPage() {
       }
       setMessage("Credenciales rotadas.");
       await loadSecrets();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al rotar secret");
     }
   }
@@ -108,7 +108,7 @@ export default function SecretsPage() {
       }
       setMessage("Secret verificado.");
       await loadSecrets();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "Error al verificar");
     }
   }
@@ -151,7 +151,7 @@ export default function SecretsPage() {
           Proveedor
           <select
             value={provider}
-            onChange={(e) => setProvider(e.target.value as any)}
+            onChange={(e) => setProvider(e.target.value as unknown)}
             style={{ marginTop: 6 }}
           >
             {PROVIDERS.map((p) => (

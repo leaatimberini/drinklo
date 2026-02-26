@@ -7,21 +7,21 @@ import { redactDeep } from "../modules/data-governance/dlp-redactor";
 export class ObservabilityExceptionFilter implements ExceptionFilter {
   constructor(private readonly ops: OpsService) {}
 
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest();
     const res = ctx.getResponse();
     const status = exception?.getStatus?.() ?? 500;
 
     const errorEntry = {
-      id: (req as any)?.requestId ?? String(Date.now()),
+      id: (req as unknown)?.requestId ?? String(Date.now()),
       at: new Date().toISOString(),
       route: req?.originalUrl,
       message: redactDeep(exception?.message ?? "error"),
       stack: redactDeep(exception?.stack),
-      requestId: (req as any)?.requestId,
-      userId: (req as any)?.user?.sub,
-      companyId: (req as any)?.user?.companyId,
+      requestId: (req as unknown)?.requestId,
+      userId: (req as unknown)?.user?.sub,
+      companyId: (req as unknown)?.user?.companyId,
     };
 
     this.ops.addError(errorEntry);
@@ -35,7 +35,7 @@ export class ObservabilityExceptionFilter implements ExceptionFilter {
     const payload = {
       statusCode: status,
       message: exception?.message ?? "Internal error",
-      requestId: (req as any)?.requestId,
+      requestId: (req as unknown)?.requestId,
     };
 
     res.status(status).json(payload);

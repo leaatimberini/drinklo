@@ -16,7 +16,7 @@ type FraudItem = {
     customerEmail: string;
     status: string;
   } | null;
-  reasons: Array<{ code: string; label: string; points: number; details: Record<string, any> }>;
+  reasons: Array<{ code: string; label: string; points: number; details: Record<string, unknown> }>;
 };
 
 export default function FraudPage() {
@@ -71,7 +71,7 @@ export default function FraudPage() {
         </label>
         <label>
           Estado
-          <select value={status} onChange={(e) => setStatus(e.target.value as any)}>
+          <select value={status} onChange={(e) => setStatus(e.target.value as unknown)}>
             <option value="OPEN">OPEN</option>
             <option value="RESOLVED">RESOLVED</option>
             <option value="DISMISSED">DISMISSED</option>

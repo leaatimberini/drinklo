@@ -28,7 +28,7 @@ export class BrandingController {
   @Post("import")
   @UseGuards(SuperAdminGuard)
   importBrand(@Body() body: BrandingImportDto) {
-    return this.branding.validateImport(body.payload as any, body.signature).then(async (sanitized) => {
+    return this.branding.validateImport(body.payload as unknown, body.signature).then(async (sanitized) => {
       if (body.apply) {
         const applied = await this.branding.applyImport(sanitized);
         return { applied: true, settings: applied };
@@ -42,7 +42,7 @@ export class BrandingController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "marketing")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadLogo(@Req() req: any, @UploadedFile() file?: Express.Multer.File) {
+  async uploadLogo(@Req() req: unknown, @UploadedFile() file?: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException("File is required");
     }
@@ -58,7 +58,7 @@ export class BrandingController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Roles("admin", "marketing")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadFavicon(@Req() req: any, @UploadedFile() file?: Express.Multer.File) {
+  async uploadFavicon(@Req() req: unknown, @UploadedFile() file?: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException("File is required");
     }

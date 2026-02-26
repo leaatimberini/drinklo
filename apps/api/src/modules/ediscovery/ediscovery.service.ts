@@ -71,8 +71,8 @@ export class EdiscoveryService {
     const sections: ExportSection[] = Object.entries(data).map(([name, payload]) => {
       const count = Array.isArray(payload)
         ? payload.length
-        : payload && typeof payload === "object" && Array.isArray((payload as any).items)
-          ? (payload as any).items.length
+        : payload && typeof payload === "object" && Array.isArray((payload as unknown).items)
+          ? (payload as unknown).items.length
           : 1;
       return {
         name: name as EdiscoveryEntity,
@@ -119,7 +119,7 @@ export class EdiscoveryService {
     };
   }
 
-  verifyForensicPack(pack: any) {
+  verifyForensicPack(pack: unknown) {
     if (!pack || typeof pack !== "object") {
       return { ok: false, reason: "invalid_pack" };
     }
@@ -167,7 +167,7 @@ export class EdiscoveryService {
           where: {
             companyId,
             ...this.buildRangeWhere("createdAt", from, to),
-          } as any,
+          } as unknown,
           include: {
             items: true,
             payments: true,
@@ -185,7 +185,7 @@ export class EdiscoveryService {
             where: {
               companyId,
               ...this.buildRangeWhere("createdAt", from, to),
-            } as any,
+            } as unknown,
             orderBy: { createdAt: "asc" },
             take: 5000,
           }),
@@ -193,7 +193,7 @@ export class EdiscoveryService {
             where: {
               companyId,
               ...this.buildRangeWhere("createdAt", from, to),
-            } as any,
+            } as unknown,
             orderBy: { createdAt: "asc" },
             take: 5000,
           }),
@@ -205,13 +205,13 @@ export class EdiscoveryService {
           where: {
             companyId,
             ...this.buildRangeWhere("createdAt", from, to),
-          } as any,
+          } as unknown,
           orderBy: { createdAt: "asc" },
           take: 10000,
         });
         return {
           items: logs,
-          chainVerification: this.audit.verifyChain(logs as any),
+          chainVerification: this.audit.verifyChain(logs as unknown),
           truncated: logs.length >= 10000,
         };
       }
@@ -220,7 +220,7 @@ export class EdiscoveryService {
           where: {
             companyId,
             ...this.buildRangeWhere("receivedAt", from, to),
-          } as any,
+          } as unknown,
           orderBy: { receivedAt: "asc" },
           take: 10000,
         });
@@ -233,7 +233,7 @@ export class EdiscoveryService {
               companyId,
               category: "configuration",
               ...this.buildRangeWhere("createdAt", from, to),
-            } as any,
+            } as unknown,
             orderBy: { createdAt: "asc" },
             take: 5000,
           }),
@@ -244,7 +244,7 @@ export class EdiscoveryService {
             where: {
               companyId,
               ...this.buildRangeWhere("createdAt", from, to),
-            } as any,
+            } as unknown,
             orderBy: { createdAt: "asc" },
             take: 2000,
           }),
@@ -278,7 +278,7 @@ export class EdiscoveryService {
             where: {
               companyId,
               ...this.buildRangeWhere("createdAt", from, to),
-            } as any,
+            } as unknown,
             include: {
               items: true,
             },
@@ -293,7 +293,7 @@ export class EdiscoveryService {
           where: {
             companyId,
             ...this.buildRangeWhere("createdAt", from, to),
-          } as any,
+          } as unknown,
           include: {
             customer: { select: { id: true, name: true, email: true } },
             user: { select: { id: true, name: true, email: true } },

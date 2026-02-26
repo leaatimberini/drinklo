@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export default function SandboxPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const [token, setToken] = useState("");
-  const [status, setStatus] = useState<any>(null);
+  const [status, setStatus] = useState<unknown>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +30,7 @@ export default function SandboxPage() {
     try {
       const data = await fetchJson("/admin/sandbox/status");
       setStatus(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo cargar estado");
     }
   }
@@ -51,7 +51,7 @@ export default function SandboxPage() {
       });
       setMessage(`Sandbox ${enabled ? "activado" : "desactivado"}`);
       await loadStatus();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo actualizar modo");
     }
   }
@@ -63,7 +63,7 @@ export default function SandboxPage() {
       await fetchJson("/admin/sandbox/reset", { method: "POST" });
       setMessage("Sandbox reiniciado a estado inicial");
       await loadStatus();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message ?? "No se pudo resetear sandbox");
     }
   }

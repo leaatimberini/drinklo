@@ -1,12 +1,12 @@
 ﻿import { ImmutableAuditService } from "./immutable-audit.service";
 
 function makePrisma() {
-  const store: any[] = [];
+  const store: unknown[] = [];
   return {
     store,
     prisma: {
       immutableAuditLog: {
-        findFirst: jest.fn(async (args: any) => {
+        findFirst: jest.fn(async (args: unknown) => {
           const list = [...store];
           if (!list.length) return null;
           if (args?.where?.companyId && args?.where?.aggregateType && args?.where?.aggregateId) {
@@ -22,7 +22,7 @@ function makePrisma() {
           }
           return list.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
         }),
-        create: jest.fn(async ({ data }: any) => {
+        create: jest.fn(async ({ data }: unknown) => {
           const row = {
             id: `a${store.length + 1}`,
             createdAt: new Date(Date.now() + store.length),
@@ -31,7 +31,7 @@ function makePrisma() {
           store.push(row);
           return row;
         }),
-        findMany: jest.fn(async ({ where }: any) => {
+        findMany: jest.fn(async ({ where }: unknown) => {
           return store.filter((item) => item.companyId === where.companyId);
         }),
       },
@@ -42,7 +42,7 @@ function makePrisma() {
 describe("ImmutableAuditService", () => {
   it("builds valid hash chain", async () => {
     const { prisma, store } = makePrisma();
-    const service = new ImmutableAuditService(prisma as any);
+    const service = new ImmutableAuditService(prisma as unknown);
 
     await service.append({
       companyId: "c1",
@@ -67,13 +67,13 @@ describe("ImmutableAuditService", () => {
       payload: { qty: 2 },
     });
 
-    const verification = service.verifyChain(store as any);
+    const verification = service.verifyChain(store as unknown);
     expect(verification.ok).toBe(true);
   });
 
   it("detects tampering in chain", async () => {
     const { prisma, store } = makePrisma();
-    const service = new ImmutableAuditService(prisma as any);
+    const service = new ImmutableAuditService(prisma as unknown);
 
     await service.append({
       companyId: "c1",
@@ -99,7 +99,7 @@ describe("ImmutableAuditService", () => {
     });
 
     store[1].payload.discount = 99;
-    const verification = service.verifyChain(store as any);
+    const verification = service.verifyChain(store as unknown);
     expect(verification.ok).toBe(false);
     expect(verification.reason).toBe("payload_hash_mismatch");
   });
@@ -107,7 +107,7 @@ describe("ImmutableAuditService", () => {
   it("exports signed evidence pack", async () => {
     process.env.AUDIT_EVIDENCE_SECRET = "audit-secret";
     const { prisma } = makePrisma();
-    const service = new ImmutableAuditService(prisma as any);
+    const service = new ImmutableAuditService(prisma as unknown);
 
     await service.append({
       companyId: "c1",

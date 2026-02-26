@@ -12,7 +12,7 @@ export class BotAuditService {
     command: string;
     args?: string;
     status: string;
-    result?: any;
+    result?: unknown;
   }) {
     return this.prisma.botCommandLog.create({
       data: {
