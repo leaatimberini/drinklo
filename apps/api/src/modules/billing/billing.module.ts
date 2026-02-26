@@ -3,6 +3,7 @@ import { BillingController } from "./billing.controller";
 import { BillingSupportController } from "./billing-support.controller";
 import { BillingService } from "./billing.service";
 import { BillingPlanChangesService } from "./billing-plan-changes.service";
+import { ArcaReadinessService } from "./arca-readiness.service";
 import { SharedModule } from "../shared/shared.module";
 import { StorageModule } from "../storage/storage.module";
 import { LicensingModule } from "../licensing/licensing.module";
@@ -15,7 +16,7 @@ import { PaymentsModule } from "../payments/payments.module";
 @Module({
   imports: [SharedModule, StorageModule, LicensingModule, SecretsModule, SandboxModule, PlansModule, ImmutableAuditModule, PaymentsModule],
   controllers: [BillingController, BillingSupportController],
-  providers: [BillingService, BillingPlanChangesService],
+  providers: [BillingService, BillingPlanChangesService, ArcaReadinessService],
   exports: [BillingPlanChangesService],
 })
 export class BillingModule {}
