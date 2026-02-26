@@ -2015,6 +2015,38 @@ enum CrmDealStage {
   LOST
 }
 
+enum OutboundSequenceStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum OutboundSequenceStepChannel {
+  EMAIL
+}
+
+enum OutboundSequenceEnrollmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  STOPPED
+  OPTED_OUT
+}
+
+enum OutboundSequenceEventType {
+  ENROLLED
+  SENT
+  OPEN
+  CLICK
+  BOUNCE
+  REPLY
+  UNSUBSCRIBE
+  STEP_SKIPPED
+  COMPLIANCE_BLOCKED
+  COMPLETED
+}
+
 model CrmLead {
   id               String   @id @default(uuid())
   installationId   String?
@@ -2146,6 +2178,119 @@ model CrmDealAttachment {
   deal CrmDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
   @@index([dealId, createdAt])
+}
+
+model OutboundSequence {
+  id          String                 @id @default(uuid())
+  key         String                 @unique
+  name        String
+  status      OutboundSequenceStatus @default(DRAFT)
+  locale      String                 @default("es")
+  icpFilters  String[]               @default([])
+  description String?
+  variables   Json?
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  steps       OutboundSequenceStep[]
+  enrollments OutboundSequenceEnrollment[]
+  events      OutboundSequenceEvent[]
+
+  @@index([status, createdAt])
+  @@index([locale, status])
+}
+
+model OutboundSequenceStep {
+  id            String                      @id @default(uuid())
+  sequenceId    String
+  stepOrder     Int
+  channel       OutboundSequenceStepChannel @default(EMAIL)
+  delayDays     Int                         @default(0)
+  name          String
+  subjectTpl    String
+  bodyTpl       String
+  ctaUrlTpl     String?
+  variablesUsed String[]                    @default([])
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+
+  sequence OutboundSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  events    OutboundSequenceEvent[]
+
+  @@unique([sequenceId, stepOrder])
+  @@index([sequenceId, stepOrder])
+}
+
+model OutboundSequenceEnrollment {
+  id             String                           @id @default(uuid())
+  sequenceId     String
+  leadId         String
+  dealId         String?
+  installationId String?
+  instanceId     String?
+  email          String
+  status         OutboundSequenceEnrollmentStatus @default(ACTIVE)
+  currentStepOrder Int                            @default(1)
+  nextRunAt      DateTime?
+  lastSentAt     DateTime?
+  completedAt    DateTime?
+  optedOutAt     DateTime?
+  source         String                           @default("manual")
+  metadata       Json?
+  createdAt      DateTime                         @default(now())
+  updatedAt      DateTime                         @updatedAt
+
+  sequence OutboundSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  events    OutboundSequenceEvent[]
+
+  @@unique([sequenceId, leadId])
+  @@index([status, nextRunAt])
+  @@index([leadId, createdAt])
+  @@index([email, createdAt])
+  @@index([installationId, createdAt])
+}
+
+model OutboundSequenceEvent {
+  id             String                   @id @default(uuid())
+  sequenceId     String
+  enrollmentId   String?
+  stepId         String?
+  leadId         String?
+  dealId         String?
+  eventType      OutboundSequenceEventType
+  occurredAt     DateTime                 @default(now())
+  provider       String?                  @default("mock")
+  providerMessageId String?
+  trackingToken  String?                  @unique
+  url            String?
+  ipHash         String?
+  userAgentHash  String?
+  metadata       Json?
+  createdAt      DateTime                 @default(now())
+
+  sequence   OutboundSequence           @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  enrollment OutboundSequenceEnrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  step       OutboundSequenceStep?       @relation(fields: [stepId], references: [id], onDelete: SetNull)
+
+  @@index([sequenceId, occurredAt])
+  @@index([enrollmentId, occurredAt])
+  @@index([leadId, occurredAt])
+  @@index([eventType, occurredAt])
+}
+
+model OutboundSequenceOptOut {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  source       String   @default("unsubscribe_link")
+  reason       String?
+  ipHash       String?
+  userAgentHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
 }
 
 model TrialLifecycleEvent {
