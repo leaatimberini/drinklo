@@ -92,6 +92,17 @@
         "x-source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
       }
     },
+    "/admin/copilot/rag/status": {
+      "get": {
+        "operationId": "get_admin_copilot_rag_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ai-copilot/ai-copilot.controller.ts"
+      }
+    },
     "/admin/copilot/proposals/:id/approve": {
       "post": {
         "operationId": "post_admin_copilot_proposals_id_approve",
@@ -309,6 +320,61 @@
         "x-source": "apps/api/src/modules/automation/automation.controller.ts"
       }
     },
+    "/admin/support/billing/:companyId/upgrade": {
+      "post": {
+        "operationId": "post_admin_support_billing_companyId_upgrade",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing-support.controller.ts"
+      }
+    },
+    "/admin/support/billing/:companyId/downgrade": {
+      "post": {
+        "operationId": "post_admin_support_billing_companyId_downgrade",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing-support.controller.ts"
+      }
+    },
+    "/admin/support/billing/:companyId/cancel": {
+      "post": {
+        "operationId": "post_admin_support_billing_companyId_cancel",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing-support.controller.ts"
+      }
+    },
+    "/admin/support/billing/:companyId/reactivate": {
+      "post": {
+        "operationId": "post_admin_support_billing_companyId_reactivate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing-support.controller.ts"
+      }
+    },
+    "/admin/support/billing/apply-due": {
+      "post": {
+        "operationId": "post_admin_support_billing_apply_due",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing-support.controller.ts"
+      }
+    },
     "/billing/invoices": {
       "post": {
         "operationId": "post_billing_invoices",
@@ -323,6 +389,83 @@
     "/billing/invoices/:id/pdf": {
       "get": {
         "operationId": "get_billing_invoices_id_pdf",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/upgrade": {
+      "post": {
+        "operationId": "post_billing_upgrade",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/downgrade": {
+      "post": {
+        "operationId": "post_billing_downgrade",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/cancel": {
+      "post": {
+        "operationId": "post_billing_cancel",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/reactivate": {
+      "post": {
+        "operationId": "post_billing_reactivate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/arca/readiness": {
+      "get": {
+        "operationId": "get_billing_arca_readiness",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/arca/readiness/dry-run": {
+      "post": {
+        "operationId": "post_billing_arca_readiness_dry_run",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/billing/billing.controller.ts"
+      }
+    },
+    "/billing/arca/readiness/report": {
+      "post": {
+        "operationId": "post_billing_arca_readiness_report",
         "responses": {
           "200": {
             "description": "OK"
@@ -896,6 +1039,28 @@
         "x-source": "apps/api/src/modules/edge-cache/edge-cache.controller.ts"
       }
     },
+    "/admin/ediscovery/export": {
+      "post": {
+        "operationId": "post_admin_ediscovery_export",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ediscovery/ediscovery.controller.ts"
+      }
+    },
+    "/admin/ediscovery/verify": {
+      "post": {
+        "operationId": "post_admin_ediscovery_verify",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/ediscovery/ediscovery.controller.ts"
+      }
+    },
     "/admin/email-templates": {
       "get": {
         "operationId": "get_admin_email_templates",
@@ -974,6 +1139,17 @@
     "/admin/events/stats": {
       "get": {
         "operationId": "get_admin_events_stats",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/events/events.controller.ts"
+      }
+    },
+    "/admin/events/feature-usage": {
+      "get": {
+        "operationId": "get_admin_events_feature_usage",
         "responses": {
           "200": {
             "description": "OK"
@@ -1255,9 +1431,51 @@
         "x-source": "apps/api/src/modules/immutable-audit/immutable-audit.controller.ts"
       }
     },
+    "/admin/import/assist/analyze": {
+      "post": {
+        "operationId": "post_admin_import_assist_analyze",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      }
+    },
     "/admin/import": {
       "post": {
         "operationId": "post_admin_import",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      }
+    },
+    "/admin/import/assist/templates": {
+      "get": {
+        "operationId": "get_admin_import_assist_templates",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_import_assist_templates",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      }
+    },
+    "/admin/import/assist/templates/:id": {
+      "delete": {
+        "operationId": "delete_admin_import_assist_templates_id",
         "responses": {
           "200": {
             "description": "OK"
@@ -1275,6 +1493,114 @@
           }
         },
         "x-source": "apps/api/src/modules/import-export/import-export.controller.ts"
+      }
+    },
+    "/admin/integration-builder/connectors": {
+      "get": {
+        "operationId": "get_admin_integration_builder_connectors",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      },
+      "put": {
+        "operationId": "put_admin_integration_builder_connectors",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/connectors/:id": {
+      "delete": {
+        "operationId": "delete_admin_integration_builder_connectors_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/preview": {
+      "post": {
+        "operationId": "post_admin_integration_builder_preview",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/connectors/:id/secret": {
+      "post": {
+        "operationId": "post_admin_integration_builder_connectors_id_secret",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/connectors/:id/logs": {
+      "get": {
+        "operationId": "get_admin_integration_builder_connectors_id_logs",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/connectors/:id/metrics": {
+      "get": {
+        "operationId": "get_admin_integration_builder_connectors_id_metrics",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/metrics": {
+      "get": {
+        "operationId": "get_admin_integration_builder_metrics",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/connectors/:id/retry-dlq": {
+      "post": {
+        "operationId": "post_admin_integration_builder_connectors_id_retry_dlq",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
+      }
+    },
+    "/admin/integration-builder/report-control-plane": {
+      "post": {
+        "operationId": "post_admin_integration_builder_report_control_plane",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/integration-builder/integration-builder.controller.ts"
       }
     },
     "/admin/integrations/health": {
@@ -1451,6 +1777,28 @@
         "x-source": "apps/api/src/modules/ops/ops.controller.ts"
       }
     },
+    "/billing/mercadopago/subscriptions/status": {
+      "get": {
+        "operationId": "get_billing_mercadopago_subscriptions_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/payments/mercadopago-billing-subscriptions.controller.ts"
+      }
+    },
+    "/billing/mercadopago/subscriptions/preapproval": {
+      "post": {
+        "operationId": "post_billing_mercadopago_subscriptions_preapproval",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/payments/mercadopago-billing-subscriptions.controller.ts"
+      }
+    },
     "/payments/mercadopago/preference": {
       "post": {
         "operationId": "post_payments_mercadopago_preference",
@@ -1471,6 +1819,103 @@
           }
         },
         "x-source": "apps/api/src/modules/payments/mercadopago.webhook.controller.ts"
+      }
+    },
+    "/admin/plans/catalog": {
+      "get": {
+        "operationId": "get_admin_plans_catalog",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/plans/subscription": {
+      "get": {
+        "operationId": "get_admin_plans_subscription",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/plans/entitlements": {
+      "get": {
+        "operationId": "get_admin_plans_entitlements",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/plans/usage/current": {
+      "get": {
+        "operationId": "get_admin_plans_usage_current",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/plans/restricted-mode": {
+      "get": {
+        "operationId": "get_admin_plans_restricted_mode",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_plans_restricted_mode",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/support/plans/:companyId/entitlements": {
+      "get": {
+        "operationId": "get_admin_support_plans_companyId_entitlements",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/support/plans/:companyId/next-tier": {
+      "post": {
+        "operationId": "post_admin_support_plans_companyId_next_tier",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
+      }
+    },
+    "/admin/support/plans/:companyId/restricted-mode": {
+      "post": {
+        "operationId": "post_admin_support_plans_companyId_restricted_mode",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/plans/plans.controller.ts"
       }
     },
     "/admin/plugins/request": {
@@ -2006,6 +2451,28 @@
         "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
       }
     },
+    "/admin/sandbox/demo-status": {
+      "get": {
+        "operationId": "get_admin_sandbox_demo_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+      }
+    },
+    "/admin/sandbox/demo-reset": {
+      "post": {
+        "operationId": "post_admin_sandbox_demo_reset",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sandbox/sandbox.controller.ts"
+      }
+    },
     "/admin/sandbox/simulate-payment/:orderId": {
       "post": {
         "operationId": "post_admin_sandbox_simulate_payment_orderId",
@@ -2114,6 +2581,123 @@
         "x-source": "apps/api/src/modules/setup/setup.controller.ts"
       }
     },
+    "/admin/sod/policies": {
+      "get": {
+        "operationId": "get_admin_sod_policies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      },
+      "put": {
+        "operationId": "put_admin_sod_policies",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/violations": {
+      "get": {
+        "operationId": "get_admin_sod_violations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/summary": {
+      "get": {
+        "operationId": "get_admin_sod_summary",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/report-control-plane": {
+      "post": {
+        "operationId": "post_admin_sod_report_control_plane",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/access-reviews/campaigns": {
+      "get": {
+        "operationId": "get_admin_sod_access_reviews_campaigns",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      },
+      "post": {
+        "operationId": "post_admin_sod_access_reviews_campaigns",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/access-reviews/campaigns/:id/items": {
+      "get": {
+        "operationId": "get_admin_sod_access_reviews_campaigns_id_items",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/access-reviews/items/:id/review": {
+      "post": {
+        "operationId": "post_admin_sod_access_reviews_items_id_review",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/access-reviews/campaigns/:id/approve": {
+      "post": {
+        "operationId": "post_admin_sod_access_reviews_campaigns_id_approve",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
+    "/admin/sod/access-reviews/campaigns/:id/complete": {
+      "post": {
+        "operationId": "post_admin_sod_access_reviews_campaigns_id_complete",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/sod-access-reviews/sod-access-reviews.controller.ts"
+      }
+    },
     "/admin/starter-packs/apply": {
       "post": {
         "operationId": "post_admin_starter_packs_apply",
@@ -2207,6 +2791,28 @@
           }
         },
         "x-source": "apps/api/src/modules/stock/stock.controller.ts"
+      }
+    },
+    "/admin/plans/lifecycle/notifications": {
+      "get": {
+        "operationId": "get_admin_plans_lifecycle_notifications",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/subscription-lifecycle/subscription-lifecycle.controller.ts"
+      }
+    },
+    "/admin/plans/lifecycle/run/:job": {
+      "post": {
+        "operationId": "post_admin_plans_lifecycle_run_job",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/subscription-lifecycle/subscription-lifecycle.controller.ts"
       }
     },
     "/admin/support/summary": {
@@ -2359,6 +2965,57 @@
           }
         },
         "x-source": "apps/api/src/modules/support-portal/portal.controller.ts"
+      }
+    },
+    "/admin/taxes/profile": {
+      "get": {
+        "operationId": "get_admin_taxes_profile",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/taxes/taxes.controller.ts"
+      },
+      "put": {
+        "operationId": "put_admin_taxes_profile",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/taxes/taxes.controller.ts"
+      }
+    },
+    "/admin/taxes/rules": {
+      "get": {
+        "operationId": "get_admin_taxes_rules",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/taxes/taxes.controller.ts"
+      },
+      "put": {
+        "operationId": "put_admin_taxes_rules",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/taxes/taxes.controller.ts"
+      }
+    },
+    "/admin/taxes/simulate": {
+      "post": {
+        "operationId": "post_admin_taxes_simulate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/taxes/taxes.controller.ts"
       }
     },
     "/themes/public": {

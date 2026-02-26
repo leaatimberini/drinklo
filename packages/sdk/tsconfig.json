@@ -8,7 +8,8 @@
     "sourceMap": false,
     "module": "CommonJS",
     "target": "ES2022",
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"]
 }

@@ -10,6 +10,7 @@ export type ApiV1Path =
   | "/experiments/event"
   | "/admin/copilot/chat"
   | "/admin/copilot/proposals"
+  | "/admin/copilot/rag/status"
   | "/admin/copilot/proposals/:id/approve"
   | "/auth/login"
   | "/admin/automation/segments"
@@ -24,8 +25,20 @@ export type ApiV1Path =
   | "/admin/automation/suppressions"
   | "/admin/automation/flows/:id/test-run"
   | "/admin/automation/flows/:id/metrics"
+  | "/admin/support/billing/:companyId/upgrade"
+  | "/admin/support/billing/:companyId/downgrade"
+  | "/admin/support/billing/:companyId/cancel"
+  | "/admin/support/billing/:companyId/reactivate"
+  | "/admin/support/billing/apply-due"
   | "/billing/invoices"
   | "/billing/invoices/:id/pdf"
+  | "/billing/upgrade"
+  | "/billing/downgrade"
+  | "/billing/cancel"
+  | "/billing/reactivate"
+  | "/billing/arca/readiness"
+  | "/billing/arca/readiness/dry-run"
+  | "/billing/arca/readiness/report"
   | "/admin/bot-audit"
   | "/admin/branding/export"
   | "/admin/branding/import"
@@ -70,6 +83,8 @@ export type ApiV1Path =
   | "/admin/email-domain/confirm"
   | "/webhooks/email"
   | "/public/edge/vitals"
+  | "/admin/ediscovery/export"
+  | "/admin/ediscovery/verify"
   | "/admin/email-templates"
   | "/admin/email-templates/:id"
   | "/admin/email-templates/generate"
@@ -77,6 +92,7 @@ export type ApiV1Path =
   | "/admin/email-templates/:id/send-test"
   | "/events/ingest"
   | "/admin/events/stats"
+  | "/admin/events/feature-usage"
   | "/events/schema"
   | "/admin/fraud/rules"
   | "/admin/fraud/rules/:code"
@@ -101,8 +117,20 @@ export type ApiV1Path =
   | "/admin/audit"
   | "/admin/audit/verify"
   | "/admin/audit/evidence-pack"
+  | "/admin/import/assist/analyze"
   | "/admin/import"
+  | "/admin/import/assist/templates"
+  | "/admin/import/assist/templates/:id"
   | "/admin/import/export"
+  | "/admin/integration-builder/connectors"
+  | "/admin/integration-builder/connectors/:id"
+  | "/admin/integration-builder/preview"
+  | "/admin/integration-builder/connectors/:id/secret"
+  | "/admin/integration-builder/connectors/:id/logs"
+  | "/admin/integration-builder/connectors/:id/metrics"
+  | "/admin/integration-builder/metrics"
+  | "/admin/integration-builder/connectors/:id/retry-dlq"
+  | "/admin/integration-builder/report-control-plane"
   | "/admin/integrations/health"
   | "/admin/integrations/health/mercadopago/webhook-test"
   | "/admin/integrations/logs"
@@ -118,8 +146,18 @@ export type ApiV1Path =
   | "/metrics"
   | "/admin/ops"
   | "/admin/ops/diagnostic"
+  | "/billing/mercadopago/subscriptions/status"
+  | "/billing/mercadopago/subscriptions/preapproval"
   | "/payments/mercadopago/preference"
   | "/webhooks/mercadopago"
+  | "/admin/plans/catalog"
+  | "/admin/plans/subscription"
+  | "/admin/plans/entitlements"
+  | "/admin/plans/usage/current"
+  | "/admin/plans/restricted-mode"
+  | "/admin/support/plans/:companyId/entitlements"
+  | "/admin/support/plans/:companyId/next-tier"
+  | "/admin/support/plans/:companyId/restricted-mode"
   | "/admin/plugins/request"
   | "/plugins/ui"
   | "/admin/plugins"
@@ -154,6 +192,12 @@ export type ApiV1Path =
   | "/sales"
   | "/sales/offline/catalog"
   | "/sales/offline/sync"
+  | "/admin/sandbox/status"
+  | "/admin/sandbox/mode"
+  | "/admin/sandbox/reset"
+  | "/admin/sandbox/demo-status"
+  | "/admin/sandbox/demo-reset"
+  | "/admin/sandbox/simulate-payment/:orderId"
   | "/search"
   | "/admin/search/config"
   | "/admin/search/reindex"
@@ -162,6 +206,15 @@ export type ApiV1Path =
   | "/admin/secrets/verify"
   | "/setup/status"
   | "/setup/initialize"
+  | "/admin/sod/policies"
+  | "/admin/sod/violations"
+  | "/admin/sod/summary"
+  | "/admin/sod/report-control-plane"
+  | "/admin/sod/access-reviews/campaigns"
+  | "/admin/sod/access-reviews/campaigns/:id/items"
+  | "/admin/sod/access-reviews/items/:id/review"
+  | "/admin/sod/access-reviews/campaigns/:id/approve"
+  | "/admin/sod/access-reviews/campaigns/:id/complete"
   | "/admin/starter-packs/apply"
   | "/admin/starter-packs/packages"
   | "/stock/locations"
@@ -169,6 +222,8 @@ export type ApiV1Path =
   | "/stock/lookup"
   | "/stock/movements/receive"
   | "/stock/items/:id"
+  | "/admin/plans/lifecycle/notifications"
+  | "/admin/plans/lifecycle/run/:job"
   | "/admin/support/summary"
   | "/admin/support/status"
   | "/admin/support/latency"
@@ -182,6 +237,9 @@ export type ApiV1Path =
   | "/portal/incidents"
   | "/portal/integrations"
   | "/portal/email/inbound"
+  | "/admin/taxes/profile"
+  | "/admin/taxes/rules"
+  | "/admin/taxes/simulate"
   | "/themes/public"
   | "/themes"
   | "/users"
@@ -202,6 +260,7 @@ export type ApiMethodByPath = {
   "/experiments/event": "POST";
   "/admin/copilot/chat": "POST";
   "/admin/copilot/proposals": "GET";
+  "/admin/copilot/rag/status": "GET";
   "/admin/copilot/proposals/:id/approve": "POST";
   "/auth/login": "POST";
   "/admin/automation/segments": "GET" | "POST";
@@ -216,8 +275,20 @@ export type ApiMethodByPath = {
   "/admin/automation/suppressions": "GET" | "POST";
   "/admin/automation/flows/:id/test-run": "POST";
   "/admin/automation/flows/:id/metrics": "GET" | "POST";
+  "/admin/support/billing/:companyId/upgrade": "POST";
+  "/admin/support/billing/:companyId/downgrade": "POST";
+  "/admin/support/billing/:companyId/cancel": "POST";
+  "/admin/support/billing/:companyId/reactivate": "POST";
+  "/admin/support/billing/apply-due": "POST";
   "/billing/invoices": "POST";
   "/billing/invoices/:id/pdf": "GET";
+  "/billing/upgrade": "POST";
+  "/billing/downgrade": "POST";
+  "/billing/cancel": "POST";
+  "/billing/reactivate": "POST";
+  "/billing/arca/readiness": "GET";
+  "/billing/arca/readiness/dry-run": "POST";
+  "/billing/arca/readiness/report": "POST";
   "/admin/bot-audit": "POST";
   "/admin/branding/export": "POST";
   "/admin/branding/import": "POST";
@@ -262,6 +333,8 @@ export type ApiMethodByPath = {
   "/admin/email-domain/confirm": "POST";
   "/webhooks/email": "POST";
   "/public/edge/vitals": "POST";
+  "/admin/ediscovery/export": "POST";
+  "/admin/ediscovery/verify": "POST";
   "/admin/email-templates": "GET";
   "/admin/email-templates/:id": "GET" | "PATCH";
   "/admin/email-templates/generate": "POST";
@@ -269,6 +342,7 @@ export type ApiMethodByPath = {
   "/admin/email-templates/:id/send-test": "POST";
   "/events/ingest": "POST";
   "/admin/events/stats": "GET";
+  "/admin/events/feature-usage": "GET";
   "/events/schema": "GET";
   "/admin/fraud/rules": "GET";
   "/admin/fraud/rules/:code": "PATCH";
@@ -293,8 +367,20 @@ export type ApiMethodByPath = {
   "/admin/audit": "GET";
   "/admin/audit/verify": "GET";
   "/admin/audit/evidence-pack": "GET";
+  "/admin/import/assist/analyze": "POST";
   "/admin/import": "POST";
+  "/admin/import/assist/templates": "GET" | "POST";
+  "/admin/import/assist/templates/:id": "DELETE";
   "/admin/import/export": "GET";
+  "/admin/integration-builder/connectors": "GET" | "PUT";
+  "/admin/integration-builder/connectors/:id": "DELETE";
+  "/admin/integration-builder/preview": "POST";
+  "/admin/integration-builder/connectors/:id/secret": "POST";
+  "/admin/integration-builder/connectors/:id/logs": "GET";
+  "/admin/integration-builder/connectors/:id/metrics": "GET";
+  "/admin/integration-builder/metrics": "GET";
+  "/admin/integration-builder/connectors/:id/retry-dlq": "POST";
+  "/admin/integration-builder/report-control-plane": "POST";
   "/admin/integrations/health": "GET";
   "/admin/integrations/health/mercadopago/webhook-test": "POST";
   "/admin/integrations/logs": "GET";
@@ -310,8 +396,18 @@ export type ApiMethodByPath = {
   "/metrics": "GET";
   "/admin/ops": "GET";
   "/admin/ops/diagnostic": "GET";
+  "/billing/mercadopago/subscriptions/status": "GET";
+  "/billing/mercadopago/subscriptions/preapproval": "POST";
   "/payments/mercadopago/preference": "POST";
   "/webhooks/mercadopago": "POST";
+  "/admin/plans/catalog": "GET";
+  "/admin/plans/subscription": "GET";
+  "/admin/plans/entitlements": "GET";
+  "/admin/plans/usage/current": "GET";
+  "/admin/plans/restricted-mode": "GET" | "POST";
+  "/admin/support/plans/:companyId/entitlements": "GET";
+  "/admin/support/plans/:companyId/next-tier": "POST";
+  "/admin/support/plans/:companyId/restricted-mode": "POST";
   "/admin/plugins/request": "POST";
   "/plugins/ui": "GET";
   "/admin/plugins": "GET" | "POST";
@@ -346,6 +442,12 @@ export type ApiMethodByPath = {
   "/sales": "POST";
   "/sales/offline/catalog": "GET";
   "/sales/offline/sync": "POST";
+  "/admin/sandbox/status": "GET";
+  "/admin/sandbox/mode": "POST";
+  "/admin/sandbox/reset": "POST";
+  "/admin/sandbox/demo-status": "GET";
+  "/admin/sandbox/demo-reset": "POST";
+  "/admin/sandbox/simulate-payment/:orderId": "POST";
   "/search": "GET";
   "/admin/search/config": "GET" | "POST";
   "/admin/search/reindex": "POST";
@@ -354,6 +456,15 @@ export type ApiMethodByPath = {
   "/admin/secrets/verify": "POST";
   "/setup/status": "GET";
   "/setup/initialize": "POST";
+  "/admin/sod/policies": "GET" | "PUT";
+  "/admin/sod/violations": "GET";
+  "/admin/sod/summary": "GET";
+  "/admin/sod/report-control-plane": "POST";
+  "/admin/sod/access-reviews/campaigns": "GET" | "POST";
+  "/admin/sod/access-reviews/campaigns/:id/items": "GET";
+  "/admin/sod/access-reviews/items/:id/review": "POST";
+  "/admin/sod/access-reviews/campaigns/:id/approve": "POST";
+  "/admin/sod/access-reviews/campaigns/:id/complete": "POST";
   "/admin/starter-packs/apply": "POST";
   "/admin/starter-packs/packages": "GET";
   "/stock/locations": "GET" | "POST";
@@ -361,6 +472,8 @@ export type ApiMethodByPath = {
   "/stock/lookup": "GET";
   "/stock/movements/receive": "POST";
   "/stock/items/:id": "PATCH";
+  "/admin/plans/lifecycle/notifications": "GET";
+  "/admin/plans/lifecycle/run/:job": "POST";
   "/admin/support/summary": "GET";
   "/admin/support/status": "GET";
   "/admin/support/latency": "GET";
@@ -374,6 +487,9 @@ export type ApiMethodByPath = {
   "/portal/incidents": "GET";
   "/portal/integrations": "GET";
   "/portal/email/inbound": "POST";
+  "/admin/taxes/profile": "GET" | "PUT";
+  "/admin/taxes/rules": "GET" | "PUT";
+  "/admin/taxes/simulate": "POST";
   "/themes/public": "GET";
   "/themes": "PATCH";
   "/users": "GET" | "POST";
@@ -394,6 +510,7 @@ export type ApiOperationById = {
   "post_experiments_event": { method: "POST"; path: "/experiments/event" };
   "post_admin_copilot_chat": { method: "POST"; path: "/admin/copilot/chat" };
   "get_admin_copilot_proposals": { method: "GET"; path: "/admin/copilot/proposals" };
+  "get_admin_copilot_rag_status": { method: "GET"; path: "/admin/copilot/rag/status" };
   "post_admin_copilot_proposals_id_approve": { method: "POST"; path: "/admin/copilot/proposals/:id/approve" };
   "post_auth_login": { method: "POST"; path: "/auth/login" };
   "get_admin_automation_segments": { method: "GET"; path: "/admin/automation/segments" };
@@ -415,8 +532,20 @@ export type ApiOperationById = {
   "post_admin_automation_flows_id_test_run": { method: "POST"; path: "/admin/automation/flows/:id/test-run" };
   "get_admin_automation_flows_id_metrics": { method: "GET"; path: "/admin/automation/flows/:id/metrics" };
   "post_admin_automation_flows_id_metrics": { method: "POST"; path: "/admin/automation/flows/:id/metrics" };
+  "post_admin_support_billing_companyId_upgrade": { method: "POST"; path: "/admin/support/billing/:companyId/upgrade" };
+  "post_admin_support_billing_companyId_downgrade": { method: "POST"; path: "/admin/support/billing/:companyId/downgrade" };
+  "post_admin_support_billing_companyId_cancel": { method: "POST"; path: "/admin/support/billing/:companyId/cancel" };
+  "post_admin_support_billing_companyId_reactivate": { method: "POST"; path: "/admin/support/billing/:companyId/reactivate" };
+  "post_admin_support_billing_apply_due": { method: "POST"; path: "/admin/support/billing/apply-due" };
   "post_billing_invoices": { method: "POST"; path: "/billing/invoices" };
   "get_billing_invoices_id_pdf": { method: "GET"; path: "/billing/invoices/:id/pdf" };
+  "post_billing_upgrade": { method: "POST"; path: "/billing/upgrade" };
+  "post_billing_downgrade": { method: "POST"; path: "/billing/downgrade" };
+  "post_billing_cancel": { method: "POST"; path: "/billing/cancel" };
+  "post_billing_reactivate": { method: "POST"; path: "/billing/reactivate" };
+  "get_billing_arca_readiness": { method: "GET"; path: "/billing/arca/readiness" };
+  "post_billing_arca_readiness_dry_run": { method: "POST"; path: "/billing/arca/readiness/dry-run" };
+  "post_billing_arca_readiness_report": { method: "POST"; path: "/billing/arca/readiness/report" };
   "post_admin_bot_audit": { method: "POST"; path: "/admin/bot-audit" };
   "post_admin_branding_export": { method: "POST"; path: "/admin/branding/export" };
   "post_admin_branding_import": { method: "POST"; path: "/admin/branding/import" };
@@ -470,6 +599,8 @@ export type ApiOperationById = {
   "post_admin_email_domain_confirm": { method: "POST"; path: "/admin/email-domain/confirm" };
   "post_webhooks_email": { method: "POST"; path: "/webhooks/email" };
   "post_public_edge_vitals": { method: "POST"; path: "/public/edge/vitals" };
+  "post_admin_ediscovery_export": { method: "POST"; path: "/admin/ediscovery/export" };
+  "post_admin_ediscovery_verify": { method: "POST"; path: "/admin/ediscovery/verify" };
   "get_admin_email_templates": { method: "GET"; path: "/admin/email-templates" };
   "get_admin_email_templates_id": { method: "GET"; path: "/admin/email-templates/:id" };
   "patch_admin_email_templates_id": { method: "PATCH"; path: "/admin/email-templates/:id" };
@@ -478,6 +609,7 @@ export type ApiOperationById = {
   "post_admin_email_templates_id_send_test": { method: "POST"; path: "/admin/email-templates/:id/send-test" };
   "post_events_ingest": { method: "POST"; path: "/events/ingest" };
   "get_admin_events_stats": { method: "GET"; path: "/admin/events/stats" };
+  "get_admin_events_feature_usage": { method: "GET"; path: "/admin/events/feature-usage" };
   "get_events_schema": { method: "GET"; path: "/events/schema" };
   "get_admin_fraud_rules": { method: "GET"; path: "/admin/fraud/rules" };
   "patch_admin_fraud_rules_code": { method: "PATCH"; path: "/admin/fraud/rules/:code" };
@@ -503,8 +635,22 @@ export type ApiOperationById = {
   "get_admin_audit": { method: "GET"; path: "/admin/audit" };
   "get_admin_audit_verify": { method: "GET"; path: "/admin/audit/verify" };
   "get_admin_audit_evidence_pack": { method: "GET"; path: "/admin/audit/evidence-pack" };
+  "post_admin_import_assist_analyze": { method: "POST"; path: "/admin/import/assist/analyze" };
   "post_admin_import": { method: "POST"; path: "/admin/import" };
+  "get_admin_import_assist_templates": { method: "GET"; path: "/admin/import/assist/templates" };
+  "post_admin_import_assist_templates": { method: "POST"; path: "/admin/import/assist/templates" };
+  "delete_admin_import_assist_templates_id": { method: "DELETE"; path: "/admin/import/assist/templates/:id" };
   "get_admin_import_export": { method: "GET"; path: "/admin/import/export" };
+  "get_admin_integration_builder_connectors": { method: "GET"; path: "/admin/integration-builder/connectors" };
+  "put_admin_integration_builder_connectors": { method: "PUT"; path: "/admin/integration-builder/connectors" };
+  "delete_admin_integration_builder_connectors_id": { method: "DELETE"; path: "/admin/integration-builder/connectors/:id" };
+  "post_admin_integration_builder_preview": { method: "POST"; path: "/admin/integration-builder/preview" };
+  "post_admin_integration_builder_connectors_id_secret": { method: "POST"; path: "/admin/integration-builder/connectors/:id/secret" };
+  "get_admin_integration_builder_connectors_id_logs": { method: "GET"; path: "/admin/integration-builder/connectors/:id/logs" };
+  "get_admin_integration_builder_connectors_id_metrics": { method: "GET"; path: "/admin/integration-builder/connectors/:id/metrics" };
+  "get_admin_integration_builder_metrics": { method: "GET"; path: "/admin/integration-builder/metrics" };
+  "post_admin_integration_builder_connectors_id_retry_dlq": { method: "POST"; path: "/admin/integration-builder/connectors/:id/retry-dlq" };
+  "post_admin_integration_builder_report_control_plane": { method: "POST"; path: "/admin/integration-builder/report-control-plane" };
   "get_admin_integrations_health": { method: "GET"; path: "/admin/integrations/health" };
   "post_admin_integrations_health_mercadopago_webhook_test": { method: "POST"; path: "/admin/integrations/health/mercadopago/webhook-test" };
   "get_admin_integrations_logs": { method: "GET"; path: "/admin/integrations/logs" };
@@ -521,8 +667,19 @@ export type ApiOperationById = {
   "get_metrics": { method: "GET"; path: "/metrics" };
   "get_admin_ops": { method: "GET"; path: "/admin/ops" };
   "get_admin_ops_diagnostic": { method: "GET"; path: "/admin/ops/diagnostic" };
+  "get_billing_mercadopago_subscriptions_status": { method: "GET"; path: "/billing/mercadopago/subscriptions/status" };
+  "post_billing_mercadopago_subscriptions_preapproval": { method: "POST"; path: "/billing/mercadopago/subscriptions/preapproval" };
   "post_payments_mercadopago_preference": { method: "POST"; path: "/payments/mercadopago/preference" };
   "post_webhooks_mercadopago": { method: "POST"; path: "/webhooks/mercadopago" };
+  "get_admin_plans_catalog": { method: "GET"; path: "/admin/plans/catalog" };
+  "get_admin_plans_subscription": { method: "GET"; path: "/admin/plans/subscription" };
+  "get_admin_plans_entitlements": { method: "GET"; path: "/admin/plans/entitlements" };
+  "get_admin_plans_usage_current": { method: "GET"; path: "/admin/plans/usage/current" };
+  "get_admin_plans_restricted_mode": { method: "GET"; path: "/admin/plans/restricted-mode" };
+  "post_admin_plans_restricted_mode": { method: "POST"; path: "/admin/plans/restricted-mode" };
+  "get_admin_support_plans_companyId_entitlements": { method: "GET"; path: "/admin/support/plans/:companyId/entitlements" };
+  "post_admin_support_plans_companyId_next_tier": { method: "POST"; path: "/admin/support/plans/:companyId/next-tier" };
+  "post_admin_support_plans_companyId_restricted_mode": { method: "POST"; path: "/admin/support/plans/:companyId/restricted-mode" };
   "post_admin_plugins_request": { method: "POST"; path: "/admin/plugins/request" };
   "get_plugins_ui": { method: "GET"; path: "/plugins/ui" };
   "get_admin_plugins": { method: "GET"; path: "/admin/plugins" };
@@ -571,6 +728,12 @@ export type ApiOperationById = {
   "post_sales": { method: "POST"; path: "/sales" };
   "get_sales_offline_catalog": { method: "GET"; path: "/sales/offline/catalog" };
   "post_sales_offline_sync": { method: "POST"; path: "/sales/offline/sync" };
+  "get_admin_sandbox_status": { method: "GET"; path: "/admin/sandbox/status" };
+  "post_admin_sandbox_mode": { method: "POST"; path: "/admin/sandbox/mode" };
+  "post_admin_sandbox_reset": { method: "POST"; path: "/admin/sandbox/reset" };
+  "get_admin_sandbox_demo_status": { method: "GET"; path: "/admin/sandbox/demo-status" };
+  "post_admin_sandbox_demo_reset": { method: "POST"; path: "/admin/sandbox/demo-reset" };
+  "post_admin_sandbox_simulate_payment_orderId": { method: "POST"; path: "/admin/sandbox/simulate-payment/:orderId" };
   "get_search": { method: "GET"; path: "/search" };
   "get_admin_search_config": { method: "GET"; path: "/admin/search/config" };
   "post_admin_search_config": { method: "POST"; path: "/admin/search/config" };
@@ -580,6 +743,17 @@ export type ApiOperationById = {
   "post_admin_secrets_verify": { method: "POST"; path: "/admin/secrets/verify" };
   "get_setup_status": { method: "GET"; path: "/setup/status" };
   "post_setup_initialize": { method: "POST"; path: "/setup/initialize" };
+  "get_admin_sod_policies": { method: "GET"; path: "/admin/sod/policies" };
+  "put_admin_sod_policies": { method: "PUT"; path: "/admin/sod/policies" };
+  "get_admin_sod_violations": { method: "GET"; path: "/admin/sod/violations" };
+  "get_admin_sod_summary": { method: "GET"; path: "/admin/sod/summary" };
+  "post_admin_sod_report_control_plane": { method: "POST"; path: "/admin/sod/report-control-plane" };
+  "get_admin_sod_access_reviews_campaigns": { method: "GET"; path: "/admin/sod/access-reviews/campaigns" };
+  "post_admin_sod_access_reviews_campaigns": { method: "POST"; path: "/admin/sod/access-reviews/campaigns" };
+  "get_admin_sod_access_reviews_campaigns_id_items": { method: "GET"; path: "/admin/sod/access-reviews/campaigns/:id/items" };
+  "post_admin_sod_access_reviews_items_id_review": { method: "POST"; path: "/admin/sod/access-reviews/items/:id/review" };
+  "post_admin_sod_access_reviews_campaigns_id_approve": { method: "POST"; path: "/admin/sod/access-reviews/campaigns/:id/approve" };
+  "post_admin_sod_access_reviews_campaigns_id_complete": { method: "POST"; path: "/admin/sod/access-reviews/campaigns/:id/complete" };
   "post_admin_starter_packs_apply": { method: "POST"; path: "/admin/starter-packs/apply" };
   "get_admin_starter_packs_packages": { method: "GET"; path: "/admin/starter-packs/packages" };
   "get_stock_locations": { method: "GET"; path: "/stock/locations" };
@@ -589,6 +763,8 @@ export type ApiOperationById = {
   "get_stock_lookup": { method: "GET"; path: "/stock/lookup" };
   "post_stock_movements_receive": { method: "POST"; path: "/stock/movements/receive" };
   "patch_stock_items_id": { method: "PATCH"; path: "/stock/items/:id" };
+  "get_admin_plans_lifecycle_notifications": { method: "GET"; path: "/admin/plans/lifecycle/notifications" };
+  "post_admin_plans_lifecycle_run_job": { method: "POST"; path: "/admin/plans/lifecycle/run/:job" };
   "get_admin_support_summary": { method: "GET"; path: "/admin/support/summary" };
   "get_admin_support_status": { method: "GET"; path: "/admin/support/status" };
   "get_admin_support_latency": { method: "GET"; path: "/admin/support/latency" };
@@ -603,6 +779,11 @@ export type ApiOperationById = {
   "get_portal_incidents": { method: "GET"; path: "/portal/incidents" };
   "get_portal_integrations": { method: "GET"; path: "/portal/integrations" };
   "post_portal_email_inbound": { method: "POST"; path: "/portal/email/inbound" };
+  "get_admin_taxes_profile": { method: "GET"; path: "/admin/taxes/profile" };
+  "put_admin_taxes_profile": { method: "PUT"; path: "/admin/taxes/profile" };
+  "get_admin_taxes_rules": { method: "GET"; path: "/admin/taxes/rules" };
+  "put_admin_taxes_rules": { method: "PUT"; path: "/admin/taxes/rules" };
+  "post_admin_taxes_simulate": { method: "POST"; path: "/admin/taxes/simulate" };
   "get_themes_public": { method: "GET"; path: "/themes/public" };
   "patch_themes": { method: "PATCH"; path: "/themes" };
   "get_users": { method: "GET"; path: "/users" };

@@ -72,7 +72,18 @@ function pathExists(openapiPaths, requestedPath) {
   if (openapiPaths[normalizedRequested]) return true;
 
   for (const candidate of Object.keys(openapiPaths)) {
-    if (normalizeDynamic(candidate) === normalizedRequested) {
+    const normalizedCandidate = normalizeDynamic(candidate);
+    if (normalizedCandidate === normalizedRequested) {
+      return true;
+    }
+    // Allow dynamic client helpers like `/billing/${kind}` to match concrete OpenAPI paths
+    // when segment counts align (e.g. `/billing/:param` vs `/billing/upgrade`).
+    const reqParts = normalizedRequested.split("/").filter(Boolean);
+    const candParts = normalizedCandidate.split("/").filter(Boolean);
+    if (
+      reqParts.length === candParts.length &&
+      reqParts.every((part, index) => part === ":param" || part === candParts[index])
+    ) {
       return true;
     }
   }
@@ -92,6 +103,10 @@ function checkClientContracts(openapi) {
   for (const client of clients) {
     const paths = collectApiPathsFromCode(client.dir);
     for (const requestedPath of paths) {
+      // Client apps may call their own Next.js route handlers (`/api/*`), which are outside apps/api OpenAPI.
+      if (requestedPath.startsWith("/api/")) {
+        continue;
+      }
       if (!pathExists(openapi.paths, requestedPath)) {
         failures.push(`[${client.name}] endpoint not present in OpenAPI: ${requestedPath}`);
       }
@@ -154,10 +169,16 @@ function parseCurrentEventModel() {
   }
 
   const requiredFields = [];
-  const requiredRegex = /if\s*\(\s*!event\.([a-zA-Z0-9_]+)\s*\|\|/g;
-  let r;
-  while ((r = requiredRegex.exec(text))) {
-    requiredFields.push(r[1]);
+  const envelopeBlock = text.match(/export type EventEnvelope\s*=\s*\{([\s\S]*?)\};/);
+  if (envelopeBlock) {
+    for (const rawLine of envelopeBlock[1].split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("//")) continue;
+      const fieldMatch = line.match(/^([A-Za-z0-9_]+)(\?)?\s*:/);
+      if (fieldMatch && fieldMatch[2] !== "?") {
+        requiredFields.push(fieldMatch[1]);
+      }
+    }
   }
 
   return {
