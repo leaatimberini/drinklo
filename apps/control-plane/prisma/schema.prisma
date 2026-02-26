@@ -96,6 +96,7 @@ model Installation {
   caseStudies         CaseStudy[]
   implementationProjects ImplementationProject[]
   implementationChecklistItems ImplementationChecklistItem[]
+  proposals           ProposalDocument[]
 
   @@index([clientName])
   @@index([domain])
@@ -124,6 +125,20 @@ enum ImplementationChecklistStatus {
   BLOCKED
   DONE
   WAIVED
+}
+
+enum ProposalTemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProposalDocumentStatus {
+  DRAFT
+  GENERATED
+  SENT
+  ACCEPTED
+  ARCHIVED
 }
 
 model CaseStudy {
@@ -2465,4 +2480,59 @@ model ImplementationChecklistItem {
   @@index([installationId, status, dueAt])
   @@index([instanceId, status])
   @@index([required, status])
+}
+
+model ProposalTemplate {
+  id             String               @id @default(uuid())
+  key            String               @unique
+  name           String
+  locale         String               @default("es")
+  planTier       String?
+  addonKeys      String[]             @default([])
+  status         ProposalTemplateStatus @default(DRAFT)
+  description    String?
+  variablesSchema Json?
+  sections       Json
+  pricingDefaults Json?
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  documents      ProposalDocument[]
+
+  @@index([status, locale, createdAt])
+  @@index([planTier, status])
+}
+
+model ProposalDocument {
+  id             String               @id @default(uuid())
+  templateId     String?
+  installationId String?
+  instanceId     String?
+  clientName     String?
+  locale         String               @default("es")
+  planTier       String
+  addonKeys      String[]             @default([])
+  status         ProposalDocumentStatus @default(GENERATED)
+  variables      Json
+  pricingSummary Json?
+  renderedPayload Json
+  manifest       Json?
+  signature      String?
+  pdfHash        String?
+  evidenceId     String?
+  createdBy      String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  template      ProposalTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  installation  Installation?     @relation(fields: [installationId], references: [id], onDelete: SetNull)
+
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([planTier, createdAt])
+  @@index([status, createdAt])
 }
