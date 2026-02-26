@@ -68,12 +68,12 @@ function parseHostPort(url: string, defaultPort: number) {
   }
 }
 
-async function tcpCheck(url: string, defaultPort: number) {
+async function tcpCheck(url: string, defaultPort: number): Promise<boolean> {
   if (!url) return false;
   const { host, port } = parseHostPort(url, defaultPort);
   if (!host) return false;
 
-  return new Promise((resolve) => {
+  return new Promise<boolean>((resolve) => {
     const socket = net.createConnection({ host, port, timeout: 2000 }, () => {
       socket.end();
       resolve(true);
