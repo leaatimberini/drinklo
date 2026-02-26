@@ -34,6 +34,12 @@ El script:
 ### Ver logs de infraestructura
 - `pnpm infra:logs`
 
+### Helper para abrir PR (GitHub UI)
+- `pnpm pr:open`
+- Override base branch:
+  - PowerShell: `$env:BASE_BRANCH='feature/blue-green-canary'; pnpm pr:open`
+  - Bash: `BASE_BRANCH=feature/blue-green-canary pnpm pr:open`
+
 ### Reset de base de datos
 - `pnpm db:reset`
 
@@ -89,6 +95,12 @@ The script will:
 
 ### Infra logs
 - `pnpm infra:logs`
+
+### PR helper (GitHub UI)
+- `pnpm pr:open`
+- Override base branch:
+  - PowerShell: `$env:BASE_BRANCH='feature/blue-green-canary'; pnpm pr:open`
+  - Bash: `BASE_BRANCH=feature/blue-green-canary pnpm pr:open`
 
 ### Reset database
 - `pnpm db:reset`

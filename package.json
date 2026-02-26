@@ -12,6 +12,7 @@
     "test": "turbo test && pnpm contract:test",
     "lint": "turbo lint",
     "format": "prettier --write .",
+    "pr:open": "node scripts/open-pr.mjs",
     "infra:up": "node scripts/infra.mjs up",
     "infra:down": "node scripts/infra.mjs down",
     "infra:logs": "node scripts/infra.mjs logs",
