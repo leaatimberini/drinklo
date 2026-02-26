@@ -4,8 +4,11 @@ import { ImportExportService } from "./import-export.service";
 import { parseFile } from "./import.helpers";
 
 describe("ImportExportService", () => {
+  const fixture = (name: string) =>
+    path.resolve(__dirname, "../../../../../tests/fixtures/imports", name);
+
   it("validates products CSV", () => {
-    const buffer = fs.readFileSync(path.join("tests", "fixtures", "imports", "products.csv"));
+    const buffer = fs.readFileSync(fixture("products.csv"));
     const { rows } = parseFile(buffer);
     const service = new ImportExportService({} as any, {} as any, {} as any);
     const result = service.validate("products", rows);
@@ -14,7 +17,7 @@ describe("ImportExportService", () => {
   });
 
   it("detects invalid products", () => {
-    const buffer = fs.readFileSync(path.join("tests", "fixtures", "imports", "products_invalid.csv"));
+    const buffer = fs.readFileSync(fixture("products_invalid.csv"));
     const { rows } = parseFile(buffer);
     const service = new ImportExportService({} as any, {} as any, {} as any);
     const result = service.validate("products", rows);
