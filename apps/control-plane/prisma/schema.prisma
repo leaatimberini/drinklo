@@ -82,6 +82,11 @@ model Installation {
   mobileBuildProfiles MobileBuildProfile[]
   mobileOtaUpdates MobileOtaUpdate[]
   marketingLeads  MarketingLead[]
+  crmLeads        CrmLead[]
+  crmDeals        CrmDeal[]
+  feedbackSurveySends FeedbackSurveySend[]
+  feedbackIssues      FeedbackIssue[]
+  statusPageIncidents StatusPageIncident[]
 
   @@index([clientName])
   @@index([domain])
@@ -452,6 +457,64 @@ enum TrialLifecycleEventType {
   BecameRestricted
 }
 
+enum TrialPlaybookKey {
+  D3_NO_CATALOG_IMPORT
+  D7_NO_FIRST_SALE_POS_NUDGE
+  D21_WHOLESALE_UPGRADE_OFFER
+  D3_BEFORE_TRIAL_END_ADD_PAYMENT
+}
+
+enum FeedbackSurveyType {
+  NPS
+  CSAT
+}
+
+enum FeedbackSurveyCampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum FeedbackSurveySendStatus {
+  QUEUED
+  SENT_MOCK
+  SENT
+  FAILED
+  RESPONDED
+}
+
+enum FeedbackIssueStatus {
+  OPEN
+  TRIAGED
+  CLOSED
+}
+
+enum StatusPageIncidentImpact {
+  DEGRADED
+  PARTIAL_OUTAGE
+  MAJOR_OUTAGE
+  MAINTENANCE
+}
+
+enum StatusPageIncidentState {
+  INVESTIGATING
+  IDENTIFIED
+  MONITORING
+  RESOLVED
+}
+
+enum StatusPageSubscriptionChannel {
+  EMAIL
+  WEBHOOK
+}
+
+enum StatusPageSubscriptionStatus {
+  UNVERIFIED
+  ACTIVE
+  PAUSED
+}
+
 enum InvoiceStatus {
   OPEN
   PAID
@@ -773,6 +836,7 @@ model BillingAccount {
   usageRecords BillingUsageRecord[]
   planChanges  BillingPlanChange[]
   partnerConversions Conversion[]
+  feedbackSurveySends FeedbackSurveySend[]
 
   @@index([installationId])
   @@index([planId])
@@ -1339,10 +1403,226 @@ model TrialCampaign {
   updatedBy       String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+  playbookConfigs TrialPlaybookConfig[]
+  feedbackSurveyCampaigns FeedbackSurveyCampaign[]
 
   @@index([status, createdAt])
   @@index([tier, createdAt])
   @@index([expiresAt])
+}
+
+model TrialPlaybookConfig {
+  id         String          @id @default(uuid())
+  campaignId String
+  playbookKey TrialPlaybookKey
+  enabled    Boolean         @default(true)
+  channels   String[]        @default([])
+  config     Json?
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  campaign TrialCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, playbookKey])
+  @@index([campaignId, enabled])
+  @@index([playbookKey, enabled])
+}
+
+model TrialPlaybookRun {
+  id              String          @id @default(uuid())
+  playbookKey     TrialPlaybookKey
+  dedupeKey       String          @unique
+  campaignId      String?
+  campaignCode    String?
+  billingAccountId String
+  installationId  String?
+  instanceId      String?
+  status          String          @default("TRIGGERED")
+  channels        String[]        @default([])
+  reason          String?
+  triggerDateBa   String?
+  executedAt      DateTime        @default(now())
+  payload         Json?
+  createdAt       DateTime        @default(now())
+
+  @@index([campaignId, createdAt])
+  @@index([billingAccountId, createdAt])
+  @@index([playbookKey, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([status, createdAt])
+}
+
+model FeedbackSurveyCampaign {
+  id                String                       @id @default(uuid())
+  name              String
+  type              FeedbackSurveyType
+  status            FeedbackSurveyCampaignStatus @default(DRAFT)
+  trialCampaignId   String?
+  planFilters       String[]                     @default([])
+  icpFilters        String[]                     @default([])
+  emailSubject      String
+  emailBody         String
+  lowScoreThreshold Int?
+  createIssueOnLow  Boolean                      @default(true)
+  categories        String[]                     @default([])
+  notes             String?
+  createdBy         String?
+  updatedBy         String?
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+
+  trialCampaign TrialCampaign? @relation(fields: [trialCampaignId], references: [id])
+  sends         FeedbackSurveySend[]
+  issues        FeedbackIssue[]
+
+  @@index([status, createdAt])
+  @@index([type, status, createdAt])
+  @@index([trialCampaignId])
+}
+
+model FeedbackSurveySend {
+  id               String                 @id @default(uuid())
+  campaignId       String
+  billingAccountId String?
+  installationId   String?
+  instanceId       String?
+  recipientEmail   String
+  recipientName    String?
+  planName         String?
+  icp              String?
+  trialCampaignId  String?
+  status           FeedbackSurveySendStatus @default(QUEUED)
+  responseToken    String                 @unique
+  sentAt           DateTime?
+  openedAt         DateTime?
+  respondedAt      DateTime?
+  metadata         Json?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  campaign      FeedbackSurveyCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  billingAccount BillingAccount?       @relation(fields: [billingAccountId], references: [id])
+  installation  Installation?          @relation(fields: [installationId], references: [id])
+  response      FeedbackSurveyResponse?
+
+  @@unique([campaignId, billingAccountId])
+  @@index([campaignId, createdAt])
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([status, createdAt])
+  @@index([planName, icp, createdAt])
+}
+
+model FeedbackSurveyResponse {
+  id         String             @id @default(uuid())
+  sendId      String             @unique
+  surveyType  FeedbackSurveyType
+  score       Int
+  category    String?
+  comment     String?
+  submittedAt DateTime           @default(now())
+  createdAt   DateTime           @default(now())
+
+  send  FeedbackSurveySend @relation(fields: [sendId], references: [id], onDelete: Cascade)
+  issue FeedbackIssue?
+
+  @@index([submittedAt])
+  @@index([surveyType, submittedAt])
+  @@index([score, submittedAt])
+}
+
+model FeedbackIssue {
+  id             String            @id @default(uuid())
+  responseId      String            @unique
+  campaignId      String?
+  installationId  String?
+  instanceId      String?
+  status          FeedbackIssueStatus @default(OPEN)
+  severity        String            @default("warning")
+  category        String?
+  title           String
+  description     String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  closedAt        DateTime?
+
+  response     FeedbackSurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  campaign     FeedbackSurveyCampaign? @relation(fields: [campaignId], references: [id])
+  installation Installation?          @relation(fields: [installationId], references: [id])
+
+  @@index([campaignId, createdAt])
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([status, createdAt])
+}
+
+model StatusPageIncident {
+  id                   String                  @id @default(uuid())
+  slug                 String                  @unique
+  installationId       String?
+  title                String
+  summary              String
+  impact               StatusPageIncidentImpact
+  state                StatusPageIncidentState @default(INVESTIGATING)
+  component            String?
+  isPublic             Boolean                 @default(false)
+  isClosed             Boolean                 @default(false)
+  startedAt            DateTime                @default(now())
+  endedAt              DateTime?
+  publishedAt          DateTime?
+  closedAt             DateTime?
+  postmortemTitle      String?
+  postmortemBody       String?
+  postmortemPublishedAt DateTime?
+  createdBy            String?
+  updatedBy            String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  installation Installation?           @relation(fields: [installationId], references: [id])
+  updates       StatusPageIncidentUpdate[]
+
+  @@index([isPublic, isClosed, startedAt])
+  @@index([impact, state, startedAt])
+  @@index([installationId, startedAt])
+}
+
+model StatusPageIncidentUpdate {
+  id          String   @id @default(uuid())
+  incidentId   String
+  state        StatusPageIncidentState?
+  message      String
+  isPublic     Boolean  @default(true)
+  isPostmortem Boolean  @default(false)
+  createdBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  publishedAt  DateTime?
+
+  incident StatusPageIncident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId, createdAt])
+  @@index([isPublic, createdAt])
+  @@index([isPostmortem, createdAt])
+}
+
+model StatusPageSubscription {
+  id            String                     @id @default(uuid())
+  channel       StatusPageSubscriptionChannel
+  status        StatusPageSubscriptionStatus @default(UNVERIFIED)
+  email         String?
+  webhookUrl    String?
+  secret        String?
+  lastNotifiedAt DateTime?
+  metadata      Json?
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  @@unique([channel, email])
+  @@unique([channel, webhookUrl])
+  @@index([status, createdAt])
 }
 
 model TrialRedemption {
@@ -1389,6 +1669,7 @@ model LeadAttribution {
   fingerprintHash  String?
   createdAt        DateTime @default(now())
   marketingLeads   MarketingLead[]
+  crmLeads         CrmLead[]
 
   @@index([campaignId, createdAt])
   @@index([redemptionId])
@@ -1421,6 +1702,149 @@ model MarketingLead {
   @@index([trialCode, createdAt])
   @@index([instanceId, createdAt])
   @@index([status, createdAt])
+}
+
+enum CrmDealStage {
+  NEW
+  CONTACTED
+  DEMO
+  TRIAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+model CrmLead {
+  id               String   @id @default(uuid())
+  installationId   String?
+  instanceId       String?
+  companyId        String?
+  leadAttributionId String?
+  trialCampaignId  String?
+  trialRedemptionId String?
+  email            String
+  name             String?
+  companyName      String?
+  phone            String?
+  city             String?
+  businessType     String?
+  ownerUserId      String?
+  nextActionAt     DateTime?
+  tags             String[] @default([])
+  source           String   @default("manual")
+  status           String   @default("ACTIVE")
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  installation   Installation?  @relation(fields: [installationId], references: [id])
+  leadAttribution LeadAttribution? @relation(fields: [leadAttributionId], references: [id])
+  deals          CrmDeal[]
+
+  @@index([email, createdAt])
+  @@index([businessType, createdAt])
+  @@index([ownerUserId, createdAt])
+  @@index([trialCampaignId, createdAt])
+  @@index([trialRedemptionId])
+  @@index([status, createdAt])
+  @@index([installationId, createdAt])
+}
+
+model CrmDeal {
+  id                String      @id @default(uuid())
+  leadId            String
+  installationId    String?
+  instanceId        String?
+  companyId         String?
+  billingAccountId  String?
+  sourceTrialCampaignId String?
+  sourceTrialRedemptionId String? @unique
+  title             String
+  stage             CrmDealStage @default(NEW)
+  ownerUserId       String?
+  nextActionAt      DateTime?
+  amount            Float?
+  currency          String       @default("USD")
+  tags              String[]     @default([])
+  source            String       @default("manual")
+  lossReason        String?
+  metadata          Json?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  wonAt             DateTime?
+  lostAt            DateTime?
+
+  lead         CrmLead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  installation Installation?            @relation(fields: [installationId], references: [id])
+  notes        CrmDealNote[]
+  tasks        CrmDealTask[]
+  attachments  CrmDealAttachment[]
+  transitions  CrmDealStageTransition[]
+
+  @@index([stage, createdAt])
+  @@index([ownerUserId, stage])
+  @@index([leadId, createdAt])
+  @@index([installationId, createdAt])
+  @@index([nextActionAt])
+}
+
+model CrmDealStageTransition {
+  id        String      @id @default(uuid())
+  dealId     String
+  fromStage  CrmDealStage?
+  toStage    CrmDealStage
+  reason     String?
+  changedBy  String?
+  createdAt  DateTime   @default(now())
+
+  deal CrmDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, createdAt])
+  @@index([toStage, createdAt])
+}
+
+model CrmDealNote {
+  id        String   @id @default(uuid())
+  dealId     String
+  body       String
+  createdBy  String?
+  createdAt  DateTime @default(now())
+
+  deal CrmDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, createdAt])
+}
+
+model CrmDealTask {
+  id          String   @id @default(uuid())
+  dealId       String
+  title        String
+  dueAt        DateTime?
+  doneAt       DateTime?
+  assignedTo   String?
+  createdBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  deal CrmDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, createdAt])
+  @@index([dueAt])
+  @@index([doneAt])
+}
+
+model CrmDealAttachment {
+  id         String   @id @default(uuid())
+  dealId      String
+  label       String
+  url         String
+  mimeType    String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  deal CrmDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, createdAt])
 }
 
 model TrialLifecycleEvent {
