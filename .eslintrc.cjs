@@ -8,7 +8,7 @@ module.exports = {
     es2022: true,
     browser: false
   },
-  ignorePatterns: ["dist", "node_modules", ".next", "coverage", "prisma/client"],
+  ignorePatterns: ["dist", "node_modules", ".next", "coverage", "prisma/client", "**/next-env.d.ts"],
   rules: {
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   }

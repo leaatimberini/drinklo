@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearBrandingCache, downloadBrandingConfig, getCachedBrandingConfig } from "../mobileBranding";
 
 const mockFetch = vi.fn();
-// @ts-expect-error test override
 global.fetch = mockFetch;
 
 function mockResponse(body: any, ok = true, status = 200) {

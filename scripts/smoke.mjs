@@ -37,6 +37,19 @@ async function waitFor(url, timeoutMs = 60000) {
 }
 
 async function main() {
+  const requireDocker = process.env.CI === "true" || process.env.SMOKE_REQUIRE_DOCKER === "true";
+  const dockerAvailable = await run("docker", ["info"], { stdio: "ignore" }).then(
+    () => true,
+    () => false,
+  );
+  if (!dockerAvailable) {
+    if (requireDocker) {
+      throw new Error("Docker is required for smoke in CI/strict mode, but it is not available.");
+    }
+    console.warn("Smoke skipped: Docker is not available on this machine.");
+    return;
+  }
+
   await run("docker", ["compose", "up", "-d"]);
   await run("pnpm", ["-C", "packages/db", "migrate", "reset", "--force"], { env });
 

@@ -26,7 +26,10 @@ export type MobileBrandingConfig = {
   apiBaseUrl?: string | null;
   channel?: "stable" | "beta";
   configVersion?: number;
-  themeTokens?: Partial<MobileThemeTokens>;
+  themeTokens?: {
+    colors?: Partial<MobileThemeTokens["colors"]>;
+    radii?: Partial<MobileThemeTokens["radii"]>;
+  };
   ota?: {
     provider?: "eas" | "custom";
     channel?: string;
@@ -53,7 +56,12 @@ export function defaultMobileTheme(): MobileThemeTokens {
   };
 }
 
-export function mergeThemeTokens(input?: Partial<MobileThemeTokens> | null): MobileThemeTokens {
+export function mergeThemeTokens(
+  input?: {
+    colors?: Partial<MobileThemeTokens["colors"]>;
+    radii?: Partial<MobileThemeTokens["radii"]>;
+  } | null,
+): MobileThemeTokens {
   const base = defaultMobileTheme();
   return {
     colors: {
@@ -90,13 +98,18 @@ export function resolveMobileBranding(input?: MobileBrandingConfig | null) {
 
 export function buildAppPalette(input?: MobileBrandingConfig | null) {
   const resolved =
-    input && typeof input === "object" && "theme" in (input as any)
-      ? (input as any)
+    input &&
+    typeof input === "object" &&
+    "theme" in input &&
+    typeof input.theme === "object" &&
+    input.theme !== null
+      ? (input as ReturnType<typeof resolveMobileBranding>)
       : resolveMobileBranding(input);
   return {
     bg: resolved.theme.colors.background,
     surface: resolved.theme.colors.surface,
     text: resolved.theme.colors.text,
+    textMuted: resolved.theme.colors.textMuted,
     primary: resolved.theme.colors.primary,
     primaryText: resolved.theme.colors.primaryText,
     accent: resolved.theme.colors.accent,

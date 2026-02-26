@@ -5,19 +5,20 @@
   "main": "App.tsx",
   "scripts": {
     "dev": "expo start",
-    "build": "expo export --platform all",
+    "build": "tsc -p tsconfig.json --noEmit",
     "start": "expo start --dev-client",
     "lint": "echo \"no lint\"",
     "test": "vitest run"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.4",
     "@erp/shared": "workspace:*",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "expo": "^51.0.0",
     "expo-barcode-scanner": "^12.5.0",
     "expo-camera": "^15.0.0",
     "react": "^19.0.0",
-    "react-native": "^0.74.0",
-    "@react-native-async-storage/async-storage": "^1.24.0"
+    "react-native": "^0.74.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

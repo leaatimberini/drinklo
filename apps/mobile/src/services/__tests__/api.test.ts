@@ -2,7 +2,6 @@
 import { listOrders, login, lookupStock, receiveStock, updateOrderStatus } from "../api";
 
 const mockFetch = vi.fn();
-// @ts-expect-error test override
 global.fetch = mockFetch;
 
 function mockResponse(body: any, ok = true, status = 200) {
