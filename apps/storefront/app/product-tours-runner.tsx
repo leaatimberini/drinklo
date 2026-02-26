@@ -5,6 +5,14 @@ import { selectToursForRuntime, type ProductTourDefinition, type ProductTourStep
 
 type RuntimePayload = { tours: ProductTourDefinition[] };
 
+declare global {
+  interface Window {
+    __ERP_INSTANCE_ID?: string;
+    __ERP_ICP?: string;
+    __ERP_TRIAL_DAYS_REMAINING?: string | number;
+  }
+}
+
 function parseJson<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;
   try {
@@ -17,7 +25,7 @@ function parseJson<T>(raw: string | null, fallback: T): T {
 function getInstanceId() {
   if (typeof window === "undefined") return null;
   return (
-    (window as any).__ERP_INSTANCE_ID ??
+    window.__ERP_INSTANCE_ID ??
     window.localStorage.getItem("erp_instance_id") ??
     process.env.NEXT_PUBLIC_INSTANCE_ID ??
     null
@@ -26,12 +34,12 @@ function getInstanceId() {
 
 function getIcp() {
   if (typeof window === "undefined") return null;
-  return String((window as any).__ERP_ICP ?? window.localStorage.getItem("erp_icp") ?? "");
+  return String(window.__ERP_ICP ?? window.localStorage.getItem("erp_icp") ?? "");
 }
 
 function getTrialDaysRemaining() {
   if (typeof window === "undefined") return null;
-  const value = (window as any).__ERP_TRIAL_DAYS_REMAINING ?? window.localStorage.getItem("erp_trial_days_remaining");
+  const value = window.__ERP_TRIAL_DAYS_REMAINING ?? window.localStorage.getItem("erp_trial_days_remaining");
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
@@ -112,7 +120,7 @@ export function ProductToursRunner() {
       };
     }
     return;
-  }, [activeStep?.id]);
+  }, [activeStep]);
 
   useEffect(() => {
     if (!activeTour || !activeStep || trackedStartRef.current === activeTour.id) return;

@@ -73,7 +73,7 @@ export default function SearchClient() {
         style={{ maxWidth: 520 }}
       />
 
-      {didYouMean && <p style={{ marginTop: 12 }}>¿Quisiste decir "{didYouMean}"?</p>}
+      {didYouMean && <p style={{ marginTop: 12 }}>¿Quisiste decir &quot;{didYouMean}&quot;?</p>}
 
       {suggestions.length > 0 && (
         <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>

@@ -13,18 +13,49 @@ type Product = {
   variants?: { sku?: string }[];
 };
 
-export default function ProductClient({ id, abVariant }: { id: string; abVariant?: { id: string; name: string; payload: any } | null }) {
+type ExperimentVariant = {
+  id: string;
+  name: string;
+  payload?: Record<string, unknown> | null;
+};
+
+type NearExpiryResponse = {
+  error?: string;
+  hasNearExpiry?: boolean;
+  nextLotCode?: string | null;
+  nextExpiryDate?: string | null;
+};
+
+type RotationHint = {
+  lotId: string;
+  lotCode?: string | null;
+  suggestion?: string | null;
+  productId: string;
+};
+
+function getStringField(obj: Record<string, unknown> | null | undefined, key: string) {
+  const value = obj?.[key];
+  return typeof value === "string" ? value : null;
+}
+
+export default function ProductClient({
+  id,
+  abVariant,
+}: {
+  id: string;
+  abVariant?: ExperimentVariant | null;
+}) {
   const [product, setProduct] = useState<Product | null>(null);
   const [added, setAdded] = useState(false);
   const [adminToken, setAdminToken] = useState("");
-  const [nearExpiry, setNearExpiry] = useState<any | null>(null);
-  const [rotationHints, setRotationHints] = useState<any[]>([]);
+  const [nearExpiry, setNearExpiry] = useState<NearExpiryResponse | null>(null);
+  const [rotationHints, setRotationHints] = useState<RotationHint[]>([]);
   const { addItem } = useCart();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const eventToken = process.env.NEXT_PUBLIC_EVENT_TOKEN;
 
   useEffect(() => {
-    fetchCatalogJson<any>(`/catalog/products/${id}`)
+    fetchCatalogJson<Product>(`/catalog/products/${id}`)
       .then((data) => setProduct(data))
       .catch(() => setProduct(null));
   }, [id]);
@@ -58,9 +89,13 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
       setRotationHints([]);
       return;
     }
-    const [productData, rotationData] = await Promise.all([productRes.json(), rotationRes.json()]);
+    const [productData, rotationData] = await Promise.all([
+      productRes.json() as Promise<NearExpiryResponse>,
+      rotationRes.json() as Promise<unknown>,
+    ]);
     setNearExpiry(productData);
-    setRotationHints((rotationData ?? []).filter((row: any) => row.productId === product.id).slice(0, 3));
+    const rows = Array.isArray(rotationData) ? (rotationData as RotationHint[]) : [];
+    setRotationHints(rows.filter((row) => row.productId === product.id).slice(0, 3));
   }
 
   if (!product) {
@@ -86,8 +121,10 @@ export default function ProductClient({ id, abVariant }: { id: string; abVariant
     <main style={{ padding: 32 }}>
       <h1 style={{ fontSize: 32, marginBottom: 8, fontFamily: "var(--font-heading)" }}>{product.name}</h1>
       <p style={{ marginBottom: 16 }}>{product.description ?? "Sin descripcion"}</p>
-      {abVariant?.payload?.badge && (
-        <p style={{ marginBottom: 16, color: "#92400e" }}>{abVariant.payload.badge}</p>
+      {getStringField(abVariant?.payload ?? undefined, "badge") && (
+        <p style={{ marginBottom: 16, color: "#92400e" }}>
+          {getStringField(abVariant?.payload ?? undefined, "badge")}
+        </p>
       )}
       {variant && <p style={{ marginBottom: 16, color: "var(--color-text-muted)" }}>SKU: {variant.sku}</p>}
 

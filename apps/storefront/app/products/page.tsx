@@ -1,13 +1,23 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { fetchCatalogJson } from "../lib/catalog-fetch";
 
+type ProductListItem = {
+  id: string;
+  name: string;
+  description?: string | null;
+};
+
+type ProductListResponse = {
+  items?: ProductListItem[];
+};
+
 export default function ProductsPage() {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<ProductListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const canSearch = useMemo(() => q.trim().length > 1, [q]);
@@ -16,7 +26,7 @@ export default function ProductsPage() {
     if (!canSearch) return;
     setIsLoading(true);
     try {
-      const data = await fetchCatalogJson<any>(`/catalog/products?q=${encodeURIComponent(q)}&page=1&pageSize=24`);
+      const data = await fetchCatalogJson<ProductListResponse>(`/catalog/products?q=${encodeURIComponent(q)}&page=1&pageSize=24`);
       setResults(data.items ?? []);
     } finally {
       setIsLoading(false);
@@ -49,7 +59,7 @@ export default function ProductsPage() {
               color: "inherit",
             }}>
               <strong>{product.name}</strong>
-              <p style={{ marginTop: 8, color: "#666" }}>{product.description ?? "Sin descripci�n"}</p>
+              <p style={{ marginTop: 8, color: "#666" }}>{product.description ?? "Sin descripción"}</p>
             </Link>
           </motion.div>
         ))}

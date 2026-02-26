@@ -4,18 +4,27 @@ export type RestrictedCheckoutRuntime = {
   storefrontCheckoutBlocked?: boolean;
 };
 
+type RestrictedErrorPayload = {
+  code?: string;
+  message?: string;
+  cta?: {
+    label?: string;
+  };
+};
+
 export function isCheckoutBlockedByRestrictedMode(runtime?: RestrictedCheckoutRuntime | null) {
   return Boolean(runtime?.enabled && (runtime?.storefrontCheckoutBlocked || runtime?.variant === "CATALOG_ONLY"));
 }
 
-export function parseRestrictedCheckoutError(payload: any) {
+export function parseRestrictedCheckoutError(payload: unknown) {
   if (!payload || typeof payload !== "object") return null;
-  if (payload.code !== "SUBSCRIPTION_RESTRICTED") return null;
+  const data = payload as RestrictedErrorPayload;
+  if (data.code !== "SUBSCRIPTION_RESTRICTED") return null;
   const message =
-    typeof payload.message === "string"
-      ? payload.message
+    typeof data.message === "string"
+      ? data.message
       : "El checkout esta temporalmente deshabilitado por estado de suscripcion.";
-  const ctaLabel = typeof payload?.cta?.label === "string" ? payload.cta.label : "Actualizar plan";
+  const ctaLabel = typeof data.cta?.label === "string" ? data.cta.label : "Actualizar plan";
   return { message, ctaLabel };
 }
 

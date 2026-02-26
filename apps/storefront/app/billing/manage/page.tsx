@@ -4,20 +4,78 @@ import Link from "next/link";
 import { useState } from "react";
 import { pricingLegalCopy, storefrontSelfServeNav } from "../../self-serve-ui-content";
 
+type JsonRecord = Record<string, unknown>;
+type PlanTier = "C1" | "C2" | "C3";
+
+type PlanCatalogEntry = Record<string, unknown>;
+
+type SubscriptionStateResponse = {
+  subscription?: {
+    status?: string | null;
+    currentTier?: string | null;
+    nextTier?: string | null;
+    currentPeriodEnd?: string | null;
+  } | null;
+  usage?: {
+    ordersCount?: number | null;
+    apiCallsCount?: number | null;
+    storageGbUsed?: number | string | null;
+  } | null;
+  entitlements?: {
+    ordersMonth?: number | null;
+    apiCallsMonth?: number | null;
+    storageGb?: number | null;
+  } | null;
+};
+
+type BillingChangePreview = JsonRecord & { kind: "upgrade" | "downgrade" };
+
+type PortalInvoice = {
+  id: string;
+  status: string;
+  currency?: string | null;
+  amount?: number | null;
+};
+
+type PortalAccount = {
+  instanceId?: string | null;
+  status?: string | null;
+  plan?: { name?: string | null } | null;
+};
+
+type PortalBillingData = {
+  account?: PortalAccount | null;
+  invoices?: PortalInvoice[];
+};
+
+type PayInvoiceResponse = {
+  initPoint?: string;
+  error?: string;
+};
+
+function isRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getErrorMessage(payload: unknown, fallback: string) {
+  if (isRecord(payload) && typeof payload.error === "string") return payload.error;
+  return fallback;
+}
+
 export default function StorefrontBillingManagePage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const cpDefault = process.env.NEXT_PUBLIC_CONTROL_PLANE_URL ?? "http://localhost:3010";
   const [jwt, setJwt] = useState("");
-  const [state, setState] = useState<any | null>(null);
-  const [catalog, setCatalog] = useState<any[]>([]);
-  const [targetTier, setTargetTier] = useState("C2");
-  const [preview, setPreview] = useState<any | null>(null);
+  const [state, setState] = useState<SubscriptionStateResponse | null>(null);
+  const [catalog, setCatalog] = useState<PlanCatalogEntry[]>([]);
+  const [targetTier, setTargetTier] = useState<PlanTier>("C2");
+  const [preview, setPreview] = useState<BillingChangePreview | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const [cpUrl, setCpUrl] = useState(cpDefault);
   const [portalToken, setPortalToken] = useState("");
   const [instanceId, setInstanceId] = useState("");
-  const [portalData, setPortalData] = useState<any | null>(null);
+  const [portalData, setPortalData] = useState<PortalBillingData | null>(null);
   const [marketingConsent, setMarketingConsent] = useState(false);
 
   async function loadState() {
@@ -31,8 +89,9 @@ export default function StorefrontBillingManagePage() {
       setMessage("Ingresá JWT admin para gestionar plan desde esta pantalla.");
       return;
     }
-    setCatalog(await catalogRes.json());
-    setState(await entRes.json());
+    const [catalogPayload, statePayload] = await Promise.all([catalogRes.json(), entRes.json()]);
+    setCatalog(Array.isArray(catalogPayload) ? (catalogPayload as PlanCatalogEntry[]) : []);
+    setState(isRecord(statePayload) ? (statePayload as SubscriptionStateResponse) : null);
   }
 
   async function previewChange(kind: "upgrade" | "downgrade") {
@@ -41,9 +100,9 @@ export default function StorefrontBillingManagePage() {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
       body: JSON.stringify({ targetTier, dryRun: true }),
     });
-    const payload = await res.json().catch(() => ({}));
-    if (!res.ok) return setMessage(payload.error ?? "No se pudo previsualizar");
-    setPreview({ kind, ...payload });
+    const payload = (await res.json().catch(() => null)) as unknown;
+    if (!res.ok) return setMessage(getErrorMessage(payload, "No se pudo previsualizar"));
+    setPreview({ kind, ...(isRecord(payload) ? payload : {}) });
   }
 
   async function applyChange(kind: "upgrade" | "downgrade") {
@@ -52,8 +111,8 @@ export default function StorefrontBillingManagePage() {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
       body: JSON.stringify({ targetTier, dryRun: false }),
     });
-    const payload = await res.json().catch(() => ({}));
-    if (!res.ok) return setMessage(payload.error ?? "No se pudo aplicar cambio");
+    const payload = (await res.json().catch(() => null)) as unknown;
+    if (!res.ok) return setMessage(getErrorMessage(payload, "No se pudo aplicar cambio"));
     setMessage(kind === "upgrade" ? "Upgrade aplicado" : "Downgrade programado al próximo ciclo");
     await loadState();
   }
@@ -62,9 +121,9 @@ export default function StorefrontBillingManagePage() {
     const res = await fetch(`${cpUrl}/api/billing/portal?instanceId=${encodeURIComponent(instanceId)}`, {
       headers: { "x-portal-token": portalToken },
     });
-    const payload = await res.json().catch(() => ({}));
-    if (!res.ok) return setMessage(payload.error ?? "No se pudo cargar portal");
-    setPortalData(payload);
+    const payload = (await res.json().catch(() => null)) as unknown;
+    if (!res.ok) return setMessage(getErrorMessage(payload, "No se pudo cargar portal"));
+    setPortalData(isRecord(payload) ? (payload as PortalBillingData) : null);
   }
 
   async function payInvoice(invoiceId: string) {
@@ -72,8 +131,10 @@ export default function StorefrontBillingManagePage() {
       method: "POST",
       headers: { "x-portal-token": portalToken },
     });
-    const payload = await res.json().catch(() => ({}));
-    if (!res.ok || !payload.initPoint) return setMessage(payload.error ?? "No se pudo iniciar pago");
+    const payload = (await res.json().catch(() => null)) as PayInvoiceResponse | null;
+    if (!res.ok || !payload?.initPoint) {
+      return setMessage(payload?.error ?? "No se pudo iniciar pago");
+    }
     window.open(payload.initPoint, "_blank", "noopener,noreferrer");
   }
 
@@ -112,7 +173,7 @@ export default function StorefrontBillingManagePage() {
             <div style={{ marginTop: 8 }}>
               <label>
                 Tier destino
-                <select value={targetTier} onChange={(e) => setTargetTier(e.target.value)}>
+                <select value={targetTier} onChange={(e) => setTargetTier(e.target.value as PlanTier)}>
                   <option value="C1">C1</option>
                   <option value="C2">C2</option>
                   <option value="C3">C3</option>
@@ -157,9 +218,9 @@ export default function StorefrontBillingManagePage() {
           <div style={{ marginTop: 12 }}>
             <div><strong>Cuenta:</strong> {portalData.account.instanceId} · {portalData.account.status}</div>
             <div><strong>Plan:</strong> {portalData.account.plan?.name ?? "-"}</div>
-            <div><strong>Facturas abiertas:</strong> {(portalData.invoices ?? []).filter((x: any) => x.status === "OPEN").length}</div>
+            <div><strong>Facturas abiertas:</strong> {(portalData.invoices ?? []).filter((x) => x.status === "OPEN").length}</div>
             <ul>
-              {(portalData.invoices ?? []).slice(0, 8).map((inv: any) => (
+              {(portalData.invoices ?? []).slice(0, 8).map((inv) => (
                 <li key={inv.id}>
                   {inv.status} · {inv.currency} {inv.amount}
                   {inv.status === "OPEN" ? <> <button onClick={() => payInvoice(inv.id)}>Pagar</button></> : null}

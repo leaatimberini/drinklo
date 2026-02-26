@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { RestrictedCheckoutRuntime } from "./checkout/restricted-mode";
 
 export function RestrictedModeBanner() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-  const [state, setState] = useState<any | null>(null);
+  const [state, setState] = useState<RestrictedCheckoutRuntime | null>(null);
 
   useEffect(() => {
     fetch(`${apiUrl}/themes/public`)
       .then((res) => res.json())
-      .then((data) => setState(data?.runtime?.restricted ?? null))
+      .then((data: { runtime?: { restricted?: RestrictedCheckoutRuntime | null } }) =>
+        setState(data.runtime?.restricted ?? null),
+      )
       .catch(() => undefined);
   }, [apiUrl]);
 

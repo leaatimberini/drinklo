@@ -63,6 +63,20 @@ Incluye:
   - Los fixes solicitados (`packages/shared/src/event-model.ts`, `apps/customer-portal/app/page.tsx`) están aplicados y verdes.
   - CI ya usa Node `24.x`, pero el gate completo requiere corregir lint adicional fuera de alcance inicial.
 
+### Storefront lint cleanup (branch `feature/133-fix-storefront-lint-gate`)
+- Objetivo del ajuste:
+  - corregir **solo** errores de lint preexistentes en `apps/storefront` sin cambio funcional
+- Cambios aplicados:
+  - reemplazo de `any` por tipos/`unknown`/interfaces locales en pantallas y helpers
+  - narrowing con type guards para payloads de API
+  - escape de comillas en JSX (`react/no-unescaped-entities`)
+  - ajuste menor de dependency array en `product-tours-runner` para eliminar warning de hooks
+- Validación ejecutada:
+  - `pnpm -C apps/storefront lint` ✅
+  - `pnpm lint` ❌ (bloquea por fallas preexistentes fuera de storefront, principalmente `apps/admin` y `apps/api`)
+  - `pnpm test` ❌ (bloquea en `@erp/sdk#test`; `tsx --test test` intenta resolver `packages/sdk/test/index.json`)
+  - `pnpm gate` ❌ (frena en `lint` por fallas preexistentes repo-wide)
+
 ---
 
 ## EN
@@ -127,3 +141,17 @@ It includes:
 - Status:
   - Requested fixes (`packages/shared/src/event-model.ts`, `apps/customer-portal/app/page.tsx`) are applied and lint-clean.
   - CI already uses Node `24.x`, but full gate still needs additional lint cleanup outside the initial scope.
+
+### Storefront lint cleanup (branch `feature/133-fix-storefront-lint-gate`)
+- Scope of this pass:
+  - fix **only** pre-existing lint errors in `apps/storefront` with no functional changes
+- Applied changes:
+  - replaced `any` with concrete types/`unknown`/local interfaces in pages and helpers
+  - added payload narrowing with type guards for API responses
+  - escaped JSX quotes (`react/no-unescaped-entities`)
+  - small dependency-array adjustment in `product-tours-runner` to remove hook warning
+- Validation run:
+  - `pnpm -C apps/storefront lint` ✅
+  - `pnpm lint` ❌ (blocked by pre-existing issues outside storefront, mainly `apps/admin` and `apps/api`)
+  - `pnpm test` ❌ (blocked at `@erp/sdk#test`; `tsx --test test` tries to resolve `packages/sdk/test/index.json`)
+  - `pnpm gate` ❌ (stops at `lint` due repo-wide pre-existing failures)

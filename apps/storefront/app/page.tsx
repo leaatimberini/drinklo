@@ -10,7 +10,12 @@ export const metadata: Metadata = {
 
 type Category = { id: string; name: string };
 
-type Product = { id: string; name: string; description?: string | null; plugins?: any[] };
+type ProductPlugin = {
+  plugin: string;
+  data?: Record<string, unknown> | null;
+};
+
+type Product = { id: string; name: string; description?: string | null; plugins?: ProductPlugin[] };
 
 type CatalogResponse = { items: Product[] };
 
@@ -19,6 +24,12 @@ type SlotBlock = { plugin: string; title: string; body: string };
 type RecommendationBlock = { items: Array<{ productId: string; name: string; sku?: string | null; price: number; stock: number; reason: string }> };
 
 type RecommendationsResponse = { blocks: { reorder?: RecommendationBlock; cross?: RecommendationBlock; upsell?: RecommendationBlock } };
+
+type ExperimentVariant = {
+  id: string;
+  name: string;
+  payload?: Record<string, unknown> | null;
+};
 
 async function fetchCategories() {
   return fetchCatalogJson<{ items: Category[] }>("/catalog/categories", {
@@ -48,8 +59,8 @@ async function fetchExperiment(target: string) {
     cache: "no-store",
   });
   if (!res.ok) return null;
-  const data = await res.json();
-  return data?.variant ?? null;
+  const data = (await res.json()) as { variant?: ExperimentVariant | null };
+  return data.variant ?? null;
 }
 
 async function fetchRecommendations(ageVerified: boolean, optOut: boolean) {

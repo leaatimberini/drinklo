@@ -6,7 +6,12 @@ import { useEffect, useState } from "react";
 
 type Category = { id: string; name: string };
 
-type Product = { id: string; name: string; description?: string | null; plugins?: Array<{ plugin: string; data: any }> };
+type ProductPlugin = {
+  plugin: string;
+  data?: Record<string, unknown> | null;
+};
+
+type Product = { id: string; name: string; description?: string | null; plugins?: ProductPlugin[] };
 
 type SlotBlock = { plugin: string; title: string; body: string };
 
@@ -25,6 +30,17 @@ type Recommendations = {
   upsell?: { items: RecommendationItem[] };
 };
 
+type ExperimentVariant = {
+  id: string;
+  name: string;
+  payload?: Record<string, unknown> | null;
+};
+
+function getStringField(obj: Record<string, unknown> | null | undefined, key: string) {
+  const value = obj?.[key];
+  return typeof value === "string" ? value : null;
+}
+
 export default function HomeClient({
   categories,
   products,
@@ -36,7 +52,7 @@ export default function HomeClient({
   products: Product[];
   slots: SlotBlock[];
   recommendations?: Recommendations;
-  abVariant?: { id: string; name: string; payload: any } | null;
+  abVariant?: ExperimentVariant | null;
 }) {
   const [optOut, setOptOut] = useState(false);
 
@@ -88,8 +104,8 @@ export default function HomeClient({
 
   return (
     <main style={{ padding: 32 }}>
-      <h1 style={{ fontSize: 34, marginBottom: 8, fontFamily: "var(--font-heading)" }}>
-        {abVariant?.payload?.headline ?? "Storefront"}
+        <h1 style={{ fontSize: 34, marginBottom: 8, fontFamily: "var(--font-heading)" }}>
+        {getStringField(abVariant?.payload ?? undefined, "headline") ?? "Storefront"}
       </h1>
       <p style={{ marginBottom: 12 }}>Explorá categorías y productos.</p>
       <Link
@@ -199,7 +215,7 @@ export default function HomeClient({
                           color: "var(--color-text-subtle)",
                         }}
                       >
-                        {pluginItem.data?.label ?? pluginItem.plugin}
+                        {getStringField(pluginItem.data ?? undefined, "label") ?? pluginItem.plugin}
                       </span>
                     ))}
                   </div>
