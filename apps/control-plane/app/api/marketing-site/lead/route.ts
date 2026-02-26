@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { prisma } from "../../../lib/prisma";
 import { hashTrialSignal, normalizeHostLike, normalizeTrialCode } from "../../../lib/trial-campaigns";
+import { assignPricingExperimentsForContext } from "../../../lib/pricing-experiments";
 
 function parseString(value: unknown, max = 200) {
   const v = String(value ?? "").trim();
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
+  const pricingCookieId = req.cookies.get("pxid")?.value?.trim() || crypto.randomUUID();
   const email = parseString(body.email, 200).toLowerCase();
   const businessType = normalizeBusinessType(body.businessType);
   const city = parseString(body.city, 120) || null;
@@ -102,7 +105,26 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({
+  let targetTier: string | null = null;
+  if (trialCode) {
+    const campaign = await prisma.trialCampaign.findUnique({ where: { code: trialCode }, select: { tier: true } }).catch(() => null);
+    targetTier = campaign?.tier ?? null;
+  }
+  if (targetTier) {
+    await assignPricingExperimentsForContext(prisma as any, {
+      instanceId: installation?.instanceId ?? instanceId,
+      installationId: installation?.id ?? null,
+      leadAttributionId: leadAttribution.id,
+      cookieId: pricingCookieId,
+      emailDomain: email.split("@")[1] ?? domain,
+      targetTier,
+      trialCode,
+      icp: businessType,
+      source: "marketing_site_lead",
+      actor: "marketing-site",
+    }).catch(() => undefined);
+  }
+  const response = NextResponse.json({
     ok: true,
     lead: {
       id: lead.id,
@@ -116,4 +138,12 @@ export async function POST(req: NextRequest) {
       utmCampaign: leadAttribution.utmCampaign,
     },
   });
+  response.cookies.set("pxid", pricingCookieId, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 365,
+    path: "/",
+  });
+  return response;
 }

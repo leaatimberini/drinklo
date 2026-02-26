@@ -11,6 +11,7 @@ import {
   resolveAttributionForAccountCreation,
 } from "../../lib/partner-program";
 import { recordTrialLifecycleEvent } from "../../lib/trial-funnel-analytics";
+import { applyPricingExperimentOfferToInvoice, assignPricingExperimentsForContext } from "../../lib/pricing-experiments";
 
 function requireToken(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
@@ -86,6 +87,18 @@ export async function POST(req: NextRequest) {
         currentPeriodEnd: new Date(Date.now() + (plan.period === "YEARLY" ? 365 : 30) * 24 * 60 * 60 * 1000),
       },
     });
+    await assignPricingExperimentsForContext(prisma as any, {
+      instanceId: account.instanceId,
+      installationId: installation.id,
+      billingAccountId: account.id,
+      cookieId: body.pricingCookieId ? String(body.pricingCookieId) : null,
+      emailDomain: account.email?.split("@")[1] ?? null,
+      targetTier: (String(plan.name ?? "").match(/C[123]/i)?.[0] ?? "").toUpperCase() || null,
+      trialCode: body.trialCode ? String(body.trialCode) : null,
+      icp: body.businessType ? String(body.businessType) : null,
+      source: "billing-account-create",
+      actor: "cp:billing-api",
+    }).catch(() => undefined);
     await prisma.installation.update({
       where: { id: installation.id },
       data: {
@@ -244,11 +257,22 @@ export async function POST(req: NextRequest) {
           externalId: null,
         },
       });
+      const offerApplied = await applyPricingExperimentOfferToInvoice(prisma as any, {
+        billingAccountId: updated.id,
+        invoiceId: invoice.id,
+        amount: Number(invoice.amount),
+        currency: invoice.currency,
+        actor: "cp:billing-change-plan",
+      }).catch(() => null);
+      const invoiceForCommission =
+        offerApplied?.applied && Number(offerApplied.finalAmount) !== Number(invoice.amount)
+          ? await prisma.billingInvoice.update({ where: { id: invoice.id }, data: { amount: Number(offerApplied.finalAmount) } })
+          : invoice;
       await applyCommissionForInvoice({
         prisma,
         billingAccountId: updated.id,
-        invoiceAmount: invoice.amount,
-        currency: invoice.currency,
+        invoiceAmount: invoiceForCommission.amount,
+        currency: invoiceForCommission.currency,
       });
     }
 

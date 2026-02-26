@@ -66,6 +66,7 @@ model Installation {
   securityReports SecurityReport[]
   drDrills  DisasterRecoveryDrill[]
   billingAccounts BillingAccount[]
+  pricingExperimentAssignments PricingExperimentAssignment[]
   finopsSnapshots FinOpsSnapshot[]
   finopsCosts   FinOpsCostRecord[]
   edgeInvalidations EdgeInvalidation[]
@@ -923,10 +924,102 @@ model BillingAccount {
   partnerConversions Conversion[]
   feedbackSurveySends FeedbackSurveySend[]
   legalAcceptances LegalAcceptance[]
+  pricingExperimentAssignments PricingExperimentAssignment[]
 
   @@index([installationId])
   @@index([planId])
   @@index([status])
+}
+
+enum PricingExperimentStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+model PricingExperiment {
+  id            String                 @id @default(uuid())
+  key           String                 @unique
+  name          String
+  status        PricingExperimentStatus @default(DRAFT)
+  targetTier    String
+  billingPeriod BillingPeriod          @default(MONTHLY)
+  currencies    String[]               @default(["USD"])
+  trialCampaignCodes String[]          @default([])
+  icpFilters    String[]               @default([])
+  startAt       DateTime?
+  endAt         DateTime?
+  description   String?
+  notes         String?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  variants    PricingExperimentVariant[]
+  assignments PricingExperimentAssignment[]
+
+  @@index([status, targetTier, createdAt])
+  @@index([startAt, endAt])
+}
+
+model PricingExperimentVariant {
+  id           String   @id @default(uuid())
+  experimentId String
+  key          String
+  name         String
+  weight       Int      @default(100)
+  isControl    Boolean  @default(false)
+  config       Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  experiment   PricingExperiment          @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  assignments  PricingExperimentAssignment[]
+
+  @@unique([experimentId, key])
+  @@index([experimentId, weight])
+}
+
+model PricingExperimentAssignment {
+  id             String   @id @default(uuid())
+  experimentId   String
+  variantId      String
+  installationId String?
+  billingAccountId String?
+  leadAttributionId String?
+  trialRedemptionId String?
+  instanceId     String?
+  stickyKeyHash  String
+  cookieIdHash   String?
+  emailDomain    String?
+  source         String   @default("signup")
+  assignedAt     DateTime @default(now())
+  offerGrantedAt DateTime?
+  offerExpiresAt DateTime?
+  offerConsumedCycles Int  @default(0)
+  offerMaxCycles Int?
+  offerStatus    String   @default("ASSIGNED")
+  offerMeta      Json?
+  lastInvoiceId  String?
+  lastAppliedAt  DateTime?
+  abuseBlockedReason String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  experiment     PricingExperiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant        PricingExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  installation   Installation?            @relation(fields: [installationId], references: [id])
+  billingAccount BillingAccount?          @relation(fields: [billingAccountId], references: [id])
+  leadAttribution LeadAttribution?        @relation(fields: [leadAttributionId], references: [id])
+
+  @@unique([experimentId, stickyKeyHash])
+  @@index([billingAccountId, offerStatus, updatedAt])
+  @@index([leadAttributionId])
+  @@index([trialRedemptionId])
+  @@index([instanceId, assignedAt])
+  @@index([variantId, assignedAt])
 }
 
 model BillingUsageRecord {
@@ -1831,6 +1924,7 @@ model LeadAttribution {
   createdAt        DateTime @default(now())
   marketingLeads   MarketingLead[]
   crmLeads         CrmLead[]
+  pricingExperimentAssignments PricingExperimentAssignment[]
 
   @@index([campaignId, createdAt])
   @@index([redemptionId])

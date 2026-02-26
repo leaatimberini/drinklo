@@ -74,6 +74,15 @@ export async function GET(req: NextRequest) {
             return { currency, current: resolved.current, next: resolved.next };
           })
       : [];
+  const pricingExperimentAssignments = await prisma.pricingExperimentAssignment.findMany({
+    where: { billingAccountId: account.id },
+    include: {
+      experiment: { select: { id: true, key: true, name: true, status: true, targetTier: true, startAt: true, endAt: true } },
+      variant: { select: { id: true, key: true, name: true, config: true } },
+    },
+    orderBy: [{ assignedAt: "desc" }],
+    take: 20,
+  });
 
   return NextResponse.json({
     account: {
@@ -94,6 +103,18 @@ export async function GET(req: NextRequest) {
       pricingPreview: usagePricing,
       pricingCatalogTier: inferredTier,
       pricingCatalog,
+      pricingExperiments: pricingExperimentAssignments.map((a) => ({
+        assignmentId: a.id,
+        experiment: a.experiment,
+        variant: a.variant,
+        assignedAt: a.assignedAt,
+        offerGrantedAt: a.offerGrantedAt,
+        offerExpiresAt: a.offerExpiresAt,
+        offerStatus: a.offerStatus,
+        offerConsumedCycles: a.offerConsumedCycles,
+        offerMaxCycles: a.offerMaxCycles,
+        offerMeta: a.offerMeta,
+      })),
     },
     invoices: account.invoices,
     usage: account.usageRecords,

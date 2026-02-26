@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { prisma } from "../../lib/prisma";
 import { getRequestIp } from "../../lib/partner-program";
 import {
@@ -12,6 +13,7 @@ import {
 import { recordTrialLifecycleEvent } from "../../lib/trial-funnel-analytics";
 import { upsertCrmDealFromTrialSignup } from "../../lib/crm";
 import { recordLegalAcceptances, validateSignupClickwrap } from "../../lib/legal-clickwrap";
+import { assignPricingExperimentsForContext } from "../../lib/pricing-experiments";
 
 function buildInstanceId(input: { companyName?: string | null; domain?: string | null }) {
   const base =
@@ -62,6 +64,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const userAgent = req.headers.get("user-agent");
+  const pricingCookieId = req.cookies.get("pxid")?.value?.trim() || crypto.randomUUID();
   const code = normalizeTrialCode(String(body.trial ?? body.code ?? ""));
   if (!code) return NextResponse.json({ error: "trial code required" }, { status: 400 });
   const signupLegal = await validateSignupClickwrap(
@@ -175,6 +178,19 @@ export async function POST(req: NextRequest) {
       fingerprintHash,
     },
   });
+
+  await assignPricingExperimentsForContext(prisma as any, {
+    instanceId: decision.ok ? instanceId : null,
+    installationId: installation?.id ?? null,
+    leadAttributionId: leadAttribution.id,
+    cookieId: pricingCookieId,
+    emailDomain,
+    targetTier: campaign.tier,
+    trialCode: campaign.code,
+    icp: body.businessType ? String(body.businessType) : null,
+    source: "trial_signup_lead",
+    actor: "public-signup",
+  }).catch(() => undefined);
 
   if (!decision.ok) {
     const redemption = await prisma.trialRedemption.create({
@@ -329,6 +345,21 @@ export async function POST(req: NextRequest) {
   }).catch(() => undefined);
 
   if (billingAccount && decision.status === "REDEEMED") {
+    await assignPricingExperimentsForContext(prisma as any, {
+      instanceId,
+      installationId: installation.id,
+      billingAccountId: billingAccount.id,
+      leadAttributionId: leadAttribution.id,
+      trialRedemptionId: redemption.id,
+      cookieId: pricingCookieId,
+      emailDomain,
+      targetTier: campaign.tier,
+      trialCode: campaign.code,
+      icp: body.businessType ? String(body.businessType) : null,
+      source: "trial_signup_account",
+      actor: "public-signup",
+    }).catch(() => undefined);
+
     await recordTrialLifecycleEvent(prisma as any, {
       eventType: "TrialStarted",
       eventAt: now,
@@ -346,8 +377,7 @@ export async function POST(req: NextRequest) {
       },
     }).catch(() => undefined);
   }
-
-  return NextResponse.json({
+  const response = NextResponse.json({
     ok: true,
     status: decision.status,
     legalAcceptances: signupLegal.documents.map((doc) => ({
@@ -371,4 +401,12 @@ export async function POST(req: NextRequest) {
     redemptionId: redemption.id,
     leadAttributionId: leadAttribution.id,
   });
+  response.cookies.set("pxid", pricingCookieId, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 365,
+    path: "/",
+  });
+  return response;
 }
