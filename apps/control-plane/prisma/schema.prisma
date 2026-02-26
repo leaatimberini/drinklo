@@ -93,11 +93,57 @@ model Installation {
   productTourEvents   ProductTourEvent[]
   academyProgresses   AcademyProgress[]
   academyCertificates AcademyCertificate[]
+  caseStudies         CaseStudy[]
 
   @@index([clientName])
   @@index([domain])
   @@index([healthStatus])
   @@index([primaryRegion])
+}
+
+enum CaseStudyStatus {
+  DRAFT
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+model CaseStudy {
+  id              String          @id @default(uuid())
+  installationId  String
+  instanceId      String
+  billingAccountId String?
+  crmDealId       String?
+  slug            String          @unique
+  locale          String          @default("es")
+  title           String
+  summary         String
+  status          CaseStudyStatus @default(DRAFT)
+  industry        String?         @default("bebidas")
+  icp             String?
+  tags            String[]        @default([])
+  stack           String[]        @default([])
+  timeframeDays   Int?
+  approvalRequired Boolean        @default(true)
+  source          String          @default("auto-generator")
+  sourceSnapshot  Json?
+  metrics         Json?
+  content         Json
+  approvedAt      DateTime?
+  approvedBy      String?
+  publishedAt     DateTime?
+  publishedBy     String?
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId, createdAt])
+  @@index([instanceId, createdAt])
+  @@index([status, publishedAt])
+  @@index([icp, status, createdAt])
 }
 
 model MobileBrandProfile {
