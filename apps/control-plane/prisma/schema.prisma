@@ -90,6 +90,8 @@ model Installation {
   legalAcceptances    LegalAcceptance[]
   productTours        ProductTour[]
   productTourEvents   ProductTourEvent[]
+  academyProgresses   AcademyProgress[]
+  academyCertificates AcademyCertificate[]
 
   @@index([clientName])
   @@index([domain])
@@ -2026,4 +2028,76 @@ model TrialLifecycleEvent {
   @@index([instanceId, eventAt])
   @@index([billingAccountId, eventAt])
   @@index([businessType, eventAt])
+}
+
+enum AcademyProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CERTIFIED
+}
+
+model AcademyProgress {
+  id                  String               @id @default(uuid())
+  installationId      String
+  instanceId          String
+  companyId           String?
+  learnerKey          String
+  learnerUserId       String?
+  learnerEmail        String?
+  learnerName         String?
+  icp                 String?
+  locale              String               @default("es")
+  courseKey           String
+  courseTitle         String
+  completedModuleKeys String[]             @default([])
+  quizScores          Json?
+  progressPct         Int                  @default(0)
+  status              AcademyProgressStatus @default(NOT_STARTED)
+  startedAt           DateTime?
+  completedAt         DateTime?
+  lastActivityAt      DateTime?
+  source              String               @default("academy")
+  metadata            Json?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  certificates AcademyCertificate[]
+
+  @@unique([instanceId, learnerKey, courseKey])
+  @@index([installationId, status, updatedAt])
+  @@index([instanceId, updatedAt])
+  @@index([courseKey, status])
+}
+
+model AcademyCertificate {
+  id               String   @id @default(uuid())
+  installationId   String
+  instanceId       String
+  companyId        String?
+  progressId       String?
+  learnerKey       String
+  learnerUserId    String?
+  learnerEmail     String?
+  learnerName      String?
+  courseKey        String
+  courseTitle      String
+  certificateType  String   @default("ADMIN_CERTIFIED")
+  locale           String   @default("es")
+  issuedAt         DateTime @default(now())
+  evidencePayload  Json
+  evidenceHash     String
+  evidenceSignature String
+  createdBy        String?
+  createdAt        DateTime @default(now())
+
+  installation Installation @relation(fields: [installationId], references: [id])
+  progress     AcademyProgress? @relation(fields: [progressId], references: [id])
+
+  @@index([installationId, issuedAt])
+  @@index([instanceId, issuedAt])
+  @@index([learnerKey, issuedAt])
+  @@index([courseKey, issuedAt])
+  @@index([evidenceHash])
 }
