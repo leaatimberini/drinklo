@@ -94,6 +94,8 @@ model Installation {
   academyProgresses   AcademyProgress[]
   academyCertificates AcademyCertificate[]
   caseStudies         CaseStudy[]
+  implementationProjects ImplementationProject[]
+  implementationChecklistItems ImplementationChecklistItem[]
 
   @@index([clientName])
   @@index([domain])
@@ -106,6 +108,22 @@ enum CaseStudyStatus {
   APPROVED
   PUBLISHED
   ARCHIVED
+}
+
+enum ImplementationProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  READY_FOR_GO_LIVE
+  LIVE
+  BLOCKED
+}
+
+enum ImplementationChecklistStatus {
+  PENDING
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  WAIVED
 }
 
 model CaseStudy {
@@ -2385,4 +2403,66 @@ model AcademyCertificate {
   @@index([learnerKey, issuedAt])
   @@index([courseKey, issuedAt])
   @@index([evidenceHash])
+}
+
+model ImplementationProject {
+  id              String                      @id @default(uuid())
+  installationId  String
+  instanceId      String
+  icp             String                      @default("kiosco")
+  status          ImplementationProjectStatus @default(PLANNING)
+  ownerUserId     String?
+  ownerName       String?
+  kickoffAt       DateTime?
+  targetGoLiveAt  DateTime?
+  actualGoLiveAt  DateTime?
+  notes           String?
+  lastReadinessColor String?
+  lastReadinessScore Int?
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  installation Installation               @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  items        ImplementationChecklistItem[]
+
+  @@unique([installationId])
+  @@index([instanceId])
+  @@index([status, targetGoLiveAt])
+}
+
+model ImplementationChecklistItem {
+  id               String                        @id @default(uuid())
+  projectId        String
+  installationId   String
+  instanceId       String
+  taskKey          String
+  title            String
+  description      String?
+  phase            String?
+  required         Boolean                       @default(true)
+  status           ImplementationChecklistStatus @default(PENDING)
+  responsibleRole  String?
+  responsibleUserId String?
+  responsibleName  String?
+  dueAt            DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  source           String                        @default("template")
+  linkedSignalKey  String?
+  linkedCourseKey  String?
+  linkedTourKey    String?
+  sortOrder        Int                           @default(0)
+  metadata         Json?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+
+  project      ImplementationProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  installation Installation         @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, taskKey])
+  @@index([installationId, status, dueAt])
+  @@index([instanceId, status])
+  @@index([required, status])
 }
