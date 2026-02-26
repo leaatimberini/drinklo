@@ -181,3 +181,27 @@ It includes:
   - `pnpm -C apps/admin lint` ? (hook warnings only, no errors)
   - `pnpm -C apps/api lint` ?
   - `pnpm lint` ?
+
+## ES (Actualizacion branch feature/135-fix-sdk-tests-index-json)
+
+### SDK tests path fix (branch `feature/135-fix-sdk-tests-index-json`)
+- Causa del error:
+  - `packages/sdk` tenia `test` = `tsx --test test`
+  - en Windows/Linux ese path de directorio hacia que `tsx` intentara resolver `test/index.*` (fallaba en `test/index.json`)
+- Fix aplicado (cross-platform):
+  - `packages/sdk/package.json` -> `tsx --test test/**/*.test.ts`
+- Validacion ejecutada:
+  - `pnpm -C packages/sdk test` ?
+  - `pnpm test` ? (falla por problemas adicionales fuera de `@erp/sdk`, incluyendo tests TS en `apps/api` y build/test en `apps/control-plane`)
+
+## EN (Update for branch feature/135-fix-sdk-tests-index-json)
+
+### SDK tests path fix (branch `feature/135-fix-sdk-tests-index-json`)
+- Root cause:
+  - `packages/sdk` used `test` = `tsx --test test`
+  - on Windows/Linux that directory path made `tsx` resolve `test/index.*` (failing on `test/index.json`)
+- Applied fix (cross-platform):
+  - `packages/sdk/package.json` -> `tsx --test test/**/*.test.ts`
+- Validation run:
+  - `pnpm -C packages/sdk test` ?
+  - `pnpm test` ? (fails due additional issues outside `@erp/sdk`, including TS test failures in `apps/api` and build/test failures in `apps/control-plane`)
