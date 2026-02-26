@@ -54,6 +54,15 @@ Incluye:
   - `pnpm -C apps/customer-portal lint` ✅
   - `pnpm lint` ❌ (aparecen más fallas preexistentes fuera del alcance inicial, principalmente en `apps/storefront`)
 
+### Validación adicional (branch `feature/132-fix-gate-node24`)
+- `pnpm -C apps/api test -- src/modules/config/env.schema.spec.ts` ✅
+- `pnpm lint` ❌
+  - bloquea en `apps/storefront` con errores preexistentes (`no-explicit-any`, `react/no-unescaped-entities`)
+- `pnpm gate` ❌ (frena en etapa `lint` por el punto anterior)
+- Estado:
+  - Los fixes solicitados (`packages/shared/src/event-model.ts`, `apps/customer-portal/app/page.tsx`) están aplicados y verdes.
+  - CI ya usa Node `24.x`, pero el gate completo requiere corregir lint adicional fuera de alcance inicial.
+
 ---
 
 ## EN
@@ -109,3 +118,12 @@ It includes:
   - `pnpm -C packages/shared lint` ✅
   - `pnpm -C apps/customer-portal lint` ✅
   - `pnpm lint` ❌ (additional pre-existing lint issues surfaced outside the initial scope, mainly in `apps/storefront`)
+
+### Additional validation (branch `feature/132-fix-gate-node24`)
+- `pnpm -C apps/api test -- src/modules/config/env.schema.spec.ts` ✅
+- `pnpm lint` ❌
+  - blocked by pre-existing `apps/storefront` lint issues (`no-explicit-any`, `react/no-unescaped-entities`)
+- `pnpm gate` ❌ (stops at `lint` due to the issue above)
+- Status:
+  - Requested fixes (`packages/shared/src/event-model.ts`, `apps/customer-portal/app/page.tsx`) are applied and lint-clean.
+  - CI already uses Node `24.x`, but full gate still needs additional lint cleanup outside the initial scope.
