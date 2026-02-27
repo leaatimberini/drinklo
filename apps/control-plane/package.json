@@ -7,8 +7,8 @@
     "developer-portal:generate": "node ../../scripts/generate-developer-portal.mjs",
     "developer-portal:test:links": "node ../../scripts/test-developer-portal-links.mjs",
     "developer-portal:test:docs": "node ../../scripts/lint-developer-portal-docs.mjs",
-    "build": "pnpm developer-portal:generate && prisma generate && next build",
-    "prisma:generate": "prisma generate",
+    "build": "pnpm developer-portal:generate && node ../../scripts/prisma-generate-safe.mjs . && next build",
+    "prisma:generate": "node ../../scripts/prisma-generate-safe.mjs .",
     "start": "next start -p 3010",
     "lint": "eslint .",
     "test": "pnpm developer-portal:generate && pnpm lint && pnpm developer-portal:test:links && pnpm developer-portal:test:docs && pnpm build"
