@@ -1,12 +1,6 @@
 import "./globals.css";
-import { ThemeProvider } from "./theme-provider";
-import { SwRegister } from "./sw-register";
 import type { ReactNode } from "react";
-import { TelemetryTracker } from "./telemetry-tracker";
-import { RestrictedModeBanner } from "./restricted-mode-banner";
-import { ProductToursRunner } from "./product-tours-runner";
-import { AuthProvider } from "./auth-provider";
-import { AuthGate } from "./auth-gate";
+import { ClientShell } from "./client-shell";
 
 export const metadata = {
   title: "ERP Admin",
@@ -25,17 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <a className="skip-link" href="#main-content">Skip to content</a>
-          <ThemeProvider target="admin" />
-          <TelemetryTracker />
-          <SwRegister />
-          <RestrictedModeBanner />
-          <ProductToursRunner />
-          <AuthGate devtoolsEnabled={devtoolsEnabled}>
-            <div id="main-content">{children}</div>
-          </AuthGate>
-        </AuthProvider>
+        <ClientShell devtoolsEnabled={devtoolsEnabled}>{children}</ClientShell>
       </body>
     </html>
   );
