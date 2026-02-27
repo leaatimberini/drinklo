@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { setTimeout as sleep } from "node:timers/promises";
 
 export const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -22,29 +23,109 @@ export function exists(filePath) {
   return fs.existsSync(filePath);
 }
 
+function stringifyArgs(args) {
+  return (args ?? [])
+    .map((arg) => {
+      const value = String(arg ?? "");
+      return /\s/.test(value) ? `"${value}"` : value;
+    })
+    .join(" ");
+}
+
+function formatCommand(cmd, args) {
+  const renderedArgs = stringifyArgs(args);
+  return renderedArgs ? `${cmd} ${renderedArgs}` : String(cmd);
+}
+
 export function run(cmd, args, options = {}) {
-  const isWindowsPnpm = process.platform === "win32" && cmd === "pnpm";
-  const executable = isWindowsPnpm ? "pnpm" : cmd;
-  const result = spawnSync(executable, args, {
-    cwd: options.cwd ?? ROOT_DIR,
-    stdio: options.stdio ?? "pipe",
-    shell: options.shell ?? isWindowsPnpm,
-    env: { ...process.env, ...(options.env ?? {}) },
-    encoding: "utf8",
+  return new Promise((resolve, reject) => {
+    const cwd = options.cwd ?? ROOT_DIR;
+    const shell = options.shell ?? process.platform === "win32";
+    const env = { ...process.env, ...(options.env ?? {}) };
+    const stdio = options.stdio ?? "pipe";
+    const commandText = formatCommand(cmd, args);
+
+    const child = spawn(cmd, args, { cwd, stdio, shell, env });
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+
+    if (child.stdout) {
+      child.stdout.setEncoding("utf8");
+      child.stdout.on("data", (chunk) => {
+        stdout += chunk;
+      });
+    }
+
+    if (child.stderr) {
+      child.stderr.setEncoding("utf8");
+      child.stderr.on("data", (chunk) => {
+        stderr += chunk;
+      });
+    }
+
+    child.on("error", (err) => {
+      if (settled) return;
+      settled = true;
+
+      const diagnostic = [
+        `[bootstrap][spawn-error] cmd: ${cmd}`,
+        `[bootstrap][spawn-error] args: ${JSON.stringify(args ?? [])}`,
+        `[bootstrap][spawn-error] cwd: ${cwd}`,
+        `[bootstrap][spawn-error] code: ${err.code ?? "UNKNOWN"}`,
+      ].join("\n");
+
+      if (options.allowFailure) {
+        resolve({
+          status: null,
+          signal: null,
+          stdout,
+          stderr,
+          error: err,
+          diagnostic,
+        });
+        return;
+      }
+
+      reject(new Error(`${diagnostic}\n[bootstrap][spawn-error] message: ${err.message}`));
+    });
+
+    child.on("close", (code, signal) => {
+      if (settled) return;
+      settled = true;
+
+      const result = { status: code, signal, stdout, stderr, error: null };
+      if (options.allowFailure) {
+        resolve(result);
+        return;
+      }
+
+      if (code === 0) {
+        resolve(result);
+        return;
+      }
+
+      if (code === null) {
+        reject(
+          new Error(
+            [
+              `[bootstrap][spawn-close] command exited with null code`,
+              `[bootstrap][spawn-close] signal: ${signal ?? "none"}`,
+              `[bootstrap][spawn-close] command: ${commandText}`,
+              `[bootstrap][spawn-close] cwd: ${cwd}`,
+            ].join("\n"),
+          ),
+        );
+        return;
+      }
+
+      const errorMessage =
+        stderr.trim() ||
+        stdout.trim() ||
+        `${commandText} exited with code ${code}${signal ? ` (signal ${signal})` : ""}`;
+      reject(new Error(errorMessage));
+    });
   });
-  if (result.error && !options.allowFailure) {
-    throw new Error(result.error.message);
-  }
-  if (options.allowFailure) return result;
-  if (result.status !== 0) {
-    const err =
-      result.stderr?.trim() ||
-      result.stdout?.trim() ||
-      result.error?.message ||
-      `${executable} exited with ${result.status}`;
-    throw new Error(err);
-  }
-  return result;
 }
 
 export function logInfo(message) {
@@ -64,13 +145,24 @@ export function parseSemverMajor(value) {
   return match ? Number(match[1]) : NaN;
 }
 
-export function ensureNodeAndTools() {
+export async function ensureNodeAndTools() {
   const nodeMajor = parseSemverMajor(process.versions.node);
   if (!Number.isFinite(nodeMajor) || nodeMajor < 24) {
     throw new Error(`Node >= 24 requerido. Detectado: ${process.versions.node}`);
   }
-  run("pnpm", ["--version"]);
-  run("docker", ["info"], { allowFailure: false });
+  try {
+    await run("pnpm", ["--version"]);
+  } catch (error) {
+    throw new Error(`No se pudo ejecutar pnpm. Verifica que este en PATH.\n${error?.message ?? error}`);
+  }
+
+  try {
+    await run("docker", ["info"], { allowFailure: false });
+  } catch (error) {
+    throw new Error(
+      `Docker no esta disponible. Inicia Docker Desktop (o Docker Engine) y reintenta.\n${error?.message ?? error}`,
+    );
+  }
 }
 
 function collectComposeCandidates() {
@@ -133,8 +225,8 @@ export function detectComposeFile() {
   return candidates[0].file;
 }
 
-export function dockerComposeServices(composeFile) {
-  const res = run("docker", ["compose", "-f", composeFile, "config", "--services"], { allowFailure: true });
+export async function dockerComposeServices(composeFile) {
+  const res = await run("docker", ["compose", "-f", composeFile, "config", "--services"], { allowFailure: true });
   if (res.status !== 0) return [];
   return String(res.stdout ?? "")
     .split(/\r?\n/)
@@ -159,30 +251,30 @@ function parseComposeEnvValue(composeContent, key, fallback) {
   return String(match[1]).trim().replace(/^["']|["']$/g, "");
 }
 
-export function waitForInfra(composeFile, timeoutMs = 120000) {
+export async function waitForInfra(composeFile, timeoutMs = 120000) {
   const start = Date.now();
   const content = readText(composeFile);
-  const services = dockerComposeServices(composeFile);
+  const services = await dockerComposeServices(composeFile);
   const hasPostgres = services.includes("postgres");
   const hasRedis = services.includes("redis");
   const pgUser = parseComposeEnvValue(content, "POSTGRES_USER", "erp");
   const pgDb = parseComposeEnvValue(content, "POSTGRES_DB", "erp");
 
-  const waitLoop = (label, fn) => {
+  const waitLoop = async (label, fn) => {
     while (Date.now() - start < timeoutMs) {
-      const ok = fn();
+      const ok = await fn();
       if (ok) {
         logInfo(`${label}: OK`);
         return;
       }
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
+      await sleep(1000);
     }
     throw new Error(`Timeout esperando ${label}`);
   };
 
   if (hasPostgres) {
-    waitLoop("postgres", () => {
-      const res = dockerCompose(
+    await waitLoop("postgres", async () => {
+      const res = await dockerCompose(
         composeFile,
         ["exec", "-T", "postgres", "pg_isready", "-U", pgUser, "-d", pgDb],
         { allowFailure: true },
@@ -194,8 +286,10 @@ export function waitForInfra(composeFile, timeoutMs = 120000) {
   }
 
   if (hasRedis) {
-    waitLoop("redis", () => {
-      const res = dockerCompose(composeFile, ["exec", "-T", "redis", "redis-cli", "ping"], { allowFailure: true });
+    await waitLoop("redis", async () => {
+      const res = await dockerCompose(composeFile, ["exec", "-T", "redis", "redis-cli", "ping"], {
+        allowFailure: true,
+      });
       return res.status === 0 && /PONG/i.test(String(res.stdout ?? ""));
     });
   } else {
@@ -239,19 +333,19 @@ export function rootPackageJson() {
   return JSON.parse(readText(rootPath("package.json")));
 }
 
-export function runDbMigrateAndSeed() {
+export async function runDbMigrateAndSeed() {
   const pkg = rootPackageJson();
   const scripts = pkg.scripts ?? {};
   if (scripts["db:migrate"]) {
-    run("pnpm", ["-w", "run", "db:migrate"], { stdio: "inherit" });
+    await run("pnpm", ["-w", "run", "db:migrate"], { stdio: "inherit" });
   } else {
-    run("pnpm", ["-C", "packages/db", "exec", "prisma", "migrate", "deploy"], { stdio: "inherit" });
+    await run("pnpm", ["-C", "packages/db", "exec", "prisma", "migrate", "deploy"], { stdio: "inherit" });
   }
 
   if (scripts["db:seed"]) {
-    run("pnpm", ["-w", "run", "db:seed"], { stdio: "inherit" });
+    await run("pnpm", ["-w", "run", "db:seed"], { stdio: "inherit" });
   } else {
-    run("pnpm", ["-C", "packages/db", "exec", "prisma", "db", "seed"], { stdio: "inherit" });
+    await run("pnpm", ["-C", "packages/db", "exec", "prisma", "db", "seed"], { stdio: "inherit" });
   }
 }
 

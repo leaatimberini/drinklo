@@ -10,33 +10,33 @@ import {
   printBootstrapSummary,
   runDbMigrateAndSeed,
   selectInfraServices,
+  waitForInfra,
 } from "./quickstart-lib.mjs";
 
 async function main() {
   logStep("Validando prerequisitos");
-  ensureNodeAndTools();
+  await ensureNodeAndTools();
   logInfo(`Node ${process.versions.node} OK`);
   logInfo("pnpm y Docker OK");
 
   logStep("Detectando docker compose para infraestructura");
   const composeFile = detectComposeFile();
-  const services = dockerComposeServices(composeFile);
+  const services = await dockerComposeServices(composeFile);
   const infraServices = selectInfraServices(services);
   logInfo(`Compose: ${composeFile}`);
   logInfo(`Servicios infra: ${infraServices.join(", ") || "(todos)"}`);
 
   logStep("Levantando infraestructura");
-  dockerCompose(composeFile, ["up", "-d", ...infraServices], { stdio: "inherit" });
+  await dockerCompose(composeFile, ["up", "-d", ...infraServices], { stdio: "inherit" });
 
   logStep("Esperando health (postgres/redis)");
-  const { waitForInfra } = await import("./quickstart-lib.mjs");
-  waitForInfra(composeFile, 180000);
+  await waitForInfra(composeFile, 180000);
 
   logStep("Creando .env locales (si faltan)");
   ensureAppEnvs();
 
   logStep("Migraciones + seed");
-  runDbMigrateAndSeed();
+  await runDbMigrateAndSeed();
 
   printBootstrapSummary();
 
@@ -44,7 +44,7 @@ async function main() {
   const child = spawn("pnpm", ["-w", "run", "dev"], {
     cwd: process.cwd(),
     stdio: "inherit",
-    shell: false,
+    shell: process.platform === "win32",
     env: process.env,
   });
   child.on("exit", (code) => process.exit(code ?? 0));
@@ -58,4 +58,3 @@ main().catch((error) => {
   console.error(`[bootstrap][error] ${error?.message ?? error}`);
   process.exit(1);
 });
-
