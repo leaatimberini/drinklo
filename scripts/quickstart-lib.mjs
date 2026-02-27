@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import net from "node:net";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -35,6 +36,18 @@ function stringifyArgs(args) {
 function formatCommand(cmd, args) {
   const renderedArgs = stringifyArgs(args);
   return renderedArgs ? `${cmd} ${renderedArgs}` : String(cmd);
+}
+
+function normalizeComposeFiles(composeFiles) {
+  if (Array.isArray(composeFiles)) {
+    return composeFiles.map((file) => normalizeWinPath(String(file)));
+  }
+  return [normalizeWinPath(String(composeFiles))];
+}
+
+function composeArgs(composeFiles, args) {
+  const files = normalizeComposeFiles(composeFiles);
+  return [...files.flatMap((file) => ["-f", file]), ...args];
 }
 
 export function run(cmd, args, options = {}) {
@@ -225,8 +238,10 @@ export function detectComposeFile() {
   return candidates[0].file;
 }
 
-export async function dockerComposeServices(composeFile) {
-  const res = await run("docker", ["compose", "-f", composeFile, "config", "--services"], { allowFailure: true });
+export async function dockerComposeServices(composeFiles) {
+  const res = await run("docker", ["compose", ...composeArgs(composeFiles, ["config", "--services"])], {
+    allowFailure: true,
+  });
   if (res.status !== 0) return [];
   return String(res.stdout ?? "")
     .split(/\r?\n/)
@@ -240,8 +255,357 @@ export function selectInfraServices(serviceNames) {
   return selected.length ? selected : serviceNames;
 }
 
-export function dockerCompose(composeFile, args, options = {}) {
-  return run("docker", ["compose", "-f", composeFile, ...args], options);
+export function dockerCompose(composeFiles, args, options = {}) {
+  return run("docker", ["compose", ...composeArgs(composeFiles, args)], options);
+}
+
+function bindingKey(binding) {
+  return `${binding.service}:${binding.hostPort}:${binding.containerPort}:${binding.protocol}`;
+}
+
+function parseComposeConfigPorts(configText) {
+  const lines = String(configText ?? "").split(/\r?\n/);
+  const bindings = [];
+  let currentService = null;
+  let inPorts = false;
+  let currentPort = null;
+
+  const pushCurrentPort = () => {
+    if (!currentPort) return;
+    if (!Number.isFinite(currentPort.hostPort) || !Number.isFinite(currentPort.containerPort)) {
+      currentPort = null;
+      return;
+    }
+    bindings.push({
+      service: currentPort.service,
+      hostPort: Number(currentPort.hostPort),
+      containerPort: Number(currentPort.containerPort),
+      protocol: currentPort.protocol || "tcp",
+    });
+    currentPort = null;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\t/g, "  ");
+    const serviceMatch = line.match(/^\s{2}([A-Za-z0-9_.-]+):\s*$/);
+    if (serviceMatch) {
+      pushCurrentPort();
+      currentService = serviceMatch[1];
+      inPorts = false;
+      continue;
+    }
+
+    if (!currentService) continue;
+
+    if (/^\s{4}ports:\s*$/.test(line)) {
+      pushCurrentPort();
+      inPorts = true;
+      continue;
+    }
+
+    if (/^\s{4}[^ ].*:\s*$/.test(line) && !/^\s{4}ports:\s*$/.test(line)) {
+      pushCurrentPort();
+      inPorts = false;
+      continue;
+    }
+
+    if (!inPorts) continue;
+
+    if (/^\s{6}-\s+/.test(line)) {
+      pushCurrentPort();
+      currentPort = { service: currentService, protocol: "tcp" };
+
+      const shortPort = line.match(
+        /^\s{6}-\s*"?(?<host>\d+):(?<container>\d+)(?:\/(?<protocol>tcp|udp))?"?\s*$/i,
+      );
+      if (shortPort?.groups) {
+        currentPort.hostPort = Number(shortPort.groups.host);
+        currentPort.containerPort = Number(shortPort.groups.container);
+        currentPort.protocol = (shortPort.groups.protocol ?? "tcp").toLowerCase();
+        pushCurrentPort();
+      }
+      continue;
+    }
+
+    if (!currentPort) continue;
+
+    const published = line.match(/^\s{8}published:\s*"?(?<port>\d+)"?\s*$/);
+    if (published?.groups?.port) {
+      currentPort.hostPort = Number(published.groups.port);
+      continue;
+    }
+
+    const target = line.match(/^\s{8}target:\s*(?<port>\d+)\s*$/);
+    if (target?.groups?.port) {
+      currentPort.containerPort = Number(target.groups.port);
+      continue;
+    }
+
+    const protocol = line.match(/^\s{8}protocol:\s*(?<protocol>tcp|udp)\s*$/i);
+    if (protocol?.groups?.protocol) {
+      currentPort.protocol = protocol.groups.protocol.toLowerCase();
+    }
+  }
+
+  pushCurrentPort();
+  return bindings;
+}
+
+async function isHostPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.unref();
+    server.on("error", () => resolve(false));
+    server.listen({ port, host: "0.0.0.0", exclusive: true }, () => {
+      server.close(() => resolve(true));
+    });
+  });
+}
+
+async function lookupWindowsPortOwner(port) {
+  if (process.platform !== "win32") return null;
+  const res = await run("netstat", ["-ano", "-p", "tcp"], { allowFailure: true });
+  if (res.status !== 0) return null;
+  const matcher = new RegExp(`:${port}\\s+[^\\r\\n]*LISTENING\\s+(\\d+)`, "i");
+  for (const line of String(res.stdout ?? "").split(/\r?\n/)) {
+    const match = line.match(matcher);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+}
+
+async function resolveComposeBindings(composeFiles) {
+  const res = await run("docker", ["compose", ...composeArgs(composeFiles, ["config"])], { allowFailure: true });
+  if (res.status !== 0) {
+    throw new Error(`No se pudo evaluar compose para preflight de puertos.\n${String(res.stderr ?? "").trim()}`);
+  }
+  return parseComposeConfigPorts(String(res.stdout ?? ""));
+}
+
+function preferredRemapPort(port) {
+  const presets = {
+    9000: 19000,
+    9001: 19001,
+    5432: 15432,
+    6379: 16379,
+    7700: 17700,
+    8123: 18123,
+  };
+  return presets[port] ?? port + 10000;
+}
+
+async function nextAvailablePort(basePort, blockedPorts) {
+  for (let candidate = basePort; candidate <= 65535; candidate += 1) {
+    if (blockedPorts.has(candidate)) continue;
+    // eslint-disable-next-line no-await-in-loop
+    const available = await isHostPortAvailable(candidate);
+    if (available) return candidate;
+  }
+  return null;
+}
+
+function renderPortLine(binding, remappedPort) {
+  const hostPort = remappedPort ?? binding.hostPort;
+  const protoSuffix = binding.protocol && binding.protocol !== "tcp" ? `/${binding.protocol}` : "";
+  return `      - "${hostPort}:${binding.containerPort}${protoSuffix}"`;
+}
+
+function writeOverrideFile(overridePath, serviceBindings, remapMap) {
+  const lines = ["services:"];
+  const services = Array.from(serviceBindings.keys()).sort();
+  for (const service of services) {
+    lines.push(`  ${service}:`);
+    lines.push("    ports: !override");
+    for (const binding of serviceBindings.get(service)) {
+      const remappedPort = remapMap.get(`${service}:${binding.hostPort}:${binding.containerPort}:${binding.protocol}`);
+      lines.push(renderPortLine(binding, remappedPort));
+    }
+  }
+  fs.writeFileSync(overridePath, `${lines.join("\n")}\n`, "utf8");
+}
+
+function rankServiceForPortRetention(service) {
+  const priorities = {
+    postgres: 1,
+    redis: 2,
+    meilisearch: 3,
+    typesense: 3,
+    minio: 4,
+    clickhouse: 5,
+  };
+  return priorities[String(service ?? "").toLowerCase()] ?? 10;
+}
+
+function selectBindingToKeep(bindings) {
+  if (!bindings.length) return null;
+  return [...bindings].sort((a, b) => {
+    const rankDiff = rankServiceForPortRetention(a.service) - rankServiceForPortRetention(b.service);
+    if (rankDiff !== 0) return rankDiff;
+    return String(a.service).localeCompare(String(b.service));
+  })[0];
+}
+
+export async function preflightComposePorts(composeFile) {
+  const composeFiles = normalizeComposeFiles(composeFile);
+  const bindings = await resolveComposeBindings(composeFiles);
+  const groupsByHostAndProtocol = new Map();
+  for (const binding of bindings) {
+    const groupKey = `${binding.hostPort}/${binding.protocol}`;
+    if (!groupsByHostAndProtocol.has(groupKey)) groupsByHostAndProtocol.set(groupKey, []);
+    groupsByHostAndProtocol.get(groupKey).push(binding);
+  }
+
+  const conflicts = [];
+  const bindingsToRemap = [];
+  for (const [groupKey, groupBindings] of groupsByHostAndProtocol.entries()) {
+    const hostPort = Number(groupKey.split("/")[0]);
+    const hasInternalDuplicate = groupBindings.length > 1;
+    // eslint-disable-next-line no-await-in-loop
+    const available = await isHostPortAvailable(hostPort);
+    const isExternallyOccupied = !available;
+    const keepBinding = isExternallyOccupied ? null : selectBindingToKeep(groupBindings);
+    const shouldRemap = (binding) => {
+      if (isExternallyOccupied) return true;
+      if (!hasInternalDuplicate) return false;
+      return keepBinding ? bindingKey(binding) !== bindingKey(keepBinding) : true;
+    };
+    if (!isExternallyOccupied && !hasInternalDuplicate) continue;
+
+    // eslint-disable-next-line no-await-in-loop
+    const pid = isExternallyOccupied ? await lookupWindowsPortOwner(hostPort) : null;
+    for (const binding of groupBindings.filter((item) => shouldRemap(item))) {
+      conflicts.push({
+        ...binding,
+        pid,
+        reasons: {
+          occupied: isExternallyOccupied,
+          duplicate: hasInternalDuplicate,
+        },
+      });
+      bindingsToRemap.push(binding);
+    }
+  }
+
+  const overrideFile = rootPath(".bootstrap.compose.override.yml");
+  if (!conflicts.length) {
+    if (exists(overrideFile)) fs.rmSync(overrideFile);
+    return {
+      composeFiles,
+      overrideFile: null,
+      conflicts: [],
+      remaps: [],
+      finalBindings: bindings,
+    };
+  }
+
+  const blockedPorts = new Set(bindings.map((binding) => binding.hostPort));
+  const remapMap = new Map();
+  const remaps = [];
+  const orderedBindingsToRemap = [...bindingsToRemap].sort((a, b) => {
+    const byPort = a.hostPort - b.hostPort;
+    if (byPort !== 0) return byPort;
+    const byPriority = rankServiceForPortRetention(a.service) - rankServiceForPortRetention(b.service);
+    if (byPriority !== 0) return byPriority;
+    return String(a.service).localeCompare(String(b.service));
+  });
+
+  for (const conflict of orderedBindingsToRemap) {
+    const key = bindingKey(conflict);
+    if (remapMap.has(key)) continue;
+    const preferred = preferredRemapPort(conflict.hostPort);
+    // eslint-disable-next-line no-await-in-loop
+    const selected = await nextAvailablePort(preferred, blockedPorts);
+    if (!selected) {
+      throw new Error(
+        `No hay puertos libres para remapear ${conflict.service} ${conflict.hostPort}:${conflict.containerPort}. Libera el puerto manualmente.`,
+      );
+    }
+    blockedPorts.add(selected);
+    remapMap.set(key, selected);
+    remaps.push({
+      service: conflict.service,
+      fromHostPort: conflict.hostPort,
+      toHostPort: selected,
+      containerPort: conflict.containerPort,
+      protocol: conflict.protocol,
+      pid: conflict.pid ?? null,
+    });
+  }
+
+  const impactedServices = new Set(remaps.map((item) => item.service));
+  const serviceBindings = new Map();
+  for (const binding of bindings) {
+    if (!impactedServices.has(binding.service)) continue;
+    if (!serviceBindings.has(binding.service)) serviceBindings.set(binding.service, []);
+    serviceBindings.get(binding.service).push(binding);
+  }
+  writeOverrideFile(overrideFile, serviceBindings, remapMap);
+
+  const finalBindings = bindings.map((binding) => {
+    const key = bindingKey(binding);
+    const mapped = remapMap.get(key);
+    return mapped ? { ...binding, hostPort: mapped } : binding;
+  });
+
+  return {
+    composeFiles: [...composeFiles, overrideFile],
+    overrideFile,
+    conflicts,
+    remaps,
+    finalBindings,
+  };
+}
+
+export function printPortConflictSummary(plan) {
+  if (!plan?.conflicts?.length) {
+    logInfo("No se detectaron conflictos de puertos host.");
+    return;
+  }
+
+  for (const conflict of plan.conflicts) {
+    const reasons = [];
+    if (conflict.reasons?.occupied) reasons.push("ocupado por otro proceso");
+    if (conflict.reasons?.duplicate) reasons.push("duplicado en docker-compose");
+    const reasonSuffix = reasons.length ? ` [${reasons.join(" + ")}]` : "";
+    const pid = conflict.pid ? ` (PID ${conflict.pid})` : "";
+    logWarn(
+      `Puerto ${conflict.hostPort} en conflicto para ${conflict.service} -> ${conflict.containerPort}/${conflict.protocol}${pid}${reasonSuffix}`,
+    );
+  }
+  logInfo("Opciones:");
+  logInfo("A) liberar el puerto ocupado manualmente");
+  logInfo("B) remap automatico (aplicado) usando .bootstrap.compose.override.yml");
+
+  for (const remap of plan.remaps) {
+    logInfo(
+      `Remap aplicado: ${remap.service} ${remap.fromHostPort}->${remap.toHostPort} (container ${remap.containerPort}/${remap.protocol})`,
+    );
+  }
+}
+
+export function printInfraPortSummary(bindings) {
+  const findHostPort = (serviceName, containerPort) =>
+    bindings?.find((binding) => binding.service === serviceName && binding.containerPort === containerPort)?.hostPort;
+
+  const printHttp = (serviceName, containerPort, label) => {
+    const hostPort = findHostPort(serviceName, containerPort);
+    if (!hostPort) return;
+    process.stdout.write(`- ${label}: http://localhost:${hostPort}\n`);
+  };
+
+  const printTcp = (serviceName, containerPort, label) => {
+    const hostPort = findHostPort(serviceName, containerPort);
+    if (!hostPort) return;
+    process.stdout.write(`- ${label}: localhost:${hostPort} (tcp)\n`);
+  };
+
+  logStep("Puertos finales de infraestructura");
+  printHttp("minio", 9000, "MinIO API");
+  printHttp("minio", 9001, "MinIO Console");
+  printTcp("postgres", 5432, "Postgres");
+  printTcp("redis", 6379, "Redis");
+  printHttp("meilisearch", 7700, "Meilisearch");
+  printHttp("clickhouse", 8123, "ClickHouse HTTP");
 }
 
 function parseComposeEnvValue(composeContent, key, fallback) {
@@ -251,10 +615,12 @@ function parseComposeEnvValue(composeContent, key, fallback) {
   return String(match[1]).trim().replace(/^["']|["']$/g, "");
 }
 
-export async function waitForInfra(composeFile, timeoutMs = 120000) {
+export async function waitForInfra(composeFiles, timeoutMs = 120000) {
+  const files = normalizeComposeFiles(composeFiles);
+  const primaryComposeFile = files[0];
   const start = Date.now();
-  const content = readText(composeFile);
-  const services = await dockerComposeServices(composeFile);
+  const content = readText(primaryComposeFile);
+  const services = await dockerComposeServices(files);
   const hasPostgres = services.includes("postgres");
   const hasRedis = services.includes("redis");
   const pgUser = parseComposeEnvValue(content, "POSTGRES_USER", "erp");
@@ -275,7 +641,7 @@ export async function waitForInfra(composeFile, timeoutMs = 120000) {
   if (hasPostgres) {
     await waitLoop("postgres", async () => {
       const res = await dockerCompose(
-        composeFile,
+        files,
         ["exec", "-T", "postgres", "pg_isready", "-U", pgUser, "-d", pgDb],
         { allowFailure: true },
       );
@@ -287,7 +653,7 @@ export async function waitForInfra(composeFile, timeoutMs = 120000) {
 
   if (hasRedis) {
     await waitLoop("redis", async () => {
-      const res = await dockerCompose(composeFile, ["exec", "-T", "redis", "redis-cli", "ping"], {
+      const res = await dockerCompose(files, ["exec", "-T", "redis", "redis-cli", "ping"], {
         allowFailure: true,
       });
       return res.status === 0 && /PONG/i.test(String(res.stdout ?? ""));

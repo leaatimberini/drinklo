@@ -46,14 +46,30 @@ El script:
 - Bash:
   - `COMPOSE_FILE=deploy/templates/docker-compose.yml pnpm bootstrap`
 
+### Conflictos de puertos (auto-remap)
+- `pnpm bootstrap` ejecuta un preflight de puertos host antes de `docker compose up`.
+- Si detecta conflicto (proceso externo o puerto duplicado en compose), genera:
+  - `.bootstrap.compose.override.yml`
+  - y aplica `docker compose -f <base> -f .bootstrap.compose.override.yml ...`
+- Puertos comunes validados:
+  - `9000`/`9001` (MinIO API/Console)
+  - `5432` (Postgres)
+  - `6379` (Redis)
+  - `7700` (Meilisearch)
+  - `8123` (ClickHouse HTTP)
+- Remaps preferidos:
+  - `9000 -> 19000`, `9001 -> 19001`, `5432 -> 15432`, `6379 -> 16379`, `7700 -> 17700`, `8123 -> 18123`
+- Al finalizar, bootstrap imprime los puertos/URLs finales efectivos.
+
 ### Troubleshooting
 - **`[bootstrap][error] pnpm exited with null` o error de spawn en Windows**
   - Ejecutar `pnpm bootstrap:diag`
   - Verificar que `pnpm` este en PATH (`where pnpm` en PowerShell / Git Bash)
   - Reabrir terminal despues de instalar Node/pnpm y reintentar
 - **Puerto ocupado**
-  - Revisar contenedores y procesos locales (`docker ps`, `netstat -ano` / `lsof -i`)
-  - Cambiar puertos en `.env` o en el compose
+  - El bootstrap intenta remap automatico sin tocar tu compose base.
+  - Si queres liberar manualmente: revisar (`docker ps`, `netstat -ano` / `lsof -i`)
+  - Si queres forzar puertos fijos: liberar puerto o editar compose/override.
 - **Docker no arranca / `docker info` falla**
   - Iniciar Docker Desktop / servicio Docker y reintentar
   - El bootstrap muestra mensaje explicito: `Docker no esta disponible...`
@@ -110,14 +126,30 @@ The script will:
 - Bash:
   - `COMPOSE_FILE=deploy/templates/docker-compose.yml pnpm bootstrap`
 
+### Port conflicts (auto-remap)
+- `pnpm bootstrap` runs host-port preflight before `docker compose up`.
+- If a conflict is detected (external process or duplicate compose host port), it generates:
+  - `.bootstrap.compose.override.yml`
+  - and runs `docker compose -f <base> -f .bootstrap.compose.override.yml ...`
+- Common checked ports:
+  - `9000`/`9001` (MinIO API/Console)
+  - `5432` (Postgres)
+  - `6379` (Redis)
+  - `7700` (Meilisearch)
+  - `8123` (ClickHouse HTTP)
+- Preferred remaps:
+  - `9000 -> 19000`, `9001 -> 19001`, `5432 -> 15432`, `6379 -> 16379`, `7700 -> 17700`, `8123 -> 18123`
+- Bootstrap prints final effective ports/URLs at the end.
+
 ### Troubleshooting
 - **`[bootstrap][error] pnpm exited with null` or Windows spawn error**
   - Run `pnpm bootstrap:diag`
   - Verify `pnpm` is on PATH (`where pnpm` in PowerShell / Git Bash)
   - Reopen terminal after installing Node/pnpm and retry
 - **Port already in use**
-  - Check containers and local processes (`docker ps`, `netstat -ano` / `lsof -i`)
-  - Change ports in `.env` or compose file
+  - Bootstrap first tries automatic remap without editing the base compose file.
+  - To free manually: check (`docker ps`, `netstat -ano` / `lsof -i`)
+  - To keep fixed ports: free them or edit compose/override explicitly.
 - **Docker not running / `docker info` fails**
   - Start Docker Desktop / Docker daemon and retry
   - Bootstrap now prints explicit message: `Docker no esta disponible...`

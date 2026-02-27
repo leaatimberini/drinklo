@@ -7,3 +7,4 @@ coverage
 backups
 .turbo
 apps/control-plane/app/lib/generated
+.bootstrap.compose.override.yml
