@@ -125,6 +125,39 @@
         "x-source": "apps/api/src/modules/auth/auth.controller.ts"
       }
     },
+    "/auth/me": {
+      "get": {
+        "operationId": "get_auth_me",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/auth/auth.controller.ts"
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "post_auth_refresh",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/auth/auth.controller.ts"
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "post_auth_logout",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/auth/auth.controller.ts"
+      }
+    },
     "/admin/automation/segments": {
       "get": {
         "operationId": "get_admin_automation_segments",
@@ -2559,6 +2592,28 @@
         "x-source": "apps/api/src/modules/secrets/secrets.controller.ts"
       }
     },
+    "/installer/bootstrap": {
+      "post": {
+        "operationId": "post_installer_bootstrap",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/setup/installer.controller.ts"
+      }
+    },
+    "/instance/status": {
+      "get": {
+        "operationId": "get_instance_status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/setup/instance.controller.ts"
+      }
+    },
     "/setup/status": {
       "get": {
         "operationId": "get_setup_status",
@@ -3016,6 +3071,17 @@
           }
         },
         "x-source": "apps/api/src/modules/taxes/taxes.controller.ts"
+      }
+    },
+    "/settings/themes": {
+      "put": {
+        "operationId": "put_settings_themes",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-source": "apps/api/src/modules/themes/settings-themes.controller.ts"
       }
     },
     "/themes/public": {

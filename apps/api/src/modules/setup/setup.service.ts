@@ -1,10 +1,24 @@
 import { ConflictException, Injectable } from "@nestjs/common";
+import type { Prisma } from "@erp/db";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { RolePermissions } from "../common/rbac.constants";
 import type { SetupInitializeDto } from "./dto/setup.dto";
+import type { InstallerBootstrapDto } from "./dto/installer-bootstrap.dto";
 import { PLAN_CATALOG_DEFAULTS } from "../plans/plan-catalog.constants";
 import { buildTrialPeriod } from "../plans/plan-time.util";
+
+type SetupPayload = {
+  companyName: string;
+  brandName: string;
+  domain: string;
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+  logoUrl?: string;
+  adminTheme: "A" | "B" | "C";
+  storefrontTheme: "A" | "B" | "C";
+};
 
 @Injectable()
 export class SetupService {
@@ -15,7 +29,67 @@ export class SetupService {
     return { initialized: count > 0 };
   }
 
+  async instanceStatus() {
+    return this.status();
+  }
+
   async initialize(dto: SetupInitializeDto) {
+    return this.initializeInstance({
+      companyName: dto.companyName,
+      brandName: dto.brandName,
+      domain: dto.domain,
+      adminName: dto.adminName,
+      adminEmail: dto.adminEmail,
+      adminPassword: dto.adminPassword,
+      logoUrl: dto.logoUrl,
+      adminTheme: "A",
+      storefrontTheme: "A",
+    });
+  }
+
+  async bootstrap(dto: InstallerBootstrapDto) {
+    await this.initializeInstance({
+      companyName: dto.companyName,
+      brandName: dto.companyName,
+      domain: this.deriveDomain(dto.companyName, dto.adminEmail),
+      adminName: this.deriveAdminName(dto.adminEmail),
+      adminEmail: dto.adminEmail,
+      adminPassword: dto.adminPassword,
+      adminTheme: dto.themeAdmin,
+      storefrontTheme: dto.themeStorefront,
+    });
+    return { ok: true as const };
+  }
+
+  private deriveDomain(companyName: string, adminEmail: string) {
+    const emailDomain = adminEmail.split("@")[1]?.trim().toLowerCase();
+    if (emailDomain && !["localhost", "local"].includes(emailDomain)) {
+      return emailDomain;
+    }
+
+    const slug = companyName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    return slug ? `${slug}.local` : "empresa.local";
+  }
+
+  private deriveAdminName(adminEmail: string) {
+    const base = adminEmail.split("@")[0]?.replace(/[._-]+/g, " ").trim();
+    if (!base) {
+      return "Admin";
+    }
+    return base
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
+  private async initializeInstance(payload: SetupPayload) {
     const count = await this.prisma.company.count();
     if (count > 0) {
       throw new ConflictException("Setup already completed");
@@ -25,7 +99,7 @@ export class SetupService {
       new Set(Object.values(RolePermissions).flat()),
     );
 
-    return this.prisma.$transaction(async (tx: unknown) => {
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       for (const item of PLAN_CATALOG_DEFAULTS) {
         await tx.planEntitlement.upsert({
           where: { tier: item.tier },
@@ -47,20 +121,20 @@ export class SetupService {
 
       const company = await tx.company.create({
         data: {
-          name: dto.companyName,
+          name: payload.companyName,
         },
       });
 
       await tx.companySettings.create({
         data: {
           companyId: company.id,
-          brandName: dto.brandName,
-          domain: dto.domain,
-          logoUrl: dto.logoUrl ?? "https://placehold.co/200x200",
+          brandName: payload.brandName,
+          domain: payload.domain,
+          logoUrl: payload.logoUrl ?? "https://placehold.co/200x200",
           timezone: "America/Argentina/Buenos_Aires",
           currency: "ARS",
-          storefrontTheme: "A",
-          adminTheme: "A",
+          storefrontTheme: payload.storefrontTheme,
+          adminTheme: payload.adminTheme,
           depotAddress: "CABA",
           depotLat: -34.6037,
           depotLng: -58.3816,
@@ -125,9 +199,9 @@ export class SetupService {
         data: {
           companyId: company.id,
           roleId: adminRole.id,
-          email: dto.adminEmail,
-          name: dto.adminName,
-          passwordHash: await bcrypt.hash(dto.adminPassword, 10),
+          email: payload.adminEmail,
+          name: payload.adminName,
+          passwordHash: await bcrypt.hash(payload.adminPassword, 10),
         },
       });
 

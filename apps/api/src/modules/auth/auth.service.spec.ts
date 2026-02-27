@@ -6,6 +6,7 @@ import { PrismaService } from "../prisma/prisma.service";
 const prismaMock = {
   user: {
     findFirst: jest.fn(),
+    findUnique: jest.fn(),
   },
   companyIamConfig: {
     findUnique: jest.fn(),
@@ -33,6 +34,7 @@ describe("AuthService", () => {
 
     service = moduleRef.get(AuthService);
     prismaMock.user.findFirst.mockReset();
+    prismaMock.user.findUnique.mockReset();
     prismaMock.companyIamConfig.findUnique.mockReset();
     prismaMock.userMfaConfig.findUnique.mockReset();
     jwtMock.signAsync.mockReset();
@@ -69,5 +71,21 @@ describe("AuthService", () => {
     });
 
     await expect(service.login("admin@acme.local", "wrong")).rejects.toThrow("Invalid credentials");
+  });
+
+  it("returns user profile from me", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      companyId: "company-1",
+      email: "admin@acme.local",
+      name: "Admin",
+      role: { name: "Admin" },
+      deletedAt: null,
+    });
+
+    const result = await service.me("user-1");
+
+    expect(result.user.id).toBe("user-1");
+    expect(result.user.permissions).toContain("settings:write");
   });
 });

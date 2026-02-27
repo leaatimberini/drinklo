@@ -43,6 +43,14 @@ const dto = {
   adminPassword: "admin123",
 };
 
+const installerDto = {
+  companyName: "Bootstrap Co",
+  adminEmail: "owner@bootstrap.local",
+  adminPassword: "secret123",
+  themeAdmin: "B" as const,
+  themeStorefront: "C" as const,
+};
+
 describe("SetupService", () => {
   let service: SetupService;
 
@@ -79,6 +87,44 @@ describe("SetupService", () => {
 
     expect(result.companyId).toBe("c1");
     expect(result.adminId).toBe("u1");
+  });
+
+  it("blocks bootstrap when company exists", async () => {
+    prismaMock.company.count.mockResolvedValue(1);
+
+    await expect(service.bootstrap(installerDto)).rejects.toThrow(ConflictException);
+  });
+
+  it("bootstraps with explicit themes", async () => {
+    prismaMock.company.count.mockResolvedValue(0);
+    const settingsCreate = jest.fn();
+    prismaMock.$transaction.mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        planEntitlement: { upsert: jest.fn().mockResolvedValue(null) },
+        company: { create: jest.fn().mockResolvedValue({ id: "c1" }) },
+        companySettings: { create: settingsCreate },
+        branch: { create: jest.fn().mockResolvedValue({ id: "b1" }) },
+        permission: { create: jest.fn().mockResolvedValue({ id: "p1", code: "products:read" }) },
+        role: { create: jest.fn().mockResolvedValue({ id: "r1", name: "Admin" }) },
+        rolePermission: { create: jest.fn() },
+        user: { create: jest.fn().mockResolvedValue({ id: "u1" }) },
+        subscription: { create: jest.fn().mockResolvedValue({ id: "s1" }) },
+        $transaction: jest.fn(async (ops: unknown[]) => Promise.all(ops.map((op) => op))),
+      };
+      return cb(tx);
+    });
+
+    const result = await service.bootstrap(installerDto);
+
+    expect(result).toEqual({ ok: true });
+    expect(settingsCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          adminTheme: "B",
+          storefrontTheme: "C",
+        }),
+      }),
+    );
   });
 
   it("computes trial end preserving Buenos Aires wall clock (+30d)", () => {

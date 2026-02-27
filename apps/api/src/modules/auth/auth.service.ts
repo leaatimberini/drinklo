@@ -22,6 +22,32 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  private mapRolePermissions(role: { name: string }) {
+    const roleName = (role.name.toLowerCase() as RoleName) ?? "manager";
+    return {
+      roleName,
+      permissions: RolePermissions[roleName] ?? [],
+    };
+  }
+
+  private mapAuthUser(user: {
+    id: string;
+    email: string;
+    name: string;
+    companyId: string;
+    role: { name: string };
+  }) {
+    const { roleName, permissions } = this.mapRolePermissions(user.role);
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      companyId: user.companyId,
+      role: roleName,
+      permissions,
+    };
+  }
+
   async validateUser(email: string, password: string) {
     const user = await this.prisma.user.findFirst({
       where: { email },
@@ -80,25 +106,19 @@ export class AuthService {
     name: string;
     role: { name: string };
   }) {
-    const roleName = (user.role.name.toLowerCase() as RoleName) ?? "manager";
-    const permissions = RolePermissions[roleName] ?? [];
+    const authUser = this.mapAuthUser(user);
     const payload: JwtPayload = {
       sub: user.id,
       companyId: user.companyId,
-      role: roleName,
-      permissions,
+      role: authUser.role,
+      permissions: authUser.permissions,
       email: user.email,
       name: user.name,
     };
 
     return {
       accessToken: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: roleName,
-      },
+      user: authUser,
     };
   }
 
@@ -129,5 +149,32 @@ export class AuthService {
     }
 
     return this.issueTokenForUser(user);
+  }
+
+  async me(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true },
+    });
+    if (!user || user.deletedAt) {
+      throw new UnauthorizedException("Session not found");
+    }
+
+    return { user: this.mapAuthUser(user) };
+  }
+
+  async refresh(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true },
+    });
+    if (!user || user.deletedAt) {
+      throw new UnauthorizedException("Session not found");
+    }
+    return this.issueTokenForUser(user);
+  }
+
+  logout() {
+    return { ok: true as const };
   }
 }

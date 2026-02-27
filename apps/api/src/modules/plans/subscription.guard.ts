@@ -69,6 +69,8 @@ function classifyRoute(path: string, method: string): RoutePolicy {
     p.startsWith("/version") ||
     p.startsWith("/auth/") ||
     p.startsWith("/setup/") ||
+    p.startsWith("/instance/") ||
+    p.startsWith("/installer/") ||
     p.startsWith("/swagger") ||
     p.startsWith("/docs") ||
     p.startsWith("/payments/webhooks/") ||
