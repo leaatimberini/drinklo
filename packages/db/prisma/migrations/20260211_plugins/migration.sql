@@ -14,3 +14,4 @@ CREATE INDEX "CompanyPlugin_companyId_idx" ON "CompanyPlugin"("companyId");
 CREATE INDEX "CompanyPlugin_name_idx" ON "CompanyPlugin"("name");
 
 ALTER TABLE "CompanyPlugin" ADD CONSTRAINT "CompanyPlugin_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

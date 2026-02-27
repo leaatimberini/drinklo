@@ -1,4 +1,4 @@
-﻿CREATE TYPE "GovernanceEntity" AS ENUM ('ORDERS', 'LOGS', 'EVENTS', 'MARKETING');
+CREATE TYPE "GovernanceEntity" AS ENUM ('ORDERS', 'LOGS', 'EVENTS', 'MARKETING');
 CREATE TYPE "LegalHoldStatus" AS ENUM ('ACTIVE', 'RELEASED');
 
 CREATE TABLE "DataRetentionPolicy" (
@@ -78,3 +78,4 @@ ALTER TABLE "WebhookLog" ADD CONSTRAINT "WebhookLog_companyId_fkey" FOREIGN KEY 
 ALTER TABLE "BotCommandLog" ADD COLUMN "companyId" TEXT;
 CREATE INDEX "BotCommandLog_companyId_idx" ON "BotCommandLog"("companyId");
 ALTER TABLE "BotCommandLog" ADD CONSTRAINT "BotCommandLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

@@ -74,3 +74,4 @@ ALTER TABLE "AiCopilotProposal" ADD CONSTRAINT "AiCopilotProposal_createdByUserI
 
 -- AddForeignKey
 ALTER TABLE "AiCopilotProposal" ADD CONSTRAINT "AiCopilotProposal_approvedByUserId_fkey" FOREIGN KEY ("approvedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

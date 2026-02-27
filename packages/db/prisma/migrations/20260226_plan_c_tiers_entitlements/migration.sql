@@ -31,6 +31,11 @@ CREATE TABLE "Subscription" (
   "graceEndAt" TIMESTAMP(3),
   "lastPaymentAt" TIMESTAMP(3),
   "cancelledAt" TIMESTAMP(3),
+  "billingProvider" TEXT,
+  "mpPreapprovalId" TEXT,
+  "mpPreapprovalStatus" TEXT,
+  "mpNextBillingDate" TIMESTAMP(3),
+  "mpSubscriptionRaw" JSONB,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
@@ -59,9 +64,12 @@ CREATE UNIQUE INDEX "Subscription_companyId_key" ON "Subscription"("companyId");
 CREATE INDEX "Subscription_status_idx" ON "Subscription"("status");
 CREATE INDEX "Subscription_currentTier_idx" ON "Subscription"("currentTier");
 CREATE INDEX "Subscription_currentPeriodEnd_idx" ON "Subscription"("currentPeriodEnd");
+CREATE UNIQUE INDEX IF NOT EXISTS "Subscription_mpPreapprovalId_key" ON "Subscription"("mpPreapprovalId");
+CREATE INDEX IF NOT EXISTS "Subscription_mpPreapprovalStatus_idx" ON "Subscription"("mpPreapprovalStatus");
 
 CREATE UNIQUE INDEX "UsageCounter_companyId_periodKey_key" ON "UsageCounter"("companyId", "periodKey");
 CREATE INDEX "UsageCounter_companyId_periodStart_idx" ON "UsageCounter"("companyId", "periodStart");
 
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "UsageCounter" ADD CONSTRAINT "UsageCounter_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

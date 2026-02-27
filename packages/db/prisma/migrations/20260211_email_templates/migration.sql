@@ -1,11 +1,11 @@
 -- Email templates
-ALTER TABLE "CompanySettings" ADD COLUMN "brandTone" text DEFAULT 'Profesional';
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "brandTone" text DEFAULT 'Profesional';
 
 CREATE TYPE "EmailTemplateStatus" AS ENUM ('DRAFT', 'APPROVED');
 
 CREATE TABLE "EmailTemplate" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "type" text NOT NULL,
   "subject" text NOT NULL,
   "body" text NOT NULL,
@@ -19,3 +19,4 @@ CREATE TABLE "EmailTemplate" (
 CREATE INDEX "EmailTemplate_companyId_idx" ON "EmailTemplate"("companyId");
 CREATE INDEX "EmailTemplate_type_idx" ON "EmailTemplate"("type");
 CREATE INDEX "EmailTemplate_status_idx" ON "EmailTemplate"("status");
+

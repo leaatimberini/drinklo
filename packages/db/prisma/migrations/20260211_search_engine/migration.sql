@@ -1,4 +1,4 @@
-﻿ALTER TABLE "ProductVariant" ADD COLUMN "cost" NUMERIC(10,2);
+ALTER TABLE "ProductVariant" ADD COLUMN "cost" NUMERIC(10,2);
 
 CREATE TABLE "SearchConfig" (
   "id" TEXT NOT NULL,
@@ -26,3 +26,4 @@ CREATE UNIQUE INDEX "SearchIndexState_companyId_key" ON "SearchIndexState"("comp
 
 ALTER TABLE "SearchConfig" ADD CONSTRAINT "SearchConfig_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "SearchIndexState" ADD CONSTRAINT "SearchIndexState_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

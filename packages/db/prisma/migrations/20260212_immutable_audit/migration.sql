@@ -1,4 +1,4 @@
-﻿CREATE TABLE "ImmutableAuditLog" (
+CREATE TABLE "ImmutableAuditLog" (
   "id" TEXT NOT NULL,
   "companyId" TEXT NOT NULL,
   "category" TEXT NOT NULL,
@@ -25,3 +25,4 @@ CREATE INDEX "ImmutableAuditLog_companyId_action_idx" ON "ImmutableAuditLog"("co
 CREATE INDEX "ImmutableAuditLog_companyId_aggregateType_aggregateId_idx" ON "ImmutableAuditLog"("companyId", "aggregateType", "aggregateId");
 
 ALTER TABLE "ImmutableAuditLog" ADD CONSTRAINT "ImmutableAuditLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

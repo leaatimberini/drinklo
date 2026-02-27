@@ -138,3 +138,4 @@ ALTER TABLE "AutomationSendLog" ADD CONSTRAINT "AutomationSendLog_companyId_fkey
 ALTER TABLE "AutomationSendLog" ADD CONSTRAINT "AutomationSendLog_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "FlowMetric" ADD CONSTRAINT "FlowMetric_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "FlowMetric" ADD CONSTRAINT "FlowMetric_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

@@ -77,6 +77,17 @@ El script:
   - Verificar `DATABASE_URL` y que `postgres` este healthy
   - Probar `pnpm db:migrate` manualmente
   - Si el schema local quedo inconsistente: `pnpm db:reset`
+- **Prisma P3018 / P3009 en bootstrap**
+  - Recovery automatico (solo local/dev):
+    - PowerShell: `$env:DEV_RESET_DB='true'; pnpm bootstrap`
+    - Bash: `DEV_RESET_DB=true pnpm bootstrap`
+  - Recovery manual:
+    - `docker compose -f docker-compose.yml down -v`
+    - `pnpm -C packages/db exec prisma migrate deploy`
+    - `pnpm -C packages/db exec prisma db seed`
+- **API arranca en modo seguro durante bootstrap**
+  - Bootstrap exporta `API_BOOTSTRAP_SAFE_MODE=true` para evitar bloqueos por modulos enterprise no configurados.
+  - Para iniciar API full manualmente: `API_BOOTSTRAP_SAFE_MODE=false pnpm -C apps/api dev`
 
 ---
 
@@ -157,3 +168,14 @@ The script will:
   - Check `DATABASE_URL` and confirm `postgres` is healthy
   - Run `pnpm db:migrate` manually
   - If local schema is inconsistent: `pnpm db:reset`
+- **Prisma P3018 / P3009 during bootstrap**
+  - Automatic recovery (local/dev only):
+    - PowerShell: `$env:DEV_RESET_DB='true'; pnpm bootstrap`
+    - Bash: `DEV_RESET_DB=true pnpm bootstrap`
+  - Manual recovery:
+    - `docker compose -f docker-compose.yml down -v`
+    - `pnpm -C packages/db exec prisma migrate deploy`
+    - `pnpm -C packages/db exec prisma db seed`
+- **API starts in safe mode during bootstrap**
+  - Bootstrap sets `API_BOOTSTRAP_SAFE_MODE=true` to avoid startup blockers from advanced modules.
+  - To run full API manually: `API_BOOTSTRAP_SAFE_MODE=false pnpm -C apps/api dev`

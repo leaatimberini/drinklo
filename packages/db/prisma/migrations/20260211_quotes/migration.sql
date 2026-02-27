@@ -2,8 +2,8 @@
 CREATE TYPE "QuoteStatus" AS ENUM ('OPEN', 'SENT', 'ACCEPTED', 'EXPIRED', 'CANCELED');
 
 CREATE TABLE "Quote" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "customerName" text NOT NULL,
   "customerEmail" text,
   "subtotal" numeric(10, 2) NOT NULL,
@@ -17,10 +17,10 @@ CREATE TABLE "Quote" (
 );
 
 CREATE TABLE "QuoteItem" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "quoteId" uuid NOT NULL,
-  "productId" uuid NOT NULL,
-  "variantId" uuid,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "quoteId" text NOT NULL,
+  "productId" text NOT NULL,
+  "variantId" text,
   "name" text NOT NULL,
   "sku" text,
   "quantity" integer NOT NULL,
@@ -35,3 +35,4 @@ CREATE INDEX "Quote_companyId_idx" ON "Quote"("companyId");
 CREATE INDEX "Quote_status_idx" ON "Quote"("status");
 CREATE INDEX "QuoteItem_quoteId_idx" ON "QuoteItem"("quoteId");
 CREATE INDEX "QuoteItem_productId_idx" ON "QuoteItem"("productId");
+

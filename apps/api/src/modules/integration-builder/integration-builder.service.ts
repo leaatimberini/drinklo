@@ -69,7 +69,7 @@ export class IntegrationBuilderService implements OnModuleDestroy {
   constructor(
     private readonly prisma: PrismaService,
     private readonly secrets: SecretsService,
-    private readonly config: ConfigService,
+    private readonly config: ConfigService = new ConfigService(),
   ) {
     this.controlPlaneUrl = this.config.get<string>("CONTROL_PLANE_URL") ?? "";
     this.controlPlaneToken = this.config.get<string>("CONTROL_PLANE_INGEST_TOKEN") ?? "";

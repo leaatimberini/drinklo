@@ -2,13 +2,14 @@
 CREATE TYPE "SaleStatus" AS ENUM ('OPEN', 'PAID', 'CANCELED');
 
 CREATE TABLE "Sale" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "subtotal" numeric(10, 2) NOT NULL,
   "discount" numeric(10, 2) NOT NULL,
   "total" numeric(10, 2) NOT NULL,
   "currency" text NOT NULL,
   "paymentMethod" text NOT NULL,
+  "clientTxnId" text,
   "paidAmount" numeric(10, 2) NOT NULL,
   "changeAmount" numeric(10, 2) NOT NULL,
   "status" "SaleStatus" NOT NULL DEFAULT 'PAID',
@@ -18,10 +19,10 @@ CREATE TABLE "Sale" (
 );
 
 CREATE TABLE "SaleItem" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "saleId" uuid NOT NULL,
-  "productId" uuid NOT NULL,
-  "variantId" uuid,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "saleId" text NOT NULL,
+  "productId" text NOT NULL,
+  "variantId" text,
   "name" text NOT NULL,
   "sku" text,
   "quantity" integer NOT NULL,
@@ -33,6 +34,18 @@ CREATE TABLE "SaleItem" (
 );
 
 CREATE INDEX "Sale_companyId_idx" ON "Sale"("companyId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Sale_companyId_clientTxnId_key" ON "Sale"("companyId", "clientTxnId");
 CREATE INDEX "Sale_status_idx" ON "Sale"("status");
 CREATE INDEX "SaleItem_saleId_idx" ON "SaleItem"("saleId");
 CREATE INDEX "SaleItem_productId_idx" ON "SaleItem"("productId");
+
+DO $$
+BEGIN
+  IF to_regclass('"Invoice"') IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'Invoice_saleId_fkey'
+  ) THEN
+    ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "Sale"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+

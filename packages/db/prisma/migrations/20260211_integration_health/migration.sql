@@ -17,3 +17,4 @@ CREATE INDEX "IntegrationHealthLog_checkedAt_idx" ON "IntegrationHealthLog"("che
 
 ALTER TABLE "IntegrationHealthLog" ADD CONSTRAINT "IntegrationHealthLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "IntegrationHealthLog" ADD CONSTRAINT "IntegrationHealthLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

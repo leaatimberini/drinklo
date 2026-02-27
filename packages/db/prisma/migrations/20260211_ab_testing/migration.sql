@@ -50,7 +50,7 @@ CREATE TABLE "ExperimentEvent" (
   CONSTRAINT "ExperimentEvent_pkey" PRIMARY KEY ("id")
 );
 
-ALTER TABLE "CompanySettings" ADD COLUMN "enableAbTesting" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enableAbTesting" boolean NOT NULL DEFAULT false;
 
 CREATE INDEX "Experiment_companyId_idx" ON "Experiment"("companyId");
 CREATE INDEX "Experiment_target_idx" ON "Experiment"("target");
@@ -78,4 +78,13 @@ ALTER TABLE "ExperimentAssignment" ADD CONSTRAINT "ExperimentAssignment_variantI
 ALTER TABLE "ExperimentEvent" ADD CONSTRAINT "ExperimentEvent_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "ExperimentEvent" ADD CONSTRAINT "ExperimentEvent_experimentId_fkey" FOREIGN KEY ("experimentId") REFERENCES "Experiment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "ExperimentEvent" ADD CONSTRAINT "ExperimentEvent_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "ExperimentVariant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "ExperimentEvent" ADD CONSTRAINT "ExperimentEvent_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF to_regclass('"Order"') IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'ExperimentEvent_orderId_fkey'
+  ) THEN
+    ALTER TABLE "ExperimentEvent" ADD CONSTRAINT "ExperimentEvent_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+

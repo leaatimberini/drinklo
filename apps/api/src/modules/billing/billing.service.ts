@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, PrismaService } from "@erp/db";
+import { Prisma } from "@erp/db";
 import { WsaaClient } from "./afip/wsaa.client";
 import { WsfeClient } from "./afip/wsfe.client";
 import type { CreateInvoiceDto } from "./dto/create-invoice.dto";
@@ -7,6 +7,7 @@ import { LicensingService } from "../licensing/licensing.service";
 import { PremiumFeatures } from "../licensing/license.types";
 import { SecretsService } from "../secrets/secrets.service";
 import { SandboxService } from "../sandbox/sandbox.service";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class BillingService {

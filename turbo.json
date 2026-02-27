@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["API_BOOTSTRAP_SAFE_MODE", "AGENT_PORT", "PRINT_AGENT_PORT", "TURBO_CONCURRENCY"],
   "tasks": {
     "dev": {
       "cache": false,

@@ -5,24 +5,19 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CompaniesModule } from "./modules/companies/companies.module";
 import { CustomersModule } from "./modules/customers/customers.module";
-import { ProductsModule } from "./modules/products/products.module";
-import { StockModule } from "./modules/stock/stock.module";
 import { SetupModule } from "./modules/setup/setup.module";
 import { UsersModule } from "./modules/users/users.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ThemesModule } from "./modules/themes/themes.module";
-import { CatalogModule } from "./modules/catalog/catalog.module";
 import { CheckoutModule } from "./modules/checkout/checkout.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { SalesModule } from "./modules/sales/sales.module";
 import { QuotesModule } from "./modules/quotes/quotes.module";
-import { SharedModule } from "./modules/shared/shared.module";
 import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { FxModule } from "./modules/fx/fx.module";
 import { ScheduleModule } from "@nestjs/schedule";
 import { BillingModule } from "./modules/billing/billing.module";
 import { HealthModule } from "./modules/health/health.module";
-import { OpsModule } from "./modules/ops/ops.module";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ApiThrottlerGuard, throttlerOptions } from "./security/throttling";
 import { StockReservationModule } from "./modules/stock-reservations/stock-reservation.module";
@@ -72,96 +67,103 @@ import { PlansModule } from "./modules/plans/plans.module";
 import { SubscriptionLifecycleModule } from "./modules/subscription-lifecycle/subscription-lifecycle.module";
 import { SubscriptionGuard } from "./modules/plans/subscription.guard";
 
+const API_BOOTSTRAP_SAFE_MODE = process.env.API_BOOTSTRAP_SAFE_MODE === "true";
+
+const coreImports = [
+  ConfigModule.forRoot({
+    isGlobal: true,
+    cache: true,
+    validate: validateEnv,
+  }),
+  ScheduleModule.forRoot(),
+  ThrottlerModule.forRoot(throttlerOptions),
+  PrismaModule,
+  SetupModule,
+  ThemesModule,
+  HealthModule,
+  AuthModule,
+  CompaniesModule,
+  UsersModule,
+  CustomersModule,
+];
+
+const extendedImports = [
+  CheckoutModule,
+  PaymentsModule,
+  SalesModule,
+  QuotesModule,
+  DashboardModule,
+  FxModule,
+  BillingModule,
+  StockReservationModule,
+  BrandingModule,
+  EmailTemplatesModule,
+  BotAuditModule,
+  StorageModule,
+  LicensingModule,
+  ComplianceModule,
+  ImportExportModule,
+  DomainEmailModule,
+  PrivacyModule,
+  ReconciliationModule,
+  SupportModule,
+  StarterPacksModule,
+  SecretsModule,
+  MetricsModule,
+  IntegrationsHealthModule,
+  PortalModule,
+  PluginsModule,
+  PluginMarketplaceModule,
+  EventsModule,
+  WarehouseModule,
+  AutomationModule,
+  PromosModule,
+  AbTestingModule,
+  FulfillmentModule,
+  SearchModule,
+  RecommendationsModule,
+  IamModule,
+  ImmutableAuditModule,
+  PurchasingModule,
+  LotsModule,
+  FraudModule,
+  DataGovernanceModule,
+  EdgeCacheModule,
+  AiCopilotModule,
+  DeveloperApiModule,
+  SandboxModule,
+  TaxesModule,
+  SodAccessReviewsModule,
+  EdiscoveryModule,
+  IntegrationBuilderModule,
+  PlansModule,
+  SubscriptionLifecycleModule,
+];
+
+const baseProviders = [
+  {
+    provide: APP_GUARD,
+    useClass: ApiThrottlerGuard,
+  },
+];
+
+const extendedProviders = [
+  {
+    provide: APP_GUARD,
+    useClass: SubscriptionGuard,
+  },
+  {
+    provide: APP_INTERCEPTOR,
+    useClass: MetricsInterceptor,
+  },
+  {
+    provide: APP_INTERCEPTOR,
+    useClass: ImmutableAuditInterceptor,
+  },
+];
+
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-      validate: validateEnv,
-    }),
-    ScheduleModule.forRoot(),
-    ThrottlerModule.forRoot(throttlerOptions),
-    PrismaModule,
-    SetupModule,
-    ThemesModule,
-    CatalogModule,
-    CheckoutModule,
-    PaymentsModule,
-    SalesModule,
-    SharedModule,
-    QuotesModule,
-    DashboardModule,
-    FxModule,
-    BillingModule,
-    HealthModule,
-    OpsModule,
-    StockReservationModule,
-    BrandingModule,
-    EmailTemplatesModule,
-    BotAuditModule,
-    StorageModule,
-    LicensingModule,
-    ComplianceModule,
-    ImportExportModule,
-    DomainEmailModule,
-    PrivacyModule,
-    ReconciliationModule,
-    SupportModule,
-    StarterPacksModule,
-    SecretsModule,
-    MetricsModule,
-    IntegrationsHealthModule,
-    PortalModule,
-    PluginsModule,
-    PluginMarketplaceModule,
-    EventsModule,
-    WarehouseModule,
-    AutomationModule,
-    PromosModule,
-    AbTestingModule,
-    FulfillmentModule,
-    SearchModule,
-    RecommendationsModule,
-    IamModule,
-    ImmutableAuditModule,
-    PurchasingModule,
-    LotsModule,
-    FraudModule,
-    DataGovernanceModule,
-    EdgeCacheModule,
-    AiCopilotModule,
-    DeveloperApiModule,
-    SandboxModule,
-    TaxesModule,
-    SodAccessReviewsModule,
-    EdiscoveryModule,
-    IntegrationBuilderModule,
-    PlansModule,
-    SubscriptionLifecycleModule,
-    AuthModule,
-    CompaniesModule,
-    UsersModule,
-    ProductsModule,
-    CustomersModule,
-    StockModule,
-  ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ApiThrottlerGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: SubscriptionGuard,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: MetricsInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ImmutableAuditInterceptor,
-    },
-  ],
+  imports: [...coreImports, ...(API_BOOTSTRAP_SAFE_MODE ? [] : extendedImports)],
+  providers: [...baseProviders, ...(API_BOOTSTRAP_SAFE_MODE ? [] : extendedProviders)],
 })
 export class AppModule {}

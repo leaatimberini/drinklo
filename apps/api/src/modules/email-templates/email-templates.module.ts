@@ -8,5 +8,6 @@ import { EventsModule } from "../events/events.module";
   imports: [LicensingModule, EventsModule],
   controllers: [EmailTemplatesController],
   providers: [EmailTemplatesService],
+  exports: [EmailTemplatesService],
 })
 export class EmailTemplatesModule {}

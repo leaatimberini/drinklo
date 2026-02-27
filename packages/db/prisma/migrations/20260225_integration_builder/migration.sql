@@ -72,3 +72,4 @@ ALTER TABLE "IntegrationConnectorDelivery" ADD CONSTRAINT "IntegrationConnectorD
 ALTER TABLE "IntegrationConnectorDelivery" ADD CONSTRAINT "IntegrationConnectorDelivery_connectorId_fkey"
   FOREIGN KEY ("connectorId") REFERENCES "IntegrationConnector"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+

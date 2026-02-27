@@ -1,6 +1,7 @@
 -- Branding portability
-ALTER TABLE "CompanySettings" ADD COLUMN "faviconUrl" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "seoTitle" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "seoDescription" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "seoKeywords" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "templateId" text DEFAULT 'default';
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "faviconUrl" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "seoTitle" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "seoDescription" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "seoKeywords" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "templateId" text DEFAULT 'default';
+

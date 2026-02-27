@@ -46,3 +46,4 @@ ALTER TABLE "Secret" ADD CONSTRAINT "Secret_companyId_fkey" FOREIGN KEY ("compan
 ALTER TABLE "SecretAudit" ADD CONSTRAINT "SecretAudit_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "SecretAudit" ADD CONSTRAINT "SecretAudit_secretId_fkey" FOREIGN KEY ("secretId") REFERENCES "Secret"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "SecretAudit" ADD CONSTRAINT "SecretAudit_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

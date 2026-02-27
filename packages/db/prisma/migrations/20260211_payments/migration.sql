@@ -3,8 +3,8 @@ CREATE TYPE "PaymentProvider" AS ENUM ('MERCADOPAGO');
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'APPROVED', 'IN_PROCESS', 'REJECTED', 'CANCELED');
 
 CREATE TABLE "Payment" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "orderId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "orderId" text NOT NULL,
   "provider" "PaymentProvider" NOT NULL,
   "preferenceId" text,
   "paymentId" text,
@@ -18,7 +18,7 @@ CREATE TABLE "Payment" (
 );
 
 CREATE TABLE "WebhookLog" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "provider" text NOT NULL,
   "eventId" text NOT NULL,
   "payload" jsonb NOT NULL,
@@ -33,3 +33,4 @@ CREATE TABLE "WebhookLog" (
 CREATE INDEX "Payment_orderId_idx" ON "Payment"("orderId");
 CREATE INDEX "Payment_paymentId_idx" ON "Payment"("paymentId");
 CREATE INDEX "WebhookLog_provider_idx" ON "WebhookLog"("provider");
+

@@ -103,3 +103,4 @@ ALTER TABLE "OrderTaxBreakdown" ADD CONSTRAINT "OrderTaxBreakdown_companyId_fkey
 ALTER TABLE "OrderTaxBreakdown" ADD CONSTRAINT "OrderTaxBreakdown_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "OrderTaxBreakdown" ADD CONSTRAINT "OrderTaxBreakdown_taxProfileId_fkey" FOREIGN KEY ("taxProfileId") REFERENCES "TaxProfile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+

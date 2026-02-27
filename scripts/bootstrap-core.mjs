@@ -6,11 +6,13 @@ import {
   ensureAppEnvs,
   ensureNodeAndTools,
   logInfo,
+  logWarn,
   logStep,
   preflightComposePorts,
   printInfraPortSummary,
   printPortConflictSummary,
   printBootstrapSummary,
+  resolveDevServerPortOverrides,
   runDbMigrateAndSeed,
   selectInfraServices,
   waitForInfra,
@@ -49,17 +51,29 @@ async function main() {
   ensureAppEnvs();
 
   logStep("Migraciones + seed");
-  await runDbMigrateAndSeed();
+  await runDbMigrateAndSeed({ composeFiles });
 
   printBootstrapSummary();
   printInfraPortSummary(preflight.finalBindings);
 
   logStep("Iniciando desarrollo (turbo)");
-  const child = spawn("pnpm", ["-w", "run", "dev"], {
+  const turboConcurrency = Number(process.env.TURBO_CONCURRENCY ?? 20);
+  const resolvedConcurrency = Number.isFinite(turboConcurrency) && turboConcurrency > 0 ? turboConcurrency : 20;
+  logInfo(`Turbo concurrency: ${resolvedConcurrency}`);
+  const devPortPlan = await resolveDevServerPortOverrides();
+  for (const note of devPortPlan.notes) {
+    logWarn(note);
+  }
+  const devEnv = { ...process.env, ...devPortPlan.env };
+  if (!devEnv.API_BOOTSTRAP_SAFE_MODE) {
+    devEnv.API_BOOTSTRAP_SAFE_MODE = "true";
+    logWarn("API bootstrap safe mode habilitado (API_BOOTSTRAP_SAFE_MODE=true) para iniciar entorno local.");
+  }
+  const child = spawn("pnpm", ["exec", "turbo", "dev", `--concurrency=${resolvedConcurrency}`], {
     cwd: process.cwd(),
     stdio: "inherit",
     shell: process.platform === "win32",
-    env: process.env,
+    env: devEnv,
   });
   child.on("exit", (code) => process.exit(code ?? 0));
   child.on("error", (err) => {

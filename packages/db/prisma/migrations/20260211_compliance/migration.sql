@@ -1,8 +1,8 @@
-ALTER TABLE "CompanySettings" ADD COLUMN "ageGateMode" text NOT NULL DEFAULT 'DISABLED';
-ALTER TABLE "CompanySettings" ADD COLUMN "termsUrl" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "privacyUrl" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "cookiesUrl" text;
-ALTER TABLE "CompanySettings" ADD COLUMN "marketingConsentRequired" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "ageGateMode" text NOT NULL DEFAULT 'DISABLED';
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "termsUrl" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "privacyUrl" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "cookiesUrl" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "marketingConsentRequired" boolean NOT NULL DEFAULT false;
 
 CREATE TABLE "ConsentRecord" (
   "id" text NOT NULL,
@@ -24,3 +24,4 @@ ALTER TABLE "ConsentRecord" ADD CONSTRAINT "ConsentRecord_companyId_fkey" FOREIG
 
 ALTER TABLE "Product" ADD COLUMN "isAlcoholic" boolean NOT NULL DEFAULT false;
 ALTER TABLE "Product" ADD COLUMN "abv" double precision;
+

@@ -1,4 +1,4 @@
-﻿CREATE TABLE "CompanyIamConfig" (
+CREATE TABLE "CompanyIamConfig" (
   "id" TEXT NOT NULL,
   "companyId" TEXT NOT NULL,
   "ssoEnabled" BOOLEAN NOT NULL DEFAULT false,
@@ -62,3 +62,4 @@ CREATE INDEX "ScimProvisionLog_status_idx" ON "ScimProvisionLog"("status");
 ALTER TABLE "CompanyIamConfig" ADD CONSTRAINT "CompanyIamConfig_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "UserMfaConfig" ADD CONSTRAINT "UserMfaConfig_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "ScimProvisionLog" ADD CONSTRAINT "ScimProvisionLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

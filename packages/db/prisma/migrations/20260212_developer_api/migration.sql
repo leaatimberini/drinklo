@@ -85,3 +85,4 @@ ALTER TABLE "DeveloperWebhookDelivery" ADD CONSTRAINT "DeveloperWebhookDelivery_
   FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "DeveloperWebhookDelivery" ADD CONSTRAINT "DeveloperWebhookDelivery_endpointId_fkey"
   FOREIGN KEY ("endpointId") REFERENCES "DeveloperWebhookEndpoint"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

@@ -1,4 +1,4 @@
-﻿CREATE TYPE "FraudAction" AS ENUM ('NONE', 'HOLD_ORDER', 'REQUIRE_VERIFICATION', 'NOTIFY_ONLY');
+CREATE TYPE "FraudAction" AS ENUM ('NONE', 'HOLD_ORDER', 'REQUIRE_VERIFICATION', 'NOTIFY_ONLY');
 CREATE TYPE "FraudAssessmentStatus" AS ENUM ('OPEN', 'RESOLVED', 'DISMISSED');
 
 CREATE TABLE "FraudRule" (
@@ -49,3 +49,4 @@ ALTER TABLE "FraudAssessment" ADD CONSTRAINT "FraudAssessment_companyId_fkey" FO
 ALTER TABLE "FraudAssessment" ADD CONSTRAINT "FraudAssessment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "FraudAssessment" ADD CONSTRAINT "FraudAssessment_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "FraudAssessment" ADD CONSTRAINT "FraudAssessment_reviewedById_fkey" FOREIGN KEY ("reviewedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

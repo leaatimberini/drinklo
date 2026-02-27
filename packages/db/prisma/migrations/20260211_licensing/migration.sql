@@ -15,3 +15,4 @@ CREATE UNIQUE INDEX "LicenseKey_companyId_key" ON "LicenseKey"("companyId");
 CREATE INDEX "LicenseKey_expiresAt_idx" ON "LicenseKey"("expiresAt");
 
 ALTER TABLE "LicenseKey" ADD CONSTRAINT "LicenseKey_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

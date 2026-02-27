@@ -1,6 +1,6 @@
-﻿ALTER TABLE "CompanySettings"
-  ADD COLUMN "pickingStrategy" TEXT NOT NULL DEFAULT 'FEFO',
-  ADD COLUMN "blockExpiredLotSale" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings"
+  ADD COLUMN IF NOT EXISTS "pickingStrategy" TEXT NOT NULL DEFAULT 'FEFO',
+  ADD COLUMN IF NOT EXISTS "blockExpiredLotSale" BOOLEAN NOT NULL DEFAULT false;
 
 CREATE TABLE "BatchLot" (
   "id" TEXT NOT NULL,
@@ -42,3 +42,4 @@ ALTER TABLE "BatchLot" ADD CONSTRAINT "BatchLot_variantId_fkey" FOREIGN KEY ("va
 ALTER TABLE "StockReservationLot" ADD CONSTRAINT "StockReservationLot_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "StockReservationLot" ADD CONSTRAINT "StockReservationLot_reservationId_fkey" FOREIGN KEY ("reservationId") REFERENCES "StockReservation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "StockReservationLot" ADD CONSTRAINT "StockReservationLot_lotId_fkey" FOREIGN KEY ("lotId") REFERENCES "BatchLot"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

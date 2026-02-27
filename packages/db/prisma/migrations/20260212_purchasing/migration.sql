@@ -1,8 +1,8 @@
-﻿CREATE TYPE "PurchaseOrderStatus" AS ENUM ('DRAFT','APPROVED','PARTIALLY_RECEIVED','RECEIVED','CANCELED');
+CREATE TYPE "PurchaseOrderStatus" AS ENUM ('DRAFT','APPROVED','PARTIALLY_RECEIVED','RECEIVED','CANCELED');
 CREATE TYPE "SupplierInvoiceStatus" AS ENUM ('OPEN','PARTIAL','PAID','VOID');
 
-ALTER TABLE "CompanySettings"
-  ADD COLUMN "inventoryCostMethod" TEXT NOT NULL DEFAULT 'WAVG';
+ALTER TABLE IF EXISTS "CompanySettings"
+  ADD COLUMN IF NOT EXISTS "inventoryCostMethod" TEXT NOT NULL DEFAULT 'WAVG';
 
 CREATE TABLE "Supplier" (
   "id" TEXT NOT NULL,
@@ -151,3 +151,4 @@ ALTER TABLE "SupplierInvoice" ADD CONSTRAINT "SupplierInvoice_goodsReceiptId_fke
 ALTER TABLE "InventoryCostLayer" ADD CONSTRAINT "InventoryCostLayer_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "InventoryCostLayer" ADD CONSTRAINT "InventoryCostLayer_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "ProductVariant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "InventoryCostLayer" ADD CONSTRAINT "InventoryCostLayer_goodsReceiptItemId_fkey" FOREIGN KEY ("goodsReceiptItemId") REFERENCES "GoodsReceiptItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

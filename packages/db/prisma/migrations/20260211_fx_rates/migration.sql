@@ -1,6 +1,6 @@
 -- FX rates
 CREATE TABLE "FxRate" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "currencyCode" text NOT NULL,
   "date" timestamptz NOT NULL,
   "rate" numeric(18, 6) NOT NULL,
@@ -11,3 +11,4 @@ CREATE TABLE "FxRate" (
 
 CREATE INDEX "FxRate_currencyCode_idx" ON "FxRate"("currencyCode");
 CREATE INDEX "FxRate_date_idx" ON "FxRate"("date");
+

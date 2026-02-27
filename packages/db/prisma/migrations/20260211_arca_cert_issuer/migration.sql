@@ -1,1 +1,2 @@
-ALTER TABLE "CompanySettings" ADD COLUMN "afipCertIssuer" text;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "afipCertIssuer" text;
+

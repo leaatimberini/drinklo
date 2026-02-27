@@ -93,8 +93,10 @@ async function bootstrap() {
     new SanitizationPipe(),
   );
 
-  const ops = app.get(OpsService);
-  app.useGlobalFilters(new ObservabilityExceptionFilter(ops));
+  if (process.env.API_BOOTSTRAP_SAFE_MODE !== "true") {
+    const ops = app.get(OpsService);
+    app.useGlobalFilters(new ObservabilityExceptionFilter(ops));
+  }
 
   const port = config.get<number>("PORT", 3001);
 

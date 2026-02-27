@@ -110,3 +110,4 @@ ALTER TABLE "AccessReviewItem" ADD CONSTRAINT "AccessReviewItem_campaignId_fkey"
 ALTER TABLE "AccessReviewItem" ADD CONSTRAINT "AccessReviewItem_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "AccessReviewItem" ADD CONSTRAINT "AccessReviewItem_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "AccessReviewItem" ADD CONSTRAINT "AccessReviewItem_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

@@ -1,6 +1,6 @@
-ALTER TABLE "CompanySettings" ADD COLUMN "supportPlan" text DEFAULT 'standard';
-ALTER TABLE "CompanySettings" ADD COLUMN "supportSlaFirstResponseHours" integer DEFAULT 48;
-ALTER TABLE "CompanySettings" ADD COLUMN "supportSlaResolutionHours" integer DEFAULT 120;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "supportPlan" text DEFAULT 'standard';
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "supportSlaFirstResponseHours" integer DEFAULT 48;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "supportSlaResolutionHours" integer DEFAULT 120;
 
 CREATE TABLE "SupportCustomer" (
   "id" text NOT NULL,
@@ -83,3 +83,4 @@ ALTER TABLE "SupportTicket" ADD CONSTRAINT "SupportTicket_customerId_fkey" FOREI
 ALTER TABLE "SupportTicketMessage" ADD CONSTRAINT "SupportTicketMessage_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "SupportTicket"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "SupportTicketAttachment" ADD CONSTRAINT "SupportTicketAttachment_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "SupportTicket"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "SupportIncident" ADD CONSTRAINT "SupportIncident_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

@@ -1,6 +1,6 @@
-ALTER TABLE "CompanySettings" ADD COLUMN "retentionLogsDays" integer NOT NULL DEFAULT 90;
-ALTER TABLE "CompanySettings" ADD COLUMN "retentionOrdersDays" integer NOT NULL DEFAULT 365;
-ALTER TABLE "CompanySettings" ADD COLUMN "retentionMarketingDays" integer NOT NULL DEFAULT 365;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "retentionLogsDays" integer NOT NULL DEFAULT 90;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "retentionOrdersDays" integer NOT NULL DEFAULT 365;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "retentionMarketingDays" integer NOT NULL DEFAULT 365;
 
 CREATE TABLE "PrivacyRequest" (
   "id" text NOT NULL,
@@ -23,3 +23,4 @@ CREATE INDEX "PrivacyRequest_status_idx" ON "PrivacyRequest"("status");
 
 ALTER TABLE "PrivacyRequest" ADD CONSTRAINT "PrivacyRequest_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "PrivacyRequest" ADD CONSTRAINT "PrivacyRequest_requestedById_fkey" FOREIGN KEY ("requestedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

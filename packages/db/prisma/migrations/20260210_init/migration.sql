@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE "Company" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "name" text NOT NULL,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
   "updatedAt" timestamptz NOT NULL DEFAULT now(),
@@ -10,8 +10,8 @@ CREATE TABLE "Company" (
 );
 
 CREATE TABLE "Role" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "name" text NOT NULL,
   "description" text,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
@@ -22,8 +22,8 @@ CREATE TABLE "Role" (
 );
 
 CREATE TABLE "Permission" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "code" text NOT NULL,
   "description" text,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
@@ -33,10 +33,10 @@ CREATE TABLE "Permission" (
 );
 
 CREATE TABLE "RolePermission" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "roleId" uuid NOT NULL,
-  "permissionId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "roleId" text NOT NULL,
+  "permissionId" text NOT NULL,
   CONSTRAINT "RolePermission_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT "RolePermission_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT "RolePermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -44,9 +44,9 @@ CREATE TABLE "RolePermission" (
 );
 
 CREATE TABLE "User" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "roleId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "roleId" text NOT NULL,
   "email" text NOT NULL,
   "name" text NOT NULL,
   "passwordHash" text NOT NULL,
@@ -59,8 +59,8 @@ CREATE TABLE "User" (
 );
 
 CREATE TABLE "Customer" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "name" text NOT NULL,
   "email" text,
   "phone" text,
@@ -71,9 +71,9 @@ CREATE TABLE "Customer" (
 );
 
 CREATE TABLE "Address" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "customerId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "customerId" text NOT NULL,
   "line1" text NOT NULL,
   "line2" text,
   "city" text NOT NULL,
@@ -88,11 +88,11 @@ CREATE TABLE "Address" (
 );
 
 CREATE TABLE "Category" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "name" text NOT NULL,
   "slug" text,
-  "parentId" uuid,
+  "parentId" text,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
   "updatedAt" timestamptz NOT NULL DEFAULT now(),
   "deletedAt" timestamptz,
@@ -101,8 +101,8 @@ CREATE TABLE "Category" (
 );
 
 CREATE TABLE "Product" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "name" text NOT NULL,
   "description" text,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
@@ -112,9 +112,9 @@ CREATE TABLE "Product" (
 );
 
 CREATE TABLE "ProductVariant" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "productId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "productId" text NOT NULL,
   "name" text NOT NULL,
   "sku" text NOT NULL,
   "barcode" text,
@@ -128,10 +128,10 @@ CREATE TABLE "ProductVariant" (
 );
 
 CREATE TABLE "ProductCategory" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "productId" uuid NOT NULL,
-  "categoryId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "productId" text NOT NULL,
+  "categoryId" text NOT NULL,
   CONSTRAINT "ProductCategory_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT "ProductCategory_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT "ProductCategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -139,8 +139,8 @@ CREATE TABLE "ProductCategory" (
 );
 
 CREATE TABLE "PriceList" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "name" text NOT NULL,
   "currency" text NOT NULL,
   "isDefault" boolean NOT NULL DEFAULT false,
@@ -152,11 +152,11 @@ CREATE TABLE "PriceList" (
 );
 
 CREATE TABLE "PriceRule" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "priceListId" uuid NOT NULL,
-  "productId" uuid,
-  "variantId" uuid,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "priceListId" text NOT NULL,
+  "productId" text,
+  "variantId" text,
   "minQty" integer NOT NULL DEFAULT 1,
   "price" numeric(10, 2) NOT NULL,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
@@ -169,8 +169,8 @@ CREATE TABLE "PriceRule" (
 );
 
 CREATE TABLE "StockLocation" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
   "name" text NOT NULL,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
   "updatedAt" timestamptz NOT NULL DEFAULT now(),
@@ -179,10 +179,10 @@ CREATE TABLE "StockLocation" (
 );
 
 CREATE TABLE "StockItem" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "variantId" uuid NOT NULL,
-  "locationId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "variantId" text NOT NULL,
+  "locationId" text NOT NULL,
   "quantity" integer NOT NULL DEFAULT 0,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
   "updatedAt" timestamptz NOT NULL DEFAULT now(),
@@ -194,9 +194,9 @@ CREATE TABLE "StockItem" (
 );
 
 CREATE TABLE "StockMovement" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "companyId" uuid NOT NULL,
-  "stockItemId" uuid NOT NULL,
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "companyId" text NOT NULL,
+  "stockItemId" text NOT NULL,
   "delta" integer NOT NULL,
   "reason" text NOT NULL,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
@@ -234,3 +234,114 @@ CREATE INDEX "StockItem_companyId_idx" ON "StockItem"("companyId");
 CREATE INDEX "StockItem_variantId_idx" ON "StockItem"("variantId");
 CREATE INDEX "StockMovement_companyId_idx" ON "StockMovement"("companyId");
 CREATE INDEX "StockMovement_stockItemId_idx" ON "StockMovement"("stockItemId");
+
+-- Ensure audit columns exist for fresh databases when 20260210_audit_fields runs before init.
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "createdById" text;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "updatedById" text;
+ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "createdById" text;
+ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "updatedById" text;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "createdById" text;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "updatedById" text;
+ALTER TABLE "ProductVariant" ADD COLUMN IF NOT EXISTS "createdById" text;
+ALTER TABLE "ProductVariant" ADD COLUMN IF NOT EXISTS "updatedById" text;
+ALTER TABLE "StockLocation" ADD COLUMN IF NOT EXISTS "createdById" text;
+ALTER TABLE "StockLocation" ADD COLUMN IF NOT EXISTS "updatedById" text;
+ALTER TABLE "StockItem" ADD COLUMN IF NOT EXISTS "createdById" text;
+ALTER TABLE "StockItem" ADD COLUMN IF NOT EXISTS "updatedById" text;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'User_createdById_fkey') THEN
+    ALTER TABLE "User" ADD CONSTRAINT "User_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'User_updatedById_fkey') THEN
+    ALTER TABLE "User" ADD CONSTRAINT "User_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Customer_createdById_fkey') THEN
+    ALTER TABLE "Customer" ADD CONSTRAINT "Customer_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Customer_updatedById_fkey') THEN
+    ALTER TABLE "Customer" ADD CONSTRAINT "Customer_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Product_createdById_fkey') THEN
+    ALTER TABLE "Product" ADD CONSTRAINT "Product_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Product_updatedById_fkey') THEN
+    ALTER TABLE "Product" ADD CONSTRAINT "Product_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ProductVariant_createdById_fkey') THEN
+    ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ProductVariant_updatedById_fkey') THEN
+    ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StockLocation_createdById_fkey') THEN
+    ALTER TABLE "StockLocation" ADD CONSTRAINT "StockLocation_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StockLocation_updatedById_fkey') THEN
+    ALTER TABLE "StockLocation" ADD CONSTRAINT "StockLocation_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StockItem_createdById_fkey') THEN
+    ALTER TABLE "StockItem" ADD CONSTRAINT "StockItem_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StockItem_updatedById_fkey') THEN
+    ALTER TABLE "StockItem" ADD CONSTRAINT "StockItem_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
+

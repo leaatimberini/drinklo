@@ -2,20 +2,16 @@ import "dotenv/config";
 import { Telegraf, Markup, type Context } from "telegraf";
 import { emitEvent } from "./events";
 
-const token = process.env.BOT_TOKEN;
+const token = process.env.BOT_TOKEN?.trim();
 const allowlist = (process.env.BOT_ALLOWLIST ?? "")
   .split(",")
   .map((v) => v.trim())
   .filter(Boolean);
 const adminRole = (process.env.BOT_ADMIN_ROLE ?? "admin").toLowerCase();
 
-if (!token) {
-  throw new Error("BOT_TOKEN is required");
-}
-
 const apiUrl = process.env.API_URL ?? "http://localhost:3001";
 const eventToken = process.env.EVENT_INGEST_TOKEN;
-const bot = new Telegraf(token);
+const bot = new Telegraf(token || "dev-disabled-token");
 const rateMap = new Map<string, { count: number; reset: number }>();
 
 type BotContext = Context;
@@ -508,7 +504,25 @@ bot.on("callback_query", async (ctx) => {
   await ctx.answerCbQuery();
 });
 
-bot.launch();
+async function launchBot() {
+  try {
+    await bot.launch();
+    // eslint-disable-next-line no-console
+    console.log("Bot running");
+  } catch (error) {
+    if (process.env.NODE_ENV === "production") {
+      throw error;
+    }
 
-// eslint-disable-next-line no-console
-console.log("Bot running");
+    // eslint-disable-next-line no-console
+    console.error(`Bot disabled in local dev: ${errorMessage(error)}`);
+    // Keep the process alive so turbo dev doesn't fail when BOT_TOKEN is missing/invalid.
+    setInterval(() => {}, 60 * 60 * 1000);
+  }
+}
+
+launchBot().catch((error) => {
+  // eslint-disable-next-line no-console
+  console.error(errorMessage(error));
+  process.exit(1);
+});

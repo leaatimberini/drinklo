@@ -60,3 +60,4 @@ CREATE TABLE "ReportTemplate" (
 
 CREATE INDEX "ReportTemplate_companyId_idx" ON "ReportTemplate"("companyId");
 ALTER TABLE "ReportTemplate" ADD CONSTRAINT "ReportTemplate_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

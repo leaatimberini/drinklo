@@ -1,6 +1,7 @@
-ALTER TABLE "CompanySettings" ADD COLUMN "enableAfip" boolean NOT NULL DEFAULT false;
-ALTER TABLE "CompanySettings" ADD COLUMN "enableMercadoLibre" boolean NOT NULL DEFAULT false;
-ALTER TABLE "CompanySettings" ADD COLUMN "enableRappi" boolean NOT NULL DEFAULT false;
-ALTER TABLE "CompanySettings" ADD COLUMN "enablePedidosYa" boolean NOT NULL DEFAULT false;
-ALTER TABLE "CompanySettings" ADD COLUMN "enableAndreani" boolean NOT NULL DEFAULT false;
-ALTER TABLE "CompanySettings" ADD COLUMN "enableOwnDelivery" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enableAfip" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enableMercadoLibre" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enableRappi" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enablePedidosYa" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enableAndreani" boolean NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS "CompanySettings" ADD COLUMN IF NOT EXISTS "enableOwnDelivery" boolean NOT NULL DEFAULT false;
+

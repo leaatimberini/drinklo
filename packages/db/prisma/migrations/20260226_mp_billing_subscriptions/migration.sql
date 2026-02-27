@@ -1,8 +1,15 @@
-ALTER TABLE "Subscription" ADD COLUMN "billingProvider" TEXT;
-ALTER TABLE "Subscription" ADD COLUMN "mpPreapprovalId" TEXT;
-ALTER TABLE "Subscription" ADD COLUMN "mpPreapprovalStatus" TEXT;
-ALTER TABLE "Subscription" ADD COLUMN "mpNextBillingDate" TIMESTAMP(3);
-ALTER TABLE "Subscription" ADD COLUMN "mpSubscriptionRaw" JSONB;
+ALTER TABLE IF EXISTS "Subscription" ADD COLUMN IF NOT EXISTS "billingProvider" TEXT;
+ALTER TABLE IF EXISTS "Subscription" ADD COLUMN IF NOT EXISTS "mpPreapprovalId" TEXT;
+ALTER TABLE IF EXISTS "Subscription" ADD COLUMN IF NOT EXISTS "mpPreapprovalStatus" TEXT;
+ALTER TABLE IF EXISTS "Subscription" ADD COLUMN IF NOT EXISTS "mpNextBillingDate" TIMESTAMP(3);
+ALTER TABLE IF EXISTS "Subscription" ADD COLUMN IF NOT EXISTS "mpSubscriptionRaw" JSONB;
 
-CREATE UNIQUE INDEX "Subscription_mpPreapprovalId_key" ON "Subscription"("mpPreapprovalId");
-CREATE INDEX "Subscription_mpPreapprovalStatus_idx" ON "Subscription"("mpPreapprovalStatus");
+DO $$
+BEGIN
+  IF to_regclass('"Subscription"') IS NOT NULL THEN
+    EXECUTE 'CREATE UNIQUE INDEX IF NOT EXISTS "Subscription_mpPreapprovalId_key" ON "Subscription"("mpPreapprovalId")';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS "Subscription_mpPreapprovalStatus_idx" ON "Subscription"("mpPreapprovalStatus")';
+  END IF;
+END
+$$;
+

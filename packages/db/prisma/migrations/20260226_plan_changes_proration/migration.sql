@@ -49,3 +49,4 @@ CREATE INDEX "ProrationInvoiceItem_type_idx" ON "ProrationInvoiceItem"("type");
 ALTER TABLE "ProrationInvoice" ADD CONSTRAINT "ProrationInvoice_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "ProrationInvoice" ADD CONSTRAINT "ProrationInvoice_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "ProrationInvoiceItem" ADD CONSTRAINT "ProrationInvoiceItem_prorationInvoiceId_fkey" FOREIGN KEY ("prorationInvoiceId") REFERENCES "ProrationInvoice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

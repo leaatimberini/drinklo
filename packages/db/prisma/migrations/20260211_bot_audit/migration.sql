@@ -1,6 +1,6 @@
 -- Bot audit
 CREATE TABLE "BotCommandLog" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "id" text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "adminId" text,
   "chatId" text NOT NULL,
   "command" text NOT NULL,
@@ -12,3 +12,4 @@ CREATE TABLE "BotCommandLog" (
 
 CREATE INDEX "BotCommandLog_chatId_idx" ON "BotCommandLog"("chatId");
 CREATE INDEX "BotCommandLog_command_idx" ON "BotCommandLog"("command");
+

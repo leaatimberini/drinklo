@@ -404,6 +404,40 @@ async function nextAvailablePort(basePort, blockedPorts) {
   return null;
 }
 
+export async function resolveDevServerPortOverrides() {
+  const plans = [
+    { envKey: "AGENT_PORT", label: "instance-agent", defaultPort: 4010, preferredPort: 14010 },
+    { envKey: "PRINT_AGENT_PORT", label: "print-agent", defaultPort: 4161, preferredPort: 14161 },
+  ];
+
+  const blockedPorts = new Set();
+  const env = {};
+  const notes = [];
+
+  for (const plan of plans) {
+    const requestedPort = Number(process.env[plan.envKey] ?? plan.defaultPort);
+    if (!Number.isFinite(requestedPort) || requestedPort <= 0 || requestedPort > 65535) continue;
+
+    blockedPorts.add(requestedPort);
+    // eslint-disable-next-line no-await-in-loop
+    const available = await isHostPortAvailable(requestedPort);
+    if (available) continue;
+
+    // eslint-disable-next-line no-await-in-loop
+    const selectedPort = await nextAvailablePort(plan.preferredPort, blockedPorts);
+    if (!selectedPort) {
+      throw new Error(
+        `No hay puertos disponibles para ${plan.label}. Libera ${requestedPort} o define ${plan.envKey} manualmente.`,
+      );
+    }
+    blockedPorts.add(selectedPort);
+    env[plan.envKey] = String(selectedPort);
+    notes.push(`${plan.label}: puerto ${requestedPort} ocupado, bootstrap usara ${selectedPort} (${plan.envKey}).`);
+  }
+
+  return { env, notes };
+}
+
 function renderPortLine(binding, remappedPort) {
   const hostPort = remappedPort ?? binding.hostPort;
   const protoSuffix = binding.protocol && binding.protocol !== "tcp" ? `/${binding.protocol}` : "";
@@ -699,20 +733,117 @@ export function rootPackageJson() {
   return JSON.parse(readText(rootPath("package.json")));
 }
 
-export async function runDbMigrateAndSeed() {
-  const pkg = rootPackageJson();
-  const scripts = pkg.scripts ?? {};
-  if (scripts["db:migrate"]) {
-    await run("pnpm", ["-w", "run", "db:migrate"], { stdio: "inherit" });
-  } else {
-    await run("pnpm", ["-C", "packages/db", "exec", "prisma", "migrate", "deploy"], { stdio: "inherit" });
+function isTruthyEnv(value) {
+  return ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
+}
+
+function isPrismaMigrationRecoveryError(message) {
+  const text = String(message ?? "");
+  return /\bP3009\b/.test(text) || /\bP3018\b/.test(text);
+}
+
+function migrationRecoveryHelpText() {
+  return [
+    "Prisma detecto una migracion fallida (P3009/P3018).",
+    "Si es entorno local de desarrollo, reintenta con:",
+    "- PowerShell: $env:DEV_RESET_DB='true'; pnpm bootstrap",
+    "- Bash: DEV_RESET_DB=true pnpm bootstrap",
+    "Tambien podes recuperar manualmente con:",
+    "- docker compose -f docker-compose.yml down -v",
+    "- pnpm -C packages/db exec prisma migrate deploy",
+    "- pnpm -C packages/db exec prisma db seed",
+  ].join("\n");
+}
+
+async function runCommandAndPrint(cmd, args) {
+  const result = await run(cmd, args, { allowFailure: true });
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.status === 0) return;
+
+  const combined = [String(result.stdout ?? ""), String(result.stderr ?? "")]
+    .join("\n")
+    .trim();
+  throw new Error(combined || `${formatCommand(cmd, args)} exited with code ${result.status ?? "unknown"}`);
+}
+
+function parsePostgresCredentialsFromCompose(composeFile) {
+  const content = readText(composeFile);
+  return {
+    user: parseComposeEnvValue(content, "POSTGRES_USER", "erp"),
+    db: parseComposeEnvValue(content, "POSTGRES_DB", "erp"),
+  };
+}
+
+async function resetDevPostgresSchema(composeFiles) {
+  const files = normalizeComposeFiles(composeFiles);
+  const services = await dockerComposeServices(files);
+  if (!services.includes("postgres")) {
+    throw new Error("No se encontro el servicio postgres en el compose efectivo.");
   }
 
-  if (scripts["db:seed"]) {
-    await run("pnpm", ["-w", "run", "db:seed"], { stdio: "inherit" });
-  } else {
-    await run("pnpm", ["-C", "packages/db", "exec", "prisma", "db", "seed"], { stdio: "inherit" });
+  const { user, db } = parsePostgresCredentialsFromCompose(files[0]);
+  logWarn("DEV_RESET_DB=true detectado. Reiniciando schema public de Postgres para recovery local.");
+
+  await dockerCompose(
+    files,
+    [
+      "exec",
+      "-T",
+      "postgres",
+      "psql",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-U",
+      user,
+      "-d",
+      db,
+      "-c",
+      "DROP SCHEMA IF EXISTS public CASCADE;",
+      "-c",
+      "CREATE SCHEMA public;",
+      "-c",
+      `GRANT ALL ON SCHEMA public TO ${user};`,
+      "-c",
+      "GRANT ALL ON SCHEMA public TO public;",
+    ],
+    { stdio: "inherit" },
+  );
+}
+
+export async function runDbMigrateAndSeed(options = {}) {
+  const composeFiles = options.composeFiles ?? null;
+  const pkg = rootPackageJson();
+  const scripts = pkg.scripts ?? {};
+
+  const migrateArgs = scripts["db:migrate"]
+    ? ["-w", "run", "db:migrate"]
+    : ["-C", "packages/db", "exec", "prisma", "migrate", "deploy"];
+  const seedArgs = scripts["db:seed"]
+    ? ["-w", "run", "db:seed"]
+    : ["-C", "packages/db", "exec", "prisma", "db", "seed"];
+
+  try {
+    await runCommandAndPrint("pnpm", migrateArgs);
+  } catch (error) {
+    const message = String(error?.message ?? error);
+    if (isPrismaMigrationRecoveryError(message)) {
+      if (!isTruthyEnv(process.env.DEV_RESET_DB)) {
+        throw new Error(`${message}\n\n${migrationRecoveryHelpText()}`);
+      }
+      if (!composeFiles) {
+        throw new Error(`${message}\n\nNo se recibio composeFiles para recovery automatico.`);
+      }
+
+      await resetDevPostgresSchema(composeFiles);
+      await runCommandAndPrint("pnpm", migrateArgs);
+      await runCommandAndPrint("pnpm", seedArgs);
+      return;
+    }
+    throw error;
   }
+
+  await runCommandAndPrint("pnpm", seedArgs);
 }
 
 function readEnvFile(filePath) {

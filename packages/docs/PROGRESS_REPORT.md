@@ -293,3 +293,65 @@ It includes:
   - `pnpm -C apps/instance-agent build` [OK]
   - `pnpm build` [OK]
   - `pnpm gate` [OK] (local without Docker: smoke skipped with controlled warning)
+
+## ES (Actualizacion branch feature/143-fix-prisma-migrations-bootstrap-launch)
+
+### Bootstrap + Prisma migrations recovery
+- Problema reproducido:
+  - `pnpm bootstrap` fallaba en `db:migrate` con `P3018` / `42P01` (`relation "User" does not exist`) en `20260210_audit_fields`.
+- Root cause:
+  - Orden de migraciones inconsistente (migraciones que alteraban tablas antes de crearlas).
+  - Inconsistencia de tipos (`uuid` vs `text`) entre migraciones antiguas y schema actual.
+- Fix aplicado:
+  - `20260210_audit_fields` convertida a idempotente/segura (`ALTER TABLE IF EXISTS`, constraints condicionales).
+  - `20260210_init` y otras migraciones normalizadas a `text` para IDs/FKs.
+  - Migraciones con dependencia temporal (`ab_testing`, `billing`, `multi_branch`, `pos_offline`, `mp_billing_subscriptions`, etc.) ajustadas para no romper en fresh deploy.
+  - `company_settings` backfill de columnas que podian omitirse por orden.
+  - Bootstrap:
+    - recovery opcional por env `DEV_RESET_DB=true` para errores Prisma `P3009/P3018` (resetea schema `public` y reintenta migrate+seed).
+    - preflight + resumen de puertos finales.
+    - arranque `turbo dev` con `--concurrency` configurable y override de puertos dev para `instance-agent` / `print-agent`.
+  - API local:
+    - `API_BOOTSTRAP_SAFE_MODE=true` durante bootstrap para arrancar con modulos core y evitar bloqueos de wiring en modulos avanzados.
+    - fixes puntuales de runtime/wiring (`UseGuards` import, exports/imports faltantes en modulos, `PrismaService` import incorrecto en billing).
+  - Bot:
+    - en dev local no rompe por token invalido/faltante; queda en modo degradado y mantiene proceso vivo.
+- Evidencias ejecutadas:
+  - `docker compose -f docker-compose.yml down -v` [OK]
+  - `pnpm -C packages/db exec prisma migrate reset --force --skip-seed` [OK]
+  - `pnpm -C packages/db exec prisma migrate deploy` [OK]
+  - `pnpm -C packages/db exec prisma db seed` [OK]
+  - `pnpm bootstrap` [OK hasta dev servers; proceso queda corriendo como esperado]
+    - Admin/Storefront/Control-plane/API levantan.
+    - API en safe mode inicia y publica rutas core.
+
+## EN (Update for branch feature/143-fix-prisma-migrations-bootstrap-launch)
+
+### Bootstrap + Prisma migrations recovery
+- Reproduced issue:
+  - `pnpm bootstrap` failed at `db:migrate` with `P3018` / `42P01` (`relation "User" does not exist`) in `20260210_audit_fields`.
+- Root cause:
+  - Migration ordering mismatches (altering tables before creation).
+  - Type mismatch drift (`uuid` vs `text`) between older migrations and current schema.
+- Applied fix:
+  - `20260210_audit_fields` made idempotent/safe (`ALTER TABLE IF EXISTS`, conditional constraints).
+  - `20260210_init` and related migrations normalized to `text` IDs/FKs.
+  - Time-dependent migrations (`ab_testing`, `billing`, `multi_branch`, `pos_offline`, `mp_billing_subscriptions`, etc.) hardened for fresh deploy.
+  - `company_settings` now includes backfilled columns that could be skipped by ordering.
+  - Bootstrap:
+    - optional Prisma recovery via `DEV_RESET_DB=true` for `P3009/P3018` (resets `public` schema and retries migrate+seed).
+    - port preflight + final port summary.
+    - `turbo dev` startup with configurable `--concurrency` and dev port override for `instance-agent` / `print-agent`.
+  - Local API:
+    - `API_BOOTSTRAP_SAFE_MODE=true` during bootstrap to start with core modules and avoid advanced-module wiring blockers.
+    - targeted runtime wiring fixes (`UseGuards` import, missing module exports/imports, wrong `PrismaService` import in billing).
+  - Bot:
+    - local dev no longer crashes on missing/invalid token; runs in degraded mode and keeps process alive.
+- Command evidence:
+  - `docker compose -f docker-compose.yml down -v` [OK]
+  - `pnpm -C packages/db exec prisma migrate reset --force --skip-seed` [OK]
+  - `pnpm -C packages/db exec prisma migrate deploy` [OK]
+  - `pnpm -C packages/db exec prisma db seed` [OK]
+  - `pnpm bootstrap` [OK through dev startup; expected to keep running]
+    - Admin/Storefront/Control-plane/API start.
+    - API starts in safe mode with core routes available.

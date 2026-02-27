@@ -25,3 +25,4 @@ CREATE INDEX "SubscriptionLifecycleNotification_channel_status_idx" ON "Subscrip
 
 ALTER TABLE "SubscriptionLifecycleNotification" ADD CONSTRAINT "SubscriptionLifecycleNotification_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "SubscriptionLifecycleNotification" ADD CONSTRAINT "SubscriptionLifecycleNotification_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

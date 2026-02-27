@@ -43,3 +43,4 @@ CREATE INDEX "EmailEventLog_type_idx" ON "EmailEventLog"("type");
 CREATE INDEX "EmailEventLog_messageId_idx" ON "EmailEventLog"("messageId");
 
 ALTER TABLE "EmailEventLog" ADD CONSTRAINT "EmailEventLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

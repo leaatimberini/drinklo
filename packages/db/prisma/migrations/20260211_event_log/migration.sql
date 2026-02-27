@@ -19,3 +19,4 @@ CREATE INDEX "EventLog_receivedAt_idx" ON "EventLog"("receivedAt");
 CREATE INDEX "EventLog_status_idx" ON "EventLog"("status");
 
 ALTER TABLE "EventLog" ADD CONSTRAINT "EventLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
