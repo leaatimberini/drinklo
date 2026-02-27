@@ -9,15 +9,17 @@ Levantar el stack local en Windows/Linux/macOS con **un comando** (`pnpm bootstr
 - Prisma en `packages/db`
 
 ### Requisitos
-- **Node 24 requerido** (mínimo `>= 24`)
+- **Node 24 requerido** (minimo `>= 24`)
 - Node.js `>= 24`
 - `pnpm`
 - Docker Desktop / Docker Engine corriendo
 
-### Inicio rápido
+### Inicio rapido
 1. Instalar dependencias:
    - `pnpm install`
-2. Levantar todo:
+2. (Opcional, recomendado en Windows) Ejecutar diagnostico:
+   - `pnpm bootstrap:diag`
+3. Levantar todo:
    - `pnpm bootstrap`
 
 El script:
@@ -45,15 +47,20 @@ El script:
   - `COMPOSE_FILE=deploy/templates/docker-compose.yml pnpm bootstrap`
 
 ### Troubleshooting
+- **`[bootstrap][error] pnpm exited with null` o error de spawn en Windows**
+  - Ejecutar `pnpm bootstrap:diag`
+  - Verificar que `pnpm` este en PATH (`where pnpm` en PowerShell / Git Bash)
+  - Reabrir terminal despues de instalar Node/pnpm y reintentar
 - **Puerto ocupado**
   - Revisar contenedores y procesos locales (`docker ps`, `netstat -ano` / `lsof -i`)
   - Cambiar puertos en `.env` o en el compose
 - **Docker no arranca / `docker info` falla**
   - Iniciar Docker Desktop / servicio Docker y reintentar
+  - El bootstrap muestra mensaje explicito: `Docker no esta disponible...`
 - **Migraciones fallan**
-  - Verificar `DATABASE_URL` y que `postgres` esté healthy
+  - Verificar `DATABASE_URL` y que `postgres` este healthy
   - Probar `pnpm db:migrate` manualmente
-  - Si el schema local quedó inconsistente: `pnpm db:reset`
+  - Si el schema local quedo inconsistente: `pnpm db:reset`
 
 ---
 
@@ -74,7 +81,9 @@ Bring up the local stack on Windows/Linux/macOS with **one command** (`pnpm boot
 ### Quick start
 1. Install dependencies:
    - `pnpm install`
-2. Start everything:
+2. (Optional, recommended on Windows) Run diagnostics:
+   - `pnpm bootstrap:diag`
+3. Start everything:
    - `pnpm bootstrap`
 
 The script will:
@@ -102,11 +111,16 @@ The script will:
   - `COMPOSE_FILE=deploy/templates/docker-compose.yml pnpm bootstrap`
 
 ### Troubleshooting
+- **`[bootstrap][error] pnpm exited with null` or Windows spawn error**
+  - Run `pnpm bootstrap:diag`
+  - Verify `pnpm` is on PATH (`where pnpm` in PowerShell / Git Bash)
+  - Reopen terminal after installing Node/pnpm and retry
 - **Port already in use**
   - Check containers and local processes (`docker ps`, `netstat -ano` / `lsof -i`)
   - Change ports in `.env` or compose file
 - **Docker not running / `docker info` fails**
   - Start Docker Desktop / Docker daemon and retry
+  - Bootstrap now prints explicit message: `Docker no esta disponible...`
 - **Migrations fail**
   - Check `DATABASE_URL` and confirm `postgres` is healthy
   - Run `pnpm db:migrate` manually
